@@ -327,7 +327,7 @@ Copyright © 2026 Attorney Valois NIYIGABA. All rights reserved.
 
 ## 👨‍💻 Author
 **Attorney Valois NIYIGABA**
-- GitHub: [@yourusername](https://https://github.com/attorney755)
+- GitHub: [attorney755](https://github.com/attorney755)
 - Email: [attorneyvalois@gmail.com](mailto:attorneyvalois@gmail.com)
 
 ---
