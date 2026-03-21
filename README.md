@@ -1,22 +1,28 @@
-# TANGAMAKURU - Rwanda Crime Reporting System
+Here is your `README.md` arranged as a single, well-structured file:
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12%2B-blue.svg)](https://www.postgresql.org/)
+```markdown
+# TANGAMAKURU - Rwanda Crime Reporting System
+**Python Flask PostgreSQL**
 
 A comprehensive digital platform for reporting and managing crime incidents in Rwanda. Citizens can report incidents with evidence, officers can manage cases, and administrators can oversee the entire system.
 
-## 📋 Table of Contents
+---
 
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Prerequisites](#prerequisites)
-- [Installation Steps](#installation-steps)
-- [Project Structure](#project-structure)
-- [Default Accounts](#default-accounts)
-- [Usage Guide](#usage-guide)
-- [Troubleshooting](#troubleshooting)
-- [Security Notes](#security-notes)
+## 📋 Table of Contents
+- [Features](#-features)
+- [Technology Stack](#-technology-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation Steps](#-installation-steps)
+- [Project Structure](#-project-structure)
+- [Default Accounts](#-default-accounts)
+- [Usage Guide](#-usage-guide)
+- [Troubleshooting](#-troubleshooting)
+- [Security Notes](#-security-notes)
+- [License](#-license)
+- [Author](#-author)
+- [Acknowledgments](#-acknowledgments)
+
+---
 
 ## ✨ Features
 
@@ -50,107 +56,130 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 - Admin account management (activate/deactivate/delete)
 - View system-wide statistics
 
+---
+
 ## 🛠 Technology Stack
 
-| Component | Technology |
-|-----------|------------|
-| Backend | Flask 2.3.3 (Python 3.10+) |
-| Database | PostgreSQL 12+ |
-| ORM | SQLAlchemy 2.0 |
-| Migrations | Flask-Migrate / Alembic |
-| Frontend | Bootstrap 5, JavaScript, Jinja2 |
+| Component      | Technology                     |
+|----------------|--------------------------------|
+| Backend        | Flask 2.3.3 (Python 3.10+)     |
+| Database       | PostgreSQL 12+                 |
+| ORM            | SQLAlchemy 2.0                 |
+| Migrations     | Flask-Migrate / Alembic         |
+| Frontend       | Bootstrap 5, JavaScript, Jinja2|
 | Authentication | Session-based with Flask-Login |
-| PDF Generation | WeasyPrint |
-| File Uploads | Local storage with secure filenames |
-| Charts | Matplotlib |
-| Background Tasks | Celery with Redis |
-| Email | Flask-Mail (optional) |
+| PDF Generation | WeasyPrint                     |
+| File Uploads   | Local storage with secure filenames |
+| Charts         | Matplotlib                     |
+| Background Tasks| Celery with Redis             |
+| Email          | Flask-Mail (optional)          |
+
+---
 
 ## 📋 Prerequisites
+- Python 3.10 or 3.11 (Python 3.12 has compatibility issues with datetime functions)
+- PostgreSQL 12 or higher
+- Git (for cloning the repository)
+- Redis (optional, for Celery background tasks)
 
-- **Python 3.10 or 3.11** (Python 3.12 has compatibility issues with datetime functions)
-- **PostgreSQL 12 or higher**
-- **Git** (for cloning the repository)
-- **Redis** (optional, for Celery background tasks)
+---
 
 ## 🚀 Installation Steps
 
-### 1. Clone the repository
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/tangamakuru.git
+   cd tangamakuru
+   ```
 
-```bash
-git clone https://github.com/yourusername/tangamakuru.git
-cd tangamakuru
-2. Create and activate virtual environment
-Linux/macOS:
+2. **Create and activate virtual environment**
+   - **Linux/macOS:**
+     ```bash
+     python3.10 -m venv venv
+     source venv/bin/activate
+     ```
+   - **Windows:**
+     ```cmd
+     python -m venv venv
+     venv\Scripts\activate
+     ```
 
-bash
-python3.10 -m venv venv
-source venv/bin/activate
-Windows:
+3. **Install dependencies**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
 
-cmd
-python -m venv venv
-venv\Scripts\activate
-3. Install dependencies
-bash
-cd backend
-pip install -r requirements.txt
-4. Set up PostgreSQL database
-bash
-# Login to PostgreSQL
-sudo -u postgres psql
+4. **Set up PostgreSQL database**
+   ```bash
+   # Login to PostgreSQL
+   sudo -u postgres psql
+   ```
+   Run these SQL commands:
+   ```sql
+   CREATE DATABASE tangamakuru_db;
+   CREATE USER tangamakuru_user WITH PASSWORD 'your_secure_password';
+   ALTER ROLE tangamakuru_user SET client_encoding TO 'utf8';
+   ALTER ROLE tangamakuru_user SET default_transaction_isolation TO 'read committed';
+   ALTER ROLE tangamakuru_user SET timezone TO 'UTC';
+   GRANT ALL PRIVILEGES ON DATABASE tangamakuru_db TO tangamakuru_user;
+   \q
+   ```
 
-# Run these SQL commands
-CREATE DATABASE tangamakuru_db;
-CREATE USER tangamakuru_user WITH PASSWORD 'your_secure_password';
-ALTER ROLE tangamakuru_user SET client_encoding TO 'utf8';
-ALTER ROLE tangamakuru_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE tangamakuru_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE tangamakuru_db TO tangamakuru_user;
-\q
-5. Configure environment variables
-Create a .env file in the backend directory:
+5. **Configure environment variables**
+   Create a `.env` file in the backend directory:
+   ```bash
+   cp .env.example .env
+   nano .env  # or use any text editor
+   ```
+   `.env` file content:
+   ```ini
+   # Flask Configuration
+   SECRET_KEY=your-secret-key-here-change-this-in-production
+   FLASK_APP=run.py
+   FLASK_ENV=development
 
-bash
-cp .env.example .env
-nano .env  # or use any text editor
-.env file content:
+   # Database Configuration
+   DATABASE_URL=postgresql://tangamakuru_user:your_secure_password@localhost/tangamakuru_db
 
-ini
-# Flask Configuration
-SECRET_KEY=your-secret-key-here-change-this-in-production
-FLASK_APP=run.py
-FLASK_ENV=development
+   # Upload Configuration
+   UPLOAD_FOLDER=uploads
+   MAX_CONTENT_LENGTH=16777216  # 16MB
 
-# Database Configuration
-DATABASE_URL=postgresql://tangamakuru_user:your_secure_password@localhost/tangamakuru_db
+   # Email Configuration (optional)
+   MAIL_SERVER=smtp.gmail.com
+   MAIL_PORT=587
+   MAIL_USE_TLS=True
+   MAIL_USERNAME=your-email@gmail.com
+   MAIL_PASSWORD=your-app-password
+   ```
 
-# Upload Configuration
-UPLOAD_FOLDER=uploads
-MAX_CONTENT_LENGTH=16777216  # 16MB
+6. **Run database migrations**
+   ```bash
+   flask db upgrade
+   ```
 
-# Email Configuration (optional)
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
-6. Run database migrations
-bash
-flask db upgrade
-7. Create uploads directory
-bash
-mkdir -p uploads
-8. Create default users (optional)
-bash
-python create_admin.py
-9. Start the application
-bash
-python run.py
-The application will be available at: http://localhost:5000
+7. **Create uploads directory**
+   ```bash
+   mkdir -p uploads
+   ```
 
-📁 Project Structure
-text
+8. **Create default users (optional)**
+   ```bash
+   python create_admin.py
+   ```
+
+9. **Start the application**
+   ```bash
+   python run.py
+   ```
+   The application will be available at: [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 📁 Project Structure
+
+```
 Tangamakuru/
 ├── backend/
 │   ├── app/
@@ -188,128 +217,137 @@ Tangamakuru/
 │       ├── notifications.html     # Notification center
 │       └── view_report.html       # Report details page
 └── README.md                # This file
-🔑 Default Accounts
-After running create_admin.py, these accounts are created:
+```
 
-Role	Email	Password
-Super Admin	admin@tangamakuru.rw	Admin@2024
-Officer	officer@tangamakuru.rw	Officer@2024
-Citizen	citizen@tangamakuru.rw	Citizen@2024
-Note: District admins must be created by the Super Admin from the dashboard.
+---
 
-📖 Usage Guide
-For Citizens
-Register: Click "Register" on the landing page, select "As Citizen"
+## 🔑 Default Accounts
 
-Submit Report: After login, click "Submit Report" and fill in incident details
+After running `create_admin.py`, these accounts are created:
 
-Upload Evidence: Add images, videos, or documents as evidence
+| Role         | Email                     | Password       |
+|--------------|---------------------------|----------------|
+| Super Admin  | admin@tangamakuru.rw      | Admin@2024     |
+| Officer      | officer@tangamakuru.rw    | Officer@2024   |
+| Citizen      | citizen@tangamakuru.rw    | Citizen@2024   |
 
-Track Report: View all your reports in the dashboard
+**Note:** District admins must be created by the Super Admin from the dashboard.
 
-Respond to Requests: If an officer requests more information, you'll see a notification with a response form
+---
 
-For Officers
-Registration: Go to /officer/register or click "Register as Officer"
+## 📖 Usage Guide
 
-Wait for Approval: Your district admin must approve your account
+### For Citizens
+- **Register:** Click "Register" on the landing page, select "As Citizen"
+- **Submit Report:** After login, click "Submit Report" and fill in incident details
+- **Upload Evidence:** Add images, videos, or documents as evidence
+- **Track Report:** View all your reports in the dashboard
+- **Respond to Requests:** If an officer requests more information, you'll see a notification with a response form
 
-Login: After approval, log in to access your dashboard
+### For Officers
+- **Registration:** Go to `/officer/register` or click "Register as Officer"
+- **Wait for Approval:** Your district admin must approve your account
+- **Login:** After approval, log in to access your dashboard
+- **View Incidents:** See all assigned incidents in your sector
+- **Update Status:** Change case status (Pending → In Progress → Resolved) with comments
+- **Request Information:** Click "Request Information" to ask citizens for more details
+- **Messages:** Check messages from admin about specific cases
+- **Generate Reports:** Create monthly PDF reports with statistics
 
-View Incidents: See all assigned incidents in your sector
+### For Admins
+- **Login:** Use your admin credentials (provided by super admin)
+- **Approve Officers:** Click "New Officers" in the dropdown to approve pending registrations
+- **Manage Officers:** View all officers in your district, activate/deactivate as needed
+- **View Reports:** See all reports in your district, filter by sector
+- **Assign Reports:** Assign unassigned reports to officers in your district
+- **Messages:** Communicate with officers about specific cases
+- **Announcements:** Create announcements for officers (can target specific sectors)
 
-Update Status: Change case status (Pending → In Progress → Resolved) with comments
+### For Super Admin
+- **Login:** Use super admin credentials
+- **Manage Admins:** Create new district admins, edit or delete existing ones
+- **System Announcements:** Create maintenance announcements for all users
+- **View Statistics:** See system-wide stats (total admins, officers, citizens)
 
-Request Information: Click "Request Information" to ask citizens for more details
+---
 
-Messages: Check messages from admin about specific cases
+## 🛠 Troubleshooting
 
-Generate Reports: Create monthly PDF reports with statistics
-
-For Admins
-Login: Use your admin credentials (provided by super admin)
-
-Approve Officers: Click "New Officers" in the dropdown to approve pending registrations
-
-Manage Officers: View all officers in your district, activate/deactivate as needed
-
-View Reports: See all reports in your district, filter by sector
-
-Assign Reports: Assign unassigned reports to officers in your district
-
-Messages: Communicate with officers about specific cases
-
-Announcements: Create announcements for officers (can target specific sectors)
-
-For Super Admin
-Login: Use super admin credentials
-
-Manage Admins: Create new district admins, edit or delete existing ones
-
-System Announcements: Create maintenance announcements for all users
-
-View Statistics: See system-wide stats (total admins, officers, citizens)
-
-🛠 Troubleshooting
-Python 3.12 datetime error
-text
+### Python 3.12 datetime error
+**Error:**
+```
 AttributeError: module 'datetime' has no attribute 'utcnow'
-Solution: Use Python 3.10 or 3.11. The app is tested with Python 3.10.
+```
+**Solution:** Use Python 3.10 or 3.11. The app is tested with Python 3.10.
 
-Database connection error
-text
+### Database connection error
+**Error:**
+```
 psycopg2.OperationalError: could not connect to server
-Solution: Ensure PostgreSQL is running:
-
-bash
+```
+**Solution:** Ensure PostgreSQL is running:
+```bash
 sudo systemctl start postgresql  # Linux
 brew services start postgresql   # macOS
-Upload folder permission error
-text
-PermissionError: [Errno 13] Permission denied: 'uploads'
-Solution:
+```
 
-bash
+### Upload folder permission error
+**Error:**
+```
+PermissionError: [Errno 13] Permission denied: 'uploads'
+```
+**Solution:**
+```bash
 mkdir -p uploads
 chmod 755 uploads
-Migration error - missing tables
-text
+```
+
+### Migration error - missing tables
+**Error:**
+```
 sqlalchemy.exc.ProgrammingError: relation "users" does not exist
-Solution:
-
-bash
+```
+**Solution:**
+```bash
 flask db upgrade
-Missing secret key error
-text
+```
+
+### Missing secret key error
+**Error:**
+```
 RuntimeError: The session is unavailable because no secret key was set
-Solution: Make sure .env file exists and contains SECRET_KEY=your-secret-key
+```
+**Solution:** Make sure `.env` file exists and contains `SECRET_KEY=your-secret-key`
 
-🔒 Security Notes
-Never commit the .env file to version control
+---
 
-Change default passwords in production
+## 🔒 Security Notes
+- Never commit the `.env` file to version control
+- Change default passwords in production
+- Use HTTPS in production (configure with Nginx/Apache)
+- Set `FLASK_ENV=production` in production
+- Regularly update dependencies: `pip install --upgrade -r requirements.txt`
+- Set `SESSION_COOKIE_SECURE = True` when using HTTPS
 
-Use HTTPS in production (configure with Nginx/Apache)
+---
 
-Set FLASK_ENV=production in production
-
-Regularly update dependencies: pip install --upgrade -r requirements.txt
-
-Set SESSION_COOKIE_SECURE = True when using HTTPS
-
-📄 License
+## 📄 License
 Copyright © 2026 Attorney Valois NIYIGABA. All rights reserved.
 
-👨‍💻 Author
-Attorney Valois NIYIGABA
+---
 
-GitHub: @yourusername
+## 👨‍💻 Author
+**Attorney Valois NIYIGABA**
+- GitHub: [@yourusername](https://github.com/yourusername)
+- Email: [attorneyvalois@gmail.com](mailto:attorneyvalois@gmail.com)
 
-Email: attorneyvalois@gmail.com
+---
 
-🙏 Acknowledgments
-Rwanda National Police for the inspiration
+## 🙏 Acknowledgments
+- Rwanda National Police for the inspiration
+- Flask community for the excellent framework
+- Bootstrap for the responsive design components
+```
 
-Flask community for the excellent framework
-
-Bootstrap for the responsive design components
+---
+**Valois, let me know if you'd like any section expanded or if you need help with a specific part of your project!**
