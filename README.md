@@ -81,7 +81,7 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 git clone https://github.com/attorney755/Tangamakuru.git
 cd tangamakuru
 
-2. **Create and activate virtual environment**
+### 2. Create and activate virtual environment
    - **Linux/macOS:**
      ```bash
      python3.10 -m venv venv
