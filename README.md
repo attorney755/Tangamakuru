@@ -75,29 +75,40 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 
 ## 🚀 Installation Steps
 
-### 1. Clone the repository
+---
+
+## 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/attorney755/Tangamakuru.git
-cd tangamakuru
+cd Tangamakuru
+```
 
-### 2. Create and activate virtual environment
-   - **Linux/macOS:**
-     ```bash
-     python3.10 -m venv venv
-     source venv/bin/activate
-     ```
-   - **Windows:**
-     ```cmd
-     python -m venv venv
-     venv\Scripts\activate
-     ```
+---
 
-3. **Install dependencies**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
+## 2️⃣ Create and Activate Virtual Environment
+
+- **Linux/macOS:**
+  ```bash
+  python3.10 -m venv venv
+  source venv/bin/activate
+  ```
+- **Windows:**
+  ```cmd
+  python -m venv venv
+  venv\Scripts\activate
+  ```
+
+---
+
+## 3️⃣ Install Dependencies
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+---
 
 4. **Set up PostgreSQL database**
    ```bash
