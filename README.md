@@ -339,4 +339,3 @@ Copyright © 2026 Attorney Valois NIYIGABA. All rights reserved.
 ```
 
 ---
-**Valois, let me know if you'd like any section expanded or if you need help with a specific part of your project!**
