@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ea-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ea-topbar">
+        <div class="ea-topbar-left">
+            <a href="{{ url_for('super_admin.list_admins') }}" class="ea-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Admins
+            </a>
+            <div>
+                <div class="ea-topbar-title"><i class="fas fa-user-edit"></i> Edit Administrator</div>
+                <div class="ea-topbar-sub">{{ admin.email }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="ea-body">
+
+        <!-- LEFT — Form -->
+        <div class="ea-main">
+            <form id="editAdminForm" onsubmit="editAdmin(event, {{ admin.id }})">
+
+                <!-- Personal Details -->
+                <div class="ea-card">
+                    <div class="ea-card-header"><i class="fas fa-user"></i> Personal Details</div>
+                    <div class="ea-card-body">
+
+                        <div class="ea-row-2">
+                            <div class="ea-field">
+                                <label class="ea-label">First Name <span class="ea-req">*</span></label>
+                                <input type="text" class="ea-input" id="first_name" value="{{ admin.first_name }}" required>
+                            </div>
+                            <div class="ea-field">
+                                <label class="ea-label">Last Name <span class="ea-req">*</span></label>
+                                <input type="text" class="ea-input" id="last_name" value="{{ admin.last_name }}" required>
+                            </div>
+                        </div>
+
+                        <div class="ea-field">
+                            <label class="ea-label">Email Address <span class="ea-req">*</span></label>
+                            <div class="ea-input-wrap">
+                                <i class="fas fa-envelope ea-input-icon"></i>
+                                <input type="email" class="ea-input ea-input--icon" id="email"
+                                       value="{{ admin.email }}" required>
+                            </div>
+                        </div>
+
+                        <div class="ea-field">
+                            <label class="ea-label">Phone Number</label>
+                            <div class="ea-input-wrap">
+                                <i class="fas fa-phone ea-input-icon"></i>
+                                <input type="tel" class="ea-input ea-input--icon" id="phone"
+                                       value="{{ admin.phone or '' }}" placeholder="078X XXX XXX">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="ea-card">
+                    <div class="ea-card-header"><i class="fas fa-map-marker-alt"></i> Assigned Location</div>
+                    <div class="ea-card-body">
+
+                        <div class="ea-row-2">
+                            <div class="ea-field">
+                                <label class="ea-label">Province</label>
+                                <select class="ea-input ea-select" id="province">
+                                    <option value="Kigali City" {% if admin.province == 'Kigali City' %}selected{% endif %}>Kigali City</option>
+                                    <option value="Eastern"     {% if admin.province == 'Eastern' %}selected{% endif %}>Eastern Province</option>
+                                    <option value="Western"     {% if admin.province == 'Western' %}selected{% endif %}>Western Province</option>
+                                    <option value="Northern"    {% if admin.province == 'Northern' %}selected{% endif %}>Northern Province</option>
+                                    <option value="Southern"    {% if admin.province == 'Southern' %}selected{% endif %}>Southern Province</option>
+                                </select>
+                            </div>
+                            <div class="ea-field">
+                                <label class="ea-label">District</label>
+                                <input type="text" class="ea-input" id="district"
+                                       value="{{ admin.district or '' }}" placeholder="e.g., Gasabo">
+                            </div>
+                        </div>
+
+                        <div class="ea-row-3">
+                            <div class="ea-field">
+                                <label class="ea-label">Sector <span class="ea-req">*</span></label>
+                                <input type="text" class="ea-input" id="sector"
+                                       value="{{ admin.sector or '' }}" placeholder="e.g., Remera" required>
+                            </div>
+                            <div class="ea-field">
+                                <label class="ea-label">Cell</label>
+                                <input type="text" class="ea-input" id="cell"
+                                       value="{{ admin.cell or '' }}" placeholder="e.g., Gishushu">
+                            </div>
+                            <div class="ea-field">
+                                <label class="ea-label">Village</label>
+                                <input type="text" class="ea-input" id="village"
+                                       value="{{ admin.village or '' }}" placeholder="e.g., Amahoro">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Password Reset -->
+                <div class="ea-card ea-card--warning">
+                    <div class="ea-card-header ea-card-header--warning">
+                        <i class="fas fa-key"></i> Password Reset
+                    </div>
+                    <div class="ea-card-body">
+                        <div class="ea-toggle-row">
+                            <div>
+                                <div class="ea-toggle-label">Reset Password</div>
+                                <div class="ea-toggle-sub">A new secure random password will be generated and shown once.</div>
+                            </div>
+                            <label class="ea-toggle">
+                                <input type="checkbox" id="reset_password">
+                                <span class="ea-toggle-track"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="message" style="display:none; margin-bottom:1rem;"></div>
+
+                <!-- Actions -->
+                <div class="ea-actions">
+                    <a href="{{ url_for('super_admin.list_admins') }}" class="ea-btn ea-btn--ghost">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="ea-btn ea-btn--primary" id="submitBtn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- RIGHT — Sidebar -->
+        <div class="ea-sidebar">
+
+            <!-- Admin Info -->
+            <div class="ea-card">
+                <div class="ea-card-header"><i class="fas fa-id-card"></i> Admin Info</div>
+                <div class="ea-card-body">
+                    <div class="ea-admin-avatar">
+                        <img src="https://ui-avatars.com/api/?name={{ admin.first_name }}+{{ admin.last_name }}&background=0a1929&color=fff&size=60"
+                             class="ea-avatar-img">
+                        <div>
+                            <div class="ea-admin-name">{{ admin.first_name }} {{ admin.last_name }}</div>
+                            <div class="ea-admin-email">{{ admin.email }}</div>
+                            <span class="ea-admin-badge">Administrator</span>
+                        </div>
+                    </div>
+                    {% if admin.sector %}
+                    <div class="ea-admin-detail">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ admin.sector }} Sector{% if admin.district %}, {{ admin.district }}{% endif %}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="ea-card">
+                <div class="ea-card-header"><i class="fas fa-lightbulb"></i> Edit Tips</div>
+                <div class="ea-card-body">
+                    <div class="ea-tips">
+                        <div class="ea-tip">
+                            <div class="ea-tip-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="ea-tip-title">Email Change</div>
+                                <div class="ea-tip-desc">Changing the email will update the admin's login credentials.</div>
+                            </div>
+                        </div>
+                        <div class="ea-tip">
+                            <div class="ea-tip-icon"><i class="fas fa-key"></i></div>
+                            <div>
+                                <div class="ea-tip-title">Password Reset</div>
+                                <div class="ea-tip-desc">Enable the toggle to generate a new password. Save it before closing.</div>
+                            </div>
+                        </div>
+                        <div class="ea-tip">
+                            <div class="ea-tip-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <div class="ea-tip-title">Sector Required</div>
+                                <div class="ea-tip-desc">Sector must always be set — it defines the admin's jurisdiction.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ea-modal">
+            <div class="modal-header ea-modal-header ea-modal-header--warning">
+                <h5 class="modal-title ea-modal-title"><i class="fas fa-key"></i> New Password Generated</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body ea-modal-body">
+                <div class="ea-modal-icon ea-modal-icon--success"><i class="fas fa-check-circle"></i></div>
+                <div class="ea-modal-heading">Admin Updated Successfully</div>
+                <p class="ea-modal-desc">A new password has been generated for this administrator:</p>
+                <div class="ea-password-box">
+                    <div class="ea-password-label"><i class="fas fa-key"></i> New Password</div>
+                    <div class="ea-password-value" id="passwordDisplay"></div>
+                    <div class="ea-password-note">Save this password — it will not be shown again.</div>
+                </div>
+            </div>
+            <div class="modal-footer ea-modal-footer">
+                <button type="button" class="ea-btn ea-btn--primary" data-bs-dismiss="modal">
+                    <i class="fas fa-check"></i> OK, I've Saved It
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --super:      #0a1929;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 15px; }
+
+/* ── Wrapper ──────────────── */
+.ea-wrapper { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ea-topbar {
+    display: flex; align-items: center;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.ea-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ea-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.9rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.ea-back-btn:hover { background: var(--super); border-color: var(--super); color: #fff; }
+.ea-topbar-title { font-size: 1.05rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ea-topbar-title i { color: var(--brand); }
+.ea-topbar-sub   { font-size: 0.82rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Layout ───────────────── */
+.ea-body { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.ea-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.ea-card:last-child { margin-bottom: 0; }
+.ea-card--warning { border-color: var(--warning-border); }
+
+.ea-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.ea-card-header i { font-size: 0.78rem; }
+.ea-card-header--warning { background: var(--warning-bg); color: var(--warning); border-bottom-color: var(--warning-border); }
+
+.ea-card-body { padding: 1.35rem; }
+
+/* ── Form fields ──────────── */
+.ea-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 0.9rem; }
+.ea-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; }
+.ea-field { display: flex; flex-direction: column; margin-bottom: 1rem; }
+.ea-field:last-child { margin-bottom: 0; }
+
+.ea-label { font-size: 0.875rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.42rem; }
+.ea-req   { color: #dc2626; }
+
+.ea-input-wrap { position: relative; }
+.ea-input-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 0.78rem; color: var(--ink-3); pointer-events: none; }
+
+.ea-input {
+    width: 100%; padding: 0.8rem 0.975rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.95rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.ea-input--icon { padding-left: 2.5rem; }
+.ea-input::placeholder { color: #8fa8c0; }
+.ea-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+
+.ea-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.975rem center;
+    background-size: 10px; padding-right: 2.5rem; cursor: pointer;
+}
+
+/* Toggle switch */
+.ea-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.ea-toggle-label { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.ea-toggle-sub   { font-size: 0.8rem; color: var(--ink-3); }
+.ea-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.ea-toggle input { opacity: 0; width: 0; height: 0; }
+.ea-toggle-track { position: absolute; inset: 0; background: var(--rule); border-radius: 999px; cursor: pointer; transition: background 0.2s; }
+.ea-toggle-track::before { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; left: 3px; top: 3px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.ea-toggle input:checked + .ea-toggle-track { background: var(--warning); }
+.ea-toggle input:checked + .ea-toggle-track::before { transform: translateX(20px); }
+
+/* Inline message */
+.ea-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.8rem 1rem; font-size: 0.9rem; }
+.ea-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.ea-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* Actions */
+.ea-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; }
+
+/* Buttons */
+.ea-btn { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.95rem; font-weight: 600; font-family: inherit; padding: 0.8rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.ea-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.ea-btn--primary { background: linear-gradient(135deg, var(--super), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(10,25,41,0.25); }
+.ea-btn--primary:hover { color: #fff; }
+.ea-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* ── Sidebar ──────────────── */
+.ea-admin-avatar { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.875rem; }
+.ea-avatar-img   { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--rule); flex-shrink: 0; }
+.ea-admin-name   { font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+.ea-admin-email  { font-size: 0.775rem; color: var(--ink-3); margin-top: 2px; }
+.ea-admin-badge  { display: inline-block; font-size: 0.68rem; font-weight: 700; background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); padding: 0.15rem 0.55rem; border-radius: 5px; margin-top: 4px; }
+.ea-admin-detail { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--ink-3); padding-top: 0.75rem; border-top: 1px solid var(--rule); }
+.ea-admin-detail i { color: var(--brand); font-size: 0.72rem; }
+
+.ea-tips { display: flex; flex-direction: column; gap: 1rem; }
+.ea-tip  { display: flex; align-items: flex-start; gap: 0.75rem; }
+.ea-tip-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--info-bg); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; flex-shrink: 0; }
+.ea-tip-title { font-size: 0.85rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.ea-tip-desc  { font-size: 0.78rem; color: var(--ink-3); line-height: 1.55; }
+
+/* ── Modal ────────────────── */
+.ea-modal { border: none; border-radius: 16px; overflow: hidden; }
+.ea-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.ea-modal-header--warning { background: linear-gradient(135deg, #92400e, #d97706); }
+.ea-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.ea-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.ea-modal-footer { display: flex; align-items: center; justify-content: flex-end; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.ea-modal-icon   { width: 58px; height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.4rem; }
+.ea-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.ea-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.ea-modal-desc   { font-size: 0.875rem; color: var(--ink-3); margin-bottom: 1rem; }
+
+.ea-password-box { background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 10px; padding: 1rem 1.25rem; text-align: left; }
+.ea-password-label { font-size: 0.72rem; font-weight: 700; color: var(--warning); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem; }
+.ea-password-value { font-family: monospace; font-size: 1.1rem; font-weight: 800; color: var(--ink); background: var(--white); border: 1px solid var(--warning-border); border-radius: 7px; padding: 0.6rem 1rem; margin-bottom: 0.5rem; letter-spacing: 0.08em; }
+.ea-password-note  { font-size: 0.75rem; color: var(--warning); }
+
+/* Responsive */
+@media (max-width: 900px) { .ea-body { grid-template-columns: 1fr; } .ea-row-2 { grid-template-columns: 1fr; } .ea-row-3 { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .ea-wrapper { padding: 1rem; } .ea-actions { flex-direction: column; } .ea-btn { width: 100%; justify-content: center; } }
+</style>
+
+<script>
+function editAdmin(event, adminId) {
+    event.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const orig = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+
+    const formData = {
+        first_name:     document.getElementById('first_name').value,
+        last_name:      document.getElementById('last_name').value,
+        email:          document.getElementById('email').value,
+        phone:          document.getElementById('phone').value,
+        province:       document.getElementById('province').value,
+        district:       document.getElementById('district').value,
+        sector:         document.getElementById('sector').value,
+        cell:           document.getElementById('cell').value,
+        village:        document.getElementById('village').value,
+        reset_password: document.getElementById('reset_password').checked
+    };
+
+    fetch(`/super-admin/admins/${adminId}/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.new_password) {
+                document.getElementById('passwordDisplay').textContent = data.new_password;
+                new bootstrap.Modal(document.getElementById('passwordModal')).show();
+                document.getElementById('passwordModal').addEventListener('hidden.bs.modal', function() {
+                    window.location.href = '/super-admin/admins';
+                });
+            } else {
+                showMessage('Admin updated successfully!', 'success');
+                setTimeout(() => { window.location.href = '/super-admin/admins'; }, 1500);
+            }
+        } else {
+            showMessage(data.error || 'Failed to update admin', 'danger');
+            submitBtn.innerHTML = orig;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Network error. Please try again.', 'danger');
+        submitBtn.innerHTML = orig;
+        submitBtn.disabled = false;
+    });
+}
+
+function showMessage(text, type) {
+    const icons = { success:'check-circle', danger:'exclamation-circle', warning:'exclamation-triangle' };
+    const div = document.getElementById('message');
+    div.innerHTML = `<div class="ea-msg ea-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.style.display = 'block';
+    setTimeout(() => { div.style.display = 'none'; }, 5000);
+}
+</script>
+
+{% endblock %}

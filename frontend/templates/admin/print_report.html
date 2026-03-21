@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report {{ report.report_id }} - TANGAMAKURU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            color: #1a2332;
+            line-height: 1.5;
+            padding: 2rem;
+        }
+        
+        .print-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .print-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #1a3a5c;
+        }
+        
+        .brand h1 {
+            color: #1a3a5c;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .brand p {
+            color: #5a7290;
+            font-size: 0.85rem;
+        }
+        
+        .report-badge {
+            background: #1a3a5c;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* Report Title */
+        .report-title {
+            margin-bottom: 1.5rem;
+        }
+        
+        .report-title h2 {
+            font-size: 1.5rem;
+            color: #1a2332;
+            margin-bottom: 0.5rem;
+        }
+        
+        .report-meta {
+            display: flex;
+            gap: 1rem;
+            color: #5a7290;
+            font-size: 0.9rem;
+        }
+        
+        /* Grid Layout */
+        .print-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Cards */
+        .print-card {
+            border: 1px solid #d4dde8;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            break-inside: avoid;
+        }
+        
+        .print-card-header {
+            background: #eef2f7;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #d4dde8;
+            font-weight: 600;
+            color: #1a3a5c;
+        }
+        
+        .print-card-body {
+            padding: 1rem;
+        }
+        
+        /* Field styles */
+        .field-row {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+        
+        .field-label {
+            width: 120px;
+            font-weight: 600;
+            color: #5a7290;
+            font-size: 0.85rem;
+        }
+        
+        .field-value {
+            flex: 1;
+            color: #1a2332;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-in_progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        /* Priority badges */
+        .priority-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .priority-urgent {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        
+        .priority-high {
+            background: #fef2f2;
+            color: #c0392b;
+        }
+        
+        .priority-medium {
+            background: #fffbeb;
+            color: #92400e;
+        }
+        
+        .priority-low {
+            background: #f0fdf4;
+            color: #065f46;
+        }
+        
+        /* Location grid */
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .location-item {
+            background: #eef2f7;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .location-item strong {
+            display: block;
+            font-size: 0.7rem;
+            color: #5a7290;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+        
+        .location-item span {
+            font-size: 0.9rem;
+            color: #1a2332;
+        }
+        
+        /* Person info */
+        .person-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .person-avatar {
+            width: 48px;
+            height: 48px;
+            background: #1a3a5c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .person-details h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .person-details p {
+            color: #5a7290;
+            font-size: 0.85rem;
+        }
+        
+        /* Description box */
+        .description-box {
+            background: #eef2f7;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        /* Evidence items */
+        .evidence-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .evidence-item {
+            border: 1px solid #d4dde8;
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .evidence-item i {
+            font-size: 1.5rem;
+            color: #1a3a5c;
+            margin-bottom: 0.5rem;
+        }
+        
+        .evidence-item .filename {
+            font-size: 0.8rem;
+            color: #5a7290;
+            word-break: break-all;
+        }
+        
+        /* Footer */
+        .print-footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #d4dde8;
+            text-align: center;
+            color: #5a7290;
+            font-size: 0.8rem;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .print-header {
+                border-bottom-color: #000;
+            }
+            
+            .print-card {
+                border-color: #ccc;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+        
+        /* Utility */
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mt-3 { margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="print-container">
+        <!-- Header -->
+        <div class="print-header">
+            <div class="brand">
+                <h1>TANGAMAKURU</h1>
+                <p>Rwanda Crime Reporting System</p>
+            </div>
+            <div class="report-badge">
+                Report #{{ report.report_id }}
+            </div>
+        </div>
+
+        <!-- Report Title -->
+        <div class="report-title">
+            <h2>{{ report.title }}</h2>
+            <div class="report-meta">
+                <span>Reported: {{ report.created_at.strftime('%d %B %Y at %H:%M') if report.created_at else 'N/A' }}</span>
+                <span>|</span>
+                <span>Printed: {{ current_date }}</span>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="print-grid">
+            <!-- Left Column -->
+            <div>
+                <!-- Incident Info -->
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Incident Information
+                    </div>
+                    <div class="print-card-body">
+                        <div class="field-row">
+                            <div class="field-label">Category</div>
+                            <div class="field-value">{{ report.category }}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Status</div>
+                            <div class="field-value">
+                                <span class="status-badge status-{{ report.status }}">
+                                    {% if report.status == 'pending' %}⏳ Pending
+                                    {% elif report.status == 'in_progress' %}🔄 In Progress
+                                    {% elif report.status == 'resolved' %}✅ Resolved
+                                    {% else %}{{ report.status }}{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Priority</div>
+                            <div class="field-value">
+                                <span class="priority-badge priority-{{ report.priority }}">
+                                    {% if report.priority == 'urgent' %}🔥 Urgent
+                                    {% elif report.priority == 'high' %}⬆️ High
+                                    {% elif report.priority == 'medium' %}➖ Medium
+                                    {% else %}⬇️ Low{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Incident Date</div>
+                            <div class="field-value">{{ report.incident_date }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Description
+                    </div>
+                    <div class="print-card-body">
+                        <div class="description-box">
+                            {{ report.description }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Location Details
+                    </div>
+                    <div class="print-card-body">
+                        <div class="location-grid">
+                            <div class="location-item">
+                                <strong>Province</strong>
+                                <span>{{ report.province }}</span>
+                            </div>
+                            <div class="location-item">
+                                <strong>District</strong>
+                                <span>{{ report.district }}</span>
+                            </div>
+                            <div class="location-item">
+                                <strong>Sector</strong>
+                                <span>{{ report.sector }}</span>
+                            </div>
+                            <div class="location-item">
+                                <strong>Cell</strong>
+                                <span>{{ report.cell }}</span>
+                            </div>
+                            <div class="location-item">
+                                <strong>Village</strong>
+                                <span>{{ report.village }}</span>
+                            </div>
+                            <div class="location-item">
+                                <strong>Specific</strong>
+                                <span>{{ report.specific_location }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                {% if report.witness_info %}
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Witness Information
+                    </div>
+                    <div class="print-card-body">
+                        <div class="description-box">
+                            {{ report.witness_info }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if report.evidence_details %}
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Evidence Description
+                    </div>
+                    <div class="print-card-body">
+                        <div class="description-box">
+                            {{ report.evidence_details }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Reporter -->
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Reporter
+                    </div>
+                    <div class="print-card-body">
+                        {% if report.is_anonymous %}
+                            <div style="text-align: center; padding: 1rem;">
+                                <i class="fas fa-user-secret" style="font-size: 2rem; color: #5a7290;"></i>
+                                <p style="margin-top: 0.5rem; color: #5a7290;">Submitted Anonymously</p>
+                            </div>
+                        {% elif reporter %}
+                            <div class="person-info">
+                                <div class="person-avatar">
+                                    {{ reporter.first_name[0] }}{{ reporter.last_name[0] }}
+                                </div>
+                                <div class="person-details">
+                                    <h4>{{ reporter.first_name }} {{ reporter.last_name }}</h4>
+                                    <p>{{ reporter.email }}</p>
+                                    {% if reporter.phone %}
+                                    <p style="font-size: 0.8rem;">📞 {{ reporter.phone }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <p style="color: #5a7290;">Reporter information not available</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Assigned Officer -->
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Assigned Officer
+                    </div>
+                    <div class="print-card-body">
+                        {% if assigned_officer %}
+                            <div class="person-info">
+                                <div class="person-avatar">
+                                    {{ assigned_officer.first_name[0] }}{{ assigned_officer.last_name[0] }}
+                                </div>
+                                <div class="person-details">
+                                    <h4>{{ assigned_officer.first_name }} {{ assigned_officer.last_name }}</h4>
+                                    <p>{{ assigned_officer.email }}</p>
+                                    <p style="font-size: 0.8rem;">📍 {{ assigned_officer.sector }} Sector</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p style="color: #5a7290; text-align: center;">No officer assigned</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Evidence Files -->
+                {% if media_files and media_files|length > 0 %}
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Evidence Files ({{ media_files|length }})
+                    </div>
+                    <div class="print-card-body">
+                        <div class="evidence-list">
+                            {% for media in media_files %}
+                            <div class="evidence-item">
+                                {% if media.file_type.startswith('image/') %}
+                                    <i class="fas fa-image"></i>
+                                {% else %}
+                                    <i class="fas fa-file"></i>
+                                {% endif %}
+                                <div class="filename">{{ media.filename }}</div>
+                                <div style="font-size: 0.7rem; color: #5a7290;">
+                                    {{ (media.file_size / 1024)|round(1) if media.file_size else 0 }} KB
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Print Info -->
+                <div class="print-card">
+                    <div class="print-card-header">
+                        Print Information
+                    </div>
+                    <div class="print-card-body">
+                        <div class="field-row">
+                            <div class="field-label">Printed By</div>
+                            <div class="field-value">{{ user.first_name }} {{ user.last_name }}</div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-label">Date/Time</div>
+                            <div class="field-value">{{ current_date }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="print-footer">
+            <p>This is an official document generated by TANGAMAKURU - Rwanda Crime Reporting System</p>
+            <p style="font-size: 0.7rem; margin-top: 0.5rem;">Report #{{ report.report_id }} • Printed on {{ current_date }}</p>
+        </div>
+    </div>
+</body>
+</html>

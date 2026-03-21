@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="st-wrapper">
+
+    <!-- Top Bar -->
+    <div class="st-topbar">
+        <div class="st-topbar-left">
+            <a href="{{ url_for('officer.dashboard') }}" class="st-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="st-topbar-title"><i class="fas fa-chart-bar"></i> Statistics & Analytics</div>
+                <div class="st-topbar-sub">
+                    Sector: <strong>{{ officer.sector or 'Not assigned' }}</strong> &nbsp;·&nbsp;
+                    Total Reports: <strong>{{ total_reports }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="st-stats">
+        <div class="st-stat">
+            <div class="st-stat-icon st-stat-icon--blue"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <div class="st-stat-num">{{ total_reports }}</div>
+                <div class="st-stat-label">Total Reports</div>
+            </div>
+        </div>
+        <div class="st-stat">
+            <div class="st-stat-icon st-stat-icon--green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="st-stat-num">{{ status_counts.resolved }}</div>
+                <div class="st-stat-label">Resolved</div>
+            </div>
+        </div>
+        <div class="st-stat">
+            <div class="st-stat-icon st-stat-icon--amber"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="st-stat-num">{{ status_counts.pending }}</div>
+                <div class="st-stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="st-stat">
+            <div class="st-stat-icon st-stat-icon--cyan"><i class="fas fa-chart-line"></i></div>
+            <div>
+                <div class="st-stat-num">{{ avg_resolution or 'N/A' }} <span class="st-stat-unit">days</span></div>
+                <div class="st-stat-label">Avg Resolution</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="st-charts-row">
+
+        <!-- Monthly Trend -->
+        <div class="st-card st-card--wide">
+            <div class="st-card-header">
+                <i class="fas fa-chart-line"></i> Monthly Report Trend
+            </div>
+            <div class="st-card-body">
+                <canvas id="monthlyChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Status Distribution -->
+        <div class="st-card">
+            <div class="st-card-header">
+                <i class="fas fa-chart-pie"></i> Status Distribution
+            </div>
+            <div class="st-card-body">
+                <canvas id="statusChart" height="220"></canvas>
+                <div class="st-legend">
+                    {% for status, count in status_counts.items() %}
+                    <div class="st-legend-row">
+                        <span class="st-legend-badge
+                            {% if status == 'pending' %}st-badge--pending
+                            {% elif status == 'in_progress' %}st-badge--progress
+                            {% elif status == 'resolved' %}st-badge--resolved
+                            {% elif status == 'cancelled' %}st-badge--cancelled
+                            {% endif %}">
+                            {% if status == 'pending' %}Pending
+                            {% elif status == 'in_progress' %}In Progress
+                            {% elif status == 'resolved' %}Resolved
+                            {% elif status == 'cancelled' %}Cancelled
+                            {% else %}{{ status|title }}
+                            {% endif %}
+                        </span>
+                        <span class="st-legend-count">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Category Distribution -->
+    <div class="st-card">
+        <div class="st-card-header">
+            <i class="fas fa-tags"></i> Reports by Category
+        </div>
+        <div class="st-card-body">
+            {% if categories %}
+            <div class="st-category-layout">
+                <div class="st-category-chart">
+                    <canvas id="categoryChart" height="280"></canvas>
+                </div>
+                <div class="st-category-list">
+                    {% for category, count in categories %}
+                    <div class="st-category-row">
+                        <span class="st-category-name">{{ category|capitalize }}</span>
+                        <span class="st-category-badge">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="st-empty">
+                <div class="st-empty-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="st-empty-title">No Category Data</div>
+                <p class="st-empty-sub">Category data will appear here once reports are submitted.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.st-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.st-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.st-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.st-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.st-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.st-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.st-topbar-title i { color: var(--brand); }
+.st-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.st-topbar-sub strong { color: var(--ink-2); }
+
+/* ── Stats Row ────────────── */
+.st-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.st-stat {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.st-stat:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.07); }
+.st-stat-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.st-stat-icon--blue  { background: rgba(13,110,253,0.1);  color: #0d6efd; }
+.st-stat-icon--green { background: rgba(25,135,84,0.1);   color: #198754; }
+.st-stat-icon--amber { background: rgba(255,193,7,0.15);  color: #b45309; }
+.st-stat-icon--cyan  { background: rgba(13,202,240,0.1);  color: #0dcaf0; }
+.st-stat-num   { font-size: 1.6rem; font-weight: 800; color: var(--ink); line-height: 1; display: flex; align-items: baseline; gap: 0.3rem; }
+.st-stat-unit  { font-size: 0.75rem; font-weight: 500; color: var(--ink-3); }
+.st-stat-label { font-size: 0.72rem; color: var(--ink-3); font-weight: 500; margin-top: 3px; }
+
+/* ── Cards ────────────────── */
+.st-charts-row { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+.st-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.st-card--wide { /* takes full left column */ }
+
+.st-card-header {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.82rem; font-weight: 700; color: var(--brand);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+}
+.st-card-header i { font-size: 0.78rem; }
+.st-card-body { padding: 1.25rem; }
+
+/* ── Status Legend ────────── */
+.st-legend { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.25rem; border-top: 1px solid var(--rule); padding-top: 1.1rem; }
+.st-legend-row { display: flex; align-items: center; justify-content: space-between; }
+.st-legend-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.65rem; border-radius: 999px; }
+.st-badge--pending   { background: #fff3cd; color: #856404; }
+.st-badge--progress  { background: #cff4fc; color: #055160; }
+.st-badge--resolved  { background: #d1e7dd; color: #0a3622; }
+.st-badge--cancelled { background: #e2e3e5; color: #383d41; }
+.st-legend-count { font-size: 0.875rem; font-weight: 800; color: var(--ink); }
+
+/* ── Category section ─────── */
+.st-category-layout { display: grid; grid-template-columns: 1fr 240px; gap: 1.5rem; align-items: start; }
+.st-category-chart  {}
+.st-category-list   { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.5rem; }
+.st-category-row    { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--rule); }
+.st-category-row:last-child { border-bottom: none; }
+.st-category-name   { font-size: 0.82rem; color: var(--ink-2); text-transform: capitalize; }
+.st-category-badge  { display: inline-block; font-size: 0.72rem; font-weight: 700; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 0.2rem 0.65rem; border-radius: 999px; }
+
+/* ── Empty ────────────────── */
+.st-empty { text-align: center; padding: 3rem 2rem; }
+.st-empty-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.875rem; font-size: 1.4rem; color: var(--ink-3); }
+.st-empty-title { font-size: 0.95rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.st-empty-sub   { font-size: 0.82rem; color: var(--ink-3); line-height: 1.55; }
+
+/* Responsive */
+@media (max-width: 1000px) { .st-charts-row { grid-template-columns: 1fr; } .st-category-layout { grid-template-columns: 1fr; } }
+@media (max-width: 700px)  { .st-stats { grid-template-columns: 1fr 1fr; } .st-wrapper { padding: 1rem; } }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ── Monthly Trend Chart ──────────────
+    {% if monthly_data %}
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly_data|map(attribute='month')|list|tojson }},
+            datasets: [{
+                label: 'Reports',
+                data: {{ monthly_data|map(attribute='count')|list|tojson }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.08)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#0d6efd',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
+        }
+    });
+    {% endif %}
+
+    // ── Status Doughnut Chart ────────────
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'In Progress', 'Resolved', 'Cancelled'],
+            datasets: [{
+                data: [
+                    {{ status_counts.pending }},
+                    {{ status_counts.in_progress }},
+                    {{ status_counts.resolved }},
+                    {{ status_counts.cancelled }}
+                ],
+                backgroundColor: ['#ffc107', '#0dcaf0', '#198754', '#6c757d'],
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '65%',
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // ── Category Bar Chart ───────────────
+    {% if categories %}
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ categories|map(attribute=0)|list|tojson }},
+            datasets: [{
+                label: 'Reports',
+                data: {{ categories|map(attribute=1)|list|tojson }},
+                backgroundColor: '#0d6efd',
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

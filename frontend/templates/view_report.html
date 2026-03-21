@@ -1,0 +1,808 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="vr-wrapper">
+
+    <!-- Breadcrumb -->
+    <nav class="vr-breadcrumb">
+        <a href="/dashboard" class="vr-bc-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <i class="fas fa-chevron-right vr-bc-sep"></i>
+        <a href="/reports" class="vr-bc-link"><i class="fas fa-file-alt"></i> My Reports</a>
+        <i class="fas fa-chevron-right vr-bc-sep"></i>
+        <span class="vr-bc-current">View Report</span>
+    </nav>
+
+    <!-- Report Header -->
+    <div class="vr-report-header">
+        <div class="vr-report-header-left">
+            <div class="vr-report-id-tag"><i class="fas fa-hashtag"></i> {{ report.report_id }}</div>
+            <div class="vr-report-title">{{ report.title if report.title else 'Report Details' }}</div>
+        </div>
+        <div class="vr-report-header-actions">
+            <a href="/reports" class="vr-header-btn vr-header-btn--back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Status & Priority Strip -->
+    <div class="vr-status-strip">
+        <div class="vr-status-block">
+            <div class="vr-status-label">Status</div>
+            <span class="vr-status vr-status--{{ report.status|lower|replace(' ', '_') }}">
+                {% if report.status == 'pending' %}<i class="fas fa-clock"></i>
+                {% elif report.status == 'in_progress' %}<i class="fas fa-sync-alt"></i>
+                {% elif report.status == 'resolved' %}<i class="fas fa-check-circle"></i>
+                {% endif %}
+                {{ report.status|replace('_',' ')|title }}
+            </span>
+            <div class="vr-status-desc">
+                {% if report.status == 'pending' %}Awaiting officer review
+                {% elif report.status == 'in_progress' %}Officer is working on your case
+                {% elif report.status == 'resolved' %}Case has been resolved
+                {% endif %}
+            </div>
+        </div>
+        <div class="vr-status-sep"></div>
+        <div class="vr-status-block">
+            <div class="vr-status-label">Priority</div>
+            <span class="vr-priority vr-priority--{{ report.priority|lower }}">
+                {% if report.priority == 'urgent' %}<i class="fas fa-fire"></i>
+                {% elif report.priority == 'high' %}<i class="fas fa-arrow-up"></i>
+                {% elif report.priority == 'medium' %}<i class="fas fa-minus"></i>
+                {% else %}<i class="fas fa-arrow-down"></i>
+                {% endif %}
+                {{ report.priority|title }}
+            </span>
+            <div class="vr-status-desc">
+                {% if report.priority == 'low' %}Standard processing
+                {% elif report.priority == 'medium' %}Moderate urgency
+                {% elif report.priority == 'high' %}High urgency
+                {% elif report.priority == 'urgent' %}Immediate attention required
+                {% endif %}
+            </div>
+        </div>
+        <div class="vr-status-sep"></div>
+        <div class="vr-status-block">
+            <div class="vr-status-label">Submitted</div>
+            <div class="vr-status-date"><i class="far fa-calendar-alt"></i> {{ report.created_at }}</div>
+            <div class="vr-status-desc">Incident on {{ report.incident_date }}</div>
+        </div>
+        {% if report.is_anonymous %}
+        <div class="vr-status-sep"></div>
+        <div class="vr-status-block">
+            <div class="vr-status-label">Privacy</div>
+            <span class="vr-anon-badge"><i class="fas fa-user-secret"></i> Anonymous</span>
+            <div class="vr-status-desc">Identity protected</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Body -->
+    <div class="vr-body">
+
+        <!-- LEFT — Main Content -->
+        <div class="vr-main">
+
+            <!-- Incident Details -->
+            <div class="vr-card">
+                <div class="vr-card-header"><i class="fas fa-clipboard-list"></i> Incident Details</div>
+                <div class="vr-card-body">
+                    <div class="vr-meta-grid">
+                        <div class="vr-meta-item">
+                            <div class="vr-meta-label">Category</div>
+                            <div class="vr-meta-value">{{ report.category|title }}</div>
+                        </div>
+                        <div class="vr-meta-item">
+                            <div class="vr-meta-label">Incident Date</div>
+                            <div class="vr-meta-value"><i class="far fa-calendar-alt vr-meta-icon"></i> {{ report.incident_date }}</div>
+                        </div>
+                    </div>
+                    <div class="vr-desc-label">Description</div>
+                    <div class="vr-desc-box">{{ report.description }}</div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="vr-card">
+                <div class="vr-card-header"><i class="fas fa-map-marked-alt"></i> Location Information</div>
+                <div class="vr-card-body">
+                    <div class="vr-location-grid">
+                        <div class="vr-location-pill">
+                            <div class="vr-location-pill-label">Province</div>
+                            <div class="vr-location-pill-value">{{ report.province }}</div>
+                        </div>
+                        <div class="vr-location-pill">
+                            <div class="vr-location-pill-label">District</div>
+                            <div class="vr-location-pill-value">{{ report.district }}</div>
+                        </div>
+                        <div class="vr-location-pill">
+                            <div class="vr-location-pill-label">Sector</div>
+                            <div class="vr-location-pill-value">{{ report.sector }}</div>
+                        </div>
+                        <div class="vr-location-pill">
+                            <div class="vr-location-pill-label">Cell</div>
+                            <div class="vr-location-pill-value">{{ report.cell }}</div>
+                        </div>
+                        <div class="vr-location-pill">
+                            <div class="vr-location-pill-label">Village</div>
+                            <div class="vr-location-pill-value">{{ report.village }}</div>
+                        </div>
+                    </div>
+                    {% if report.specific_location %}
+                    <div class="vr-specific-location">
+                        <i class="fas fa-map-pin"></i>
+                        <span>{{ report.specific_location }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Officer Updates -->
+            <div class="vr-card">
+                <div class="vr-card-header"><i class="fas fa-comments"></i> Officer Updates</div>
+                <div class="vr-card-body">
+                    {% if officer_comments and officer_comments|length > 0 %}
+                        {% for comment in officer_comments %}
+                        <div class="vr-comment {% if loop.last and report.status == 'resolved' %}vr-comment--resolved{% endif %}">
+                            <div class="vr-comment-header">
+                                <div class="vr-comment-avatar"><i class="fas fa-user-shield"></i></div>
+                                <div>
+                                    <div class="vr-comment-author">{{ comment.officer }}</div>
+                                    <div class="vr-comment-role">Sector Officer</div>
+                                </div>
+                                <div class="vr-comment-time">{{ comment.timestamp }}</div>
+                            </div>
+                            <div class="vr-comment-body">{{ comment.comment }}</div>
+                        </div>
+                        {% if not loop.last %}<div class="vr-comment-sep"></div>{% endif %}
+                        {% endfor %}
+                    {% elif report.status == 'pending' %}
+                    <div class="vr-comments-empty">
+                        <div class="vr-comments-empty-icon"><i class="fas fa-comments"></i></div>
+                        <div class="vr-comments-empty-title">Awaiting Officer Review</div>
+                        <p class="vr-comments-empty-sub">Updates from your assigned officer will appear here.</p>
+                    </div>
+                    {% else %}
+                    <div class="vr-comment">
+                        <div class="vr-comment-header">
+                            <div class="vr-comment-avatar vr-comment-avatar--system"><i class="fas fa-robot"></i></div>
+                            <div>
+                                <div class="vr-comment-author">System</div>
+                                <div class="vr-comment-role">Automated Notification</div>
+                            </div>
+                            <div class="vr-comment-time">{{ report.created_at }}</div>
+                        </div>
+                        <div class="vr-comment-body">Report submitted successfully and logged in the system.</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+<!-- Officer Information Request -->
+{% if report.pending_officer_request %}
+<div class="vr-card vr-card--warning">
+    <div class="vr-card-header" style="background: var(--warning-bg); color: var(--warning);">
+        <i class="fas fa-question-circle"></i> Information Requested
+    </div>
+    <div class="vr-card-body">
+        <div class="vr-request-banner">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>The investigating officer needs more information</strong>
+                <p style="margin-top: 0.3rem; margin-bottom: 0;">{{ report.pending_officer_request }}</p>
+            </div>
+        </div>
+        
+       
+{% endif %}
+
+
+        <!-- RIGHT — Sidebar -->
+        <div class="vr-sidebar">
+ <!-- Additional Information Form -->
+        <form id="additionalInfoForm" enctype="multipart/form-data" style="margin-top: 1.2rem;">
+            <input type="hidden" name="report_id" value="{{ report.id }}">
+            
+            <div class="vr-field">
+                <label class="vr-field-label">Additional Information</label>
+                <textarea class="vr-textarea" id="additional_text" name="additional_text" rows="4" 
+                          placeholder="Please provide the requested information here..."></textarea>
+            </div>
+            
+            <div class="vr-field">
+                <label class="vr-field-label">Additional Evidence</label>
+                <input type="file" class="vr-file-input" id="additional_evidence" name="additional_evidence" multiple accept="image/*,video/*,.pdf,.doc,.docx">
+                <small class="vr-field-hint">You can upload multiple files</small>
+            </div>
+            
+            <button type="submit" class="vr-btn vr-btn--primary vr-btn--full" id="submitInfoBtn">
+                <i class="fas fa-paper-plane"></i> Submit Information
+            </button>
+        </form>
+        <div id="infoSubmitMessage" style="display:none; margin-top: 1rem;"></div>
+    </div>
+</div>
+            <!-- Quick Actions -->
+            <div class="vr-card">
+                <div class="vr-card-header"><i class="fas fa-bolt"></i> Quick Actions</div>
+                <div class="vr-card-body">
+                    <div class="vr-actions-list">
+                        <button class="vr-action-btn" onclick="printReport()">
+                            <div class="vr-action-icon vr-action-icon--blue"><i class="fas fa-print"></i></div>
+                            <div class="vr-action-label">Print Report</div>
+                        </button>
+                        <button class="vr-action-btn" onclick="downloadReport()">
+                            <div class="vr-action-icon vr-action-icon--teal"><i class="fas fa-download"></i></div>
+                            <div class="vr-action-label">Download PDF</div>
+                        </button>
+                        {% if user.role in ['officer', 'admin'] %}
+                        <button class="vr-action-btn" onclick="editReport({{ report.id }})">
+                            <div class="vr-action-icon vr-action-icon--amber"><i class="fas fa-edit"></i></div>
+                            <div class="vr-action-label">Edit Details</div>
+                        </button>
+                        <button class="vr-action-btn" onclick="confirmDelete({{ report.id }})">
+                            <div class="vr-action-icon vr-action-icon--red"><i class="fas fa-trash-alt"></i></div>
+                            <div class="vr-action-label">Delete Report</div>
+                        </button>
+                        <div class="vr-actions-divider"></div>
+                        <button class="vr-action-btn vr-action-btn--status" onclick="updateStatus({{ report.id }}, 'in_progress')">
+                            <div class="vr-action-icon vr-action-icon--blue"><i class="fas fa-play-circle"></i></div>
+                            <div class="vr-action-label">Mark In Progress</div>
+                        </button>
+                        <button class="vr-action-btn vr-action-btn--status" onclick="updateStatus({{ report.id }}, 'resolved')">
+                            <div class="vr-action-icon vr-action-icon--green"><i class="fas fa-check-circle"></i></div>
+                            <div class="vr-action-label">Mark as Resolved</div>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Evidence & Media -->
+<div class="vr-card">
+    <div class="vr-card-header"><i class="fas fa-camera"></i> Evidence & Media</div>
+    <div class="vr-card-body">
+        {% if media_files and media_files|length > 0 %}
+        <div class="vr-media-grid">
+            {% for media in media_files %}
+            <div class="vr-media-item">
+                {% if media.file_type.startswith('image/') %}
+                <img src="/reports/uploads/{{ media.filename }}"
+                     alt="Evidence"
+                     class="vr-evidence-img"
+                     onclick="window.open('/reports/uploads/{{ media.filename }}', '_blank')"
+                     style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer;">
+                <div class="vr-image-hint" style="margin-top: 0.3rem;">
+                    <i class="fas fa-image"></i> {{ media.filename|truncate(20) }}
+                </div>
+                {% elif media.file_type.startswith('video/') %}
+                <video class="vr-evidence-video" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer;" 
+                       onclick="window.open('/reports/uploads/{{ media.filename }}', '_blank')">
+                    <source src="/reports/uploads/{{ media.filename }}" type="{{ media.file_type }}">
+                </video>
+                <div class="vr-image-hint" style="margin-top: 0.3rem;">
+                    <i class="fas fa-video"></i> {{ media.filename|truncate(20) }}
+                </div>
+                {% else %}
+                <div class="vr-document-item" style="text-align: center; padding: 0.8rem; border: 1px solid var(--rule); border-radius: 8px; cursor: pointer;"
+                     onclick="window.open('/reports/uploads/{{ media.filename }}', '_blank')">
+                    <i class="fas fa-file-alt" style="font-size: 2rem; color: var(--brand);"></i>
+                    <div style="font-size: 0.7rem; margin-top: 0.3rem;">{{ media.filename|truncate(15) }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% elif report.image_url %}
+        <div class="vr-image-wrap">
+            <img src="/reports/uploads/{{ report.image_url.split('/')[-1] }}"
+                 alt="Evidence"
+                 class="vr-evidence-img"
+                 onclick="window.open('/reports/uploads/{{ report.image_url.split('/')[-1] }}', '_blank')"
+                 style="max-width: 100%; max-height: 200px; border-radius: 8px; cursor: pointer;">
+            <div class="vr-image-hint"><i class="fas fa-external-link-alt"></i> Click to view full image</div>
+        </div>
+        {% else %}
+        <div class="vr-media-empty">
+            <div class="vr-media-empty-icon"><i class="fas fa-image"></i></div>
+            <div class="vr-media-empty-text">No evidence uploaded</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Resolve Modal -->
+<div class="modal fade" id="resolveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content vr-modal">
+            <div class="modal-header vr-modal-header vr-modal-header--success">
+                <h5 class="modal-title vr-modal-title"><i class="fas fa-check-circle"></i> Confirm Resolution</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body vr-modal-body">
+                <div class="vr-modal-icon vr-modal-icon--success"><i class="fas fa-check-circle"></i></div>
+                <div class="vr-modal-heading">Mark this report as resolved?</div>
+                <p class="vr-modal-desc">Once marked as resolved, the officer will be notified of your confirmation. You can still view this report anytime in your reports list.</p>
+                <div class="vr-modal-note">
+                    <i class="fas fa-info-circle"></i>
+                    You can still view this report anytime in your reports list.
+                </div>
+            </div>
+            <div class="modal-footer vr-modal-footer">
+                <button type="button" class="vr-btn vr-btn--ghost" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                <button type="button" class="vr-btn vr-btn--success" id="confirmResolveBtn"><i class="fas fa-check-circle"></i> Yes, Mark Resolved</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="vr-toast" class="vr-toast" style="display:none;">
+    <div class="vr-toast-inner">
+        <i id="vr-toast-icon" class="fas fa-check-circle"></i>
+        <span id="vr-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.vr-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Breadcrumb ───────────── */
+.vr-breadcrumb {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; color: var(--ink-3);
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 9px; padding: 0.6rem 1rem;
+    margin-bottom: 1.1rem; flex-wrap: wrap;
+}
+.vr-bc-link { color: var(--brand); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+.vr-bc-link:hover { text-decoration: underline; }
+.vr-bc-sep  { font-size: 0.6rem; color: var(--rule); }
+.vr-bc-current { color: var(--ink-3); }
+
+/* ── Report Header ────────── */
+.vr-report-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    margin-bottom: 1.1rem; gap: 1rem; flex-wrap: wrap;
+}
+.vr-report-id-tag { font-family: monospace; font-size: 0.78rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-3); padding: 0.2rem 0.65rem; border-radius: 6px; display: inline-block; margin-bottom: 0.4rem; }
+.vr-report-title  { font-size: 1.1rem; font-weight: 800; color: var(--ink); }
+.vr-report-header-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.vr-header-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: background 0.15s, color 0.15s; }
+.vr-header-btn--back { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.vr-header-btn--back:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* ── Status Strip ─────────── */
+.vr-status-strip {
+    display: flex; align-items: center; gap: 0;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.1rem 1.5rem;
+    margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;
+}
+.vr-status-block { display: flex; flex-direction: column; gap: 0.3rem; }
+.vr-status-label { font-size: 0.68rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.vr-status-desc  { font-size: 0.72rem; color: var(--ink-3); }
+.vr-status-date  { font-size: 0.85rem; font-weight: 600; color: var(--ink-2); display: flex; align-items: center; gap: 0.35rem; }
+.vr-status-sep   { width: 1px; height: 40px; background: var(--rule); flex-shrink: 0; align-self: center; }
+
+.vr-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; padding: 0.32rem 0.875rem; border-radius: 999px; white-space: nowrap; }
+.vr-status--pending     { background: var(--warning-bg); color: var(--warning); }
+.vr-status--in_progress { background: var(--info-bg);    color: var(--info); }
+.vr-status--resolved    { background: var(--success-bg); color: var(--success); }
+
+.vr-priority { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; padding: 0.3rem 0.875rem; border-radius: 7px; white-space: nowrap; }
+.vr-priority--urgent { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); animation: pulsePri 2s infinite; }
+.vr-priority--high   { background: #fef3c7;            color: #b45309;       border: 1px solid #fde68a; }
+.vr-priority--medium { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.vr-priority--low    { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+@keyframes pulsePri { 0%,100% { opacity:1; } 50% { opacity:0.65; } }
+
+.vr-anon-badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 700; background: var(--surface); color: var(--ink-3); border: 1px solid var(--rule); padding: 0.28rem 0.7rem; border-radius: 999px; }
+
+/* ── Body Layout ──────────── */
+.vr-body { display: grid; grid-template-columns: 1fr 280px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.vr-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.1rem; }
+.vr-card:last-child { margin-bottom: 0; }
+.vr-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.vr-card-header i { font-size: 0.78rem; }
+.vr-card-body { padding: 1.25rem; }
+
+/* Meta grid */
+.vr-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.vr-meta-label { font-size: 0.68rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.vr-meta-value { font-size: 0.9rem; font-weight: 600; color: var(--ink-2); display: flex; align-items: center; gap: 0.35rem; }
+.vr-meta-icon  { color: var(--ink-3); font-size: 0.75rem; }
+.vr-desc-label { font-size: 0.68rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+.vr-desc-box   { background: var(--surface); border: 1px solid var(--rule); border-radius: 9px; padding: 1rem; font-size: 0.875rem; color: var(--ink-2); line-height: 1.7; white-space: pre-line; }
+
+/* Location grid */
+.vr-location-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.875rem; }
+.vr-location-pill { background: var(--surface); border: 1px solid var(--rule); border-radius: 9px; padding: 0.55rem 0.875rem; }
+.vr-location-pill-label { font-size: 0.62rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem; }
+.vr-location-pill-value { font-size: 0.875rem; font-weight: 700; color: var(--ink); }
+.vr-specific-location { display: flex; align-items: center; gap: 0.6rem; background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.82rem; color: var(--danger); font-weight: 600; }
+.vr-specific-location i { flex-shrink: 0; }
+
+/* Comments */
+.vr-comment { padding: 0.875rem 0; }
+.vr-comment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+.vr-comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--info-bg); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; flex-shrink: 0; }
+.vr-comment-avatar--system { background: var(--surface); color: var(--ink-3); }
+.vr-comment--resolved .vr-comment-avatar { background: var(--success-bg); color: var(--success); }
+.vr-comment-author { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+.vr-comment-role   { font-size: 0.7rem; color: var(--ink-3); }
+.vr-comment-time   { font-size: 0.72rem; color: var(--ink-3); margin-left: auto; white-space: nowrap; }
+.vr-comment-body   { font-size: 0.875rem; color: var(--ink-2); line-height: 1.6; padding-left: 44px; }
+.vr-comment-sep    { height: 1px; background: var(--rule); margin: 0.25rem 0; }
+
+.vr-comments-empty { text-align: center; padding: 2rem; }
+.vr-comments-empty-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 1.2rem; color: var(--ink-3); }
+.vr-comments-empty-title { font-size: 0.9rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.3rem; }
+.vr-comments-empty-sub   { font-size: 0.8rem; color: var(--ink-3); line-height: 1.5; }
+
+/* Quick Actions */
+.vr-actions-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.vr-action-btn {
+    display: flex; align-items: center; gap: 0.875rem;
+    padding: 0.75rem 0.875rem; border-radius: 10px;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    cursor: pointer; font-family: inherit; font-size: 0.875rem;
+    font-weight: 600; color: var(--ink-2); width: 100%; text-align: left;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.vr-action-btn:hover { border-color: var(--brand); background: var(--white); color: var(--brand); }
+.vr-action-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; flex-shrink: 0; }
+.vr-action-icon--blue  { background: var(--info-bg);    color: var(--info); }
+.vr-action-icon--teal  { background: #ecfeff;            color: #0e7490; }
+.vr-action-icon--amber { background: var(--warning-bg); color: var(--warning); }
+.vr-action-icon--red   { background: var(--danger-bg);  color: var(--danger); }
+.vr-action-icon--green { background: var(--success-bg); color: var(--success); }
+.vr-action-label { flex: 1; }
+.vr-actions-divider { height: 1px; background: var(--rule); margin: 0.25rem 0; }
+
+/* Evidence */
+.vr-image-wrap { text-align: center; }
+.vr-evidence-img { max-height: 160px; border-radius: 10px; cursor: pointer; border: 1px solid var(--rule); transition: opacity 0.15s; }
+.vr-evidence-img:hover { opacity: 0.88; }
+.vr-image-hint { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.5rem; }
+.vr-media-empty { text-align: center; padding: 1.5rem; }
+.vr-media-empty-icon { width: 44px; height: 44px; border-radius: 11px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.6rem; font-size: 1.1rem; color: var(--ink-3); }
+.vr-media-empty-text { font-size: 0.8rem; color: var(--ink-3); }
+
+/* ── Modal ────────────────── */
+.vr-modal { border: none; border-radius: 16px; overflow: hidden; }
+.vr-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.vr-modal-header--success { background: linear-gradient(135deg, #065f46, #059669); }
+.vr-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.vr-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.vr-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.vr-modal-icon   { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.3rem; }
+.vr-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.vr-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.vr-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 0; }
+.vr-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; background: var(--info-bg); border: 1px solid var(--info-border); border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; color: var(--info); line-height: 1.5; text-align: left; margin-top: 1rem; }
+
+/* Buttons */
+.vr-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.vr-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.vr-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.vr-btn--success { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 3px 10px rgba(5,150,105,0.2); }
+
+/* Toast */
+.vr-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.vr-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .vr-body { grid-template-columns: 1fr; } .vr-status-strip { gap: 0.75rem; } .vr-status-sep { display: none; } }
+@media (max-width: 600px) { .vr-wrapper { padding: 1rem; } .vr-meta-grid { grid-template-columns: 1fr; } }
+
+/* Media Grid */
+.vr-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+.vr-media-item {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.vr-media-item:hover {
+    transform: scale(1.02);
+}
+.vr-evidence-img, .vr-evidence-video {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+}
+.vr-image-hint {
+    font-size: 0.7rem;
+    color: var(--ink-3);
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.vr-document-item {
+    background: var(--surface);
+    transition: background 0.2s;
+}
+.vr-document-item:hover {
+    background: var(--info-bg);
+}
+
+
+/* Information Request */
+.vr-card--warning {
+    border-left: 4px solid var(--warning);
+}
+.vr-request-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
+    border-radius: 9px;
+    padding: 1rem;
+    color: var(--warning);
+}
+.vr-request-banner i {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.vr-field {
+    margin-bottom: 1rem;
+}
+.vr-field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    margin-bottom: 0.3rem;
+}
+.vr-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1.5px solid var(--rule);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    transition: border-color 0.15s;
+}
+.vr-textarea:focus {
+    border-color: var(--brand);
+    outline: none;
+}
+.vr-file-input {
+    width: 100%;
+    padding: 0.5rem 0;
+}
+.vr-field-hint {
+    font-size: 0.7rem;
+    color: var(--ink-3);
+    margin-top: 0.2rem;
+    display: block;
+}
+.vr-btn--primary {
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: white;
+    border: none;
+}
+.vr-btn--full {
+    width: 100%;
+    justify-content: center;
+}
+
+.vr-update-msg {
+    border-radius: 9px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.vr-update-msg--success {
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+}
+.vr-update-msg--danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+
+
+</style>
+
+<script>
+let currentReportId = null;
+
+function markAsResolved(reportId) {
+    currentReportId = reportId;
+    const resolveModal = new bootstrap.Modal(document.getElementById('resolveModal'));
+    resolveModal.show();
+    document.getElementById('confirmResolveBtn').onclick = function() {
+        performResolve(currentReportId);
+    };
+}
+
+function viewEvidence(mediaId, filename, fileType) {
+    if (fileType.startsWith('image/') || fileType.startsWith('video/')) {
+        window.open(`/reports/uploads/${filename}`, '_blank');
+    } else {
+        window.location.href = `/reports/uploads/${filename}?download=1`;
+    }
+}
+
+function performResolve(reportId) {
+    bootstrap.Modal.getInstance(document.getElementById('resolveModal')).hide();
+    showToast('Processing your request...', 'info');
+
+    fetch(`/reports/${reportId}/citizen-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'resolved' })
+    })
+    .then(response => {
+        if (!response.ok) return response.json().then(err => { throw new Error(err.error || 'Failed to update status'); });
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('Report marked as resolved successfully!', true);
+            setTimeout(() => location.reload(), 1500);
+        }
+    })
+    .catch(error => {
+        const msg = error.message.includes('already resolved') ? 'This report is already resolved.'
+                  : error.message.includes('only update your own reports') ? 'You can only update your own reports.'
+                  : error.message || 'Error updating status';
+        showToast(msg, false);
+    });
+}
+
+function updateStatus(reportId, status) {
+    if (confirm('Update the status?')) {
+        fetch(`/api/reports/${reportId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { showToast('Status updated!', true); setTimeout(() => location.reload(), 1500); }
+            else showToast('Error: ' + data.message, false);
+        })
+        .catch(() => showToast('Error updating status', false));
+    }
+}
+
+
+
+function editReport(reportId)    { alert('Edit feature coming soon'); }
+function confirmDelete(reportId) { alert('You do not have permission to delete reports'); }
+function printReport()           { window.print(); }
+function downloadReport()        { alert('PDF download coming soon'); }
+function viewImage(imageUrl)     { window.open(imageUrl, '_blank'); }
+
+function showToast(msg, success) {
+    const t = document.getElementById('vr-toast');
+    const inner = t.querySelector('.vr-toast-inner');
+    const icon  = document.getElementById('vr-toast-icon');
+    if (success === 'info') {
+        inner.style.background = '#1e40af';
+        icon.className = 'fas fa-spinner fa-spin';
+    } else {
+        inner.style.background = success ? '#059669' : '#c0392b';
+        icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    }
+    document.getElementById('vr-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+            setTimeout(() => bsAlert.close(), 3000);
+        });
+    }, 500);
+});
+
+
+// Handle additional information submission
+document.getElementById('additionalInfoForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = document.getElementById('submitInfoBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    
+    try {
+        const response = await fetch('/citizen/api/add-info', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            const msgDiv = document.getElementById('infoSubmitMessage');
+            msgDiv.innerHTML = '<div class="vr-update-msg vr-update-msg--success"><i class="fas fa-check-circle"></i> Information submitted successfully!</div>';
+            msgDiv.style.display = 'block';
+            
+            // Clear the form
+            document.getElementById('additional_text').value = '';
+            document.getElementById('additional_evidence').value = '';
+            
+            // Hide the form after 3 seconds and reload
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        } else {
+            const msgDiv = document.getElementById('infoSubmitMessage');
+            msgDiv.innerHTML = `<div class="vr-update-msg vr-update-msg--danger"><i class="fas fa-exclamation-circle"></i> Error: ${data.error || 'Failed to submit'}</div>`;
+            msgDiv.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        const msgDiv = document.getElementById('infoSubmitMessage');
+        msgDiv.innerHTML = '<div class="vr-update-msg vr-update-msg--danger"><i class="fas fa-exclamation-circle"></i> Network error. Please try again.</div>';
+        msgDiv.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+
+</script>
+{% endblock %}

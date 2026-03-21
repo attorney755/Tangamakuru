@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="sp-wrapper">
+
+    <!-- Top Bar -->
+    <div class="sp-topbar">
+        <div class="sp-topbar-left">
+            <a href="{{ url_for('super_admin.dashboard') }}" class="sp-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="sp-topbar-title"><i class="fas fa-crown"></i> Super Admin Profile</div>
+                <div class="sp-topbar-sub">Manage your super administrator information</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="sp-body">
+
+        <!-- LEFT — Profile Card -->
+        <div class="sp-sidebar">
+
+            <div class="sp-profile-card">
+                <div class="sp-profile-banner"></div>
+                <div class="sp-profile-body">
+                    <img src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=0a1929&color=fff&size=120"
+                         class="sp-avatar">
+                    <div class="sp-profile-name">{{ user.first_name }} {{ user.last_name }}</div>
+                    <div class="sp-profile-email"><i class="fas fa-envelope"></i> {{ user.email }}</div>
+                    <span class="sp-role-badge"><i class="fas fa-crown"></i> Super Administrator</span>
+                </div>
+            </div>
+
+            <!-- Nav tabs -->
+            <div class="sp-nav">
+                <button class="sp-nav-item sp-nav-item--active" id="tab-view" onclick="showTab('view')">
+                    <i class="fas fa-user"></i> Profile Info
+                </button>
+                <button class="sp-nav-item" id="tab-edit" onclick="showTab('edit')">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+                <button class="sp-nav-item" id="tab-password" onclick="showTab('password')">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+
+        </div>
+
+        <!-- RIGHT — Content -->
+        <div class="sp-main">
+
+            <!-- ── View Profile ── -->
+            <div id="panel-view">
+                <div class="sp-card">
+                    <div class="sp-card-header"><i class="fas fa-user"></i> Personal Information</div>
+                    <div class="sp-card-body">
+                        <div class="sp-details-grid">
+                            <div class="sp-detail-item">
+                                <div class="sp-detail-label">First Name</div>
+                                <div class="sp-detail-value">{{ user.first_name }}</div>
+                            </div>
+                            <div class="sp-detail-item">
+                                <div class="sp-detail-label">Last Name</div>
+                                <div class="sp-detail-value">{{ user.last_name }}</div>
+                            </div>
+                            <div class="sp-detail-item">
+                                <div class="sp-detail-label">Email Address</div>
+                                <div class="sp-detail-value"><i class="fas fa-envelope sp-detail-icon"></i>{{ user.email }}</div>
+                            </div>
+                            <div class="sp-detail-item">
+                                <div class="sp-detail-label">Phone Number</div>
+                                <div class="sp-detail-value">
+                                    {% if user.phone %}<i class="fas fa-phone sp-detail-icon"></i>{{ user.phone }}
+                                    {% else %}<span class="sp-detail-empty">Not provided</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="sp-detail-item">
+                                <div class="sp-detail-label">Account Status</div>
+                                <div class="sp-detail-value">
+                                    {% if user.is_active %}
+                                    <span class="sp-status-pill sp-status-pill--active"><i class="fas fa-check-circle"></i> Active</span>
+                                    {% else %}
+                                    <span class="sp-status-pill sp-status-pill--inactive"><i class="fas fa-ban"></i> Inactive</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="sp-detail-item">
+                                <div class="sp-detail-label">Member Since</div>
+                                <div class="sp-detail-value">
+                                    <i class="far fa-calendar-alt sp-detail-icon"></i>
+                                    {{ user.created_at.strftime('%d %B %Y') if user.created_at else 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Edit Profile ── -->
+            <div id="panel-edit" style="display:none;">
+                <div class="sp-card">
+                    <div class="sp-card-header"><i class="fas fa-edit"></i> Edit Profile</div>
+                    <div class="sp-card-body">
+                        <form id="profileEditForm">
+
+                            <div class="sp-section-label">Personal Details</div>
+                            <div class="sp-row-2">
+                                <div class="sp-field">
+                                    <label class="sp-label">First Name</label>
+                                    <input type="text" class="sp-input" id="first_name" value="{{ user.first_name }}" required>
+                                </div>
+                                <div class="sp-field">
+                                    <label class="sp-label">Last Name</label>
+                                    <input type="text" class="sp-input" id="last_name" value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                            <div class="sp-field">
+                                <label class="sp-label">Phone Number</label>
+                                <div class="sp-input-wrap">
+                                    <i class="fas fa-phone sp-input-icon"></i>
+                                    <input type="tel" class="sp-input sp-input--icon" id="phone"
+                                           value="{{ user.phone or '' }}" placeholder="078X XXX XXX">
+                                </div>
+                            </div>
+
+                            <div id="editMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                            <div class="sp-form-actions">
+                                <button type="button" class="sp-btn sp-btn--ghost" onclick="showTab('view')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="sp-btn sp-btn--primary" id="saveBtn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Change Password ── -->
+            <div id="panel-password" style="display:none;">
+                <div class="sp-card">
+                    <div class="sp-card-header"><i class="fas fa-key"></i> Change Password</div>
+                    <div class="sp-card-body">
+                        <form id="changePasswordForm">
+
+                            <div class="sp-field">
+                                <label class="sp-label">Current Password</label>
+                                <div class="sp-input-wrap">
+                                    <i class="fas fa-lock sp-input-icon"></i>
+                                    <input type="password" class="sp-input sp-input--icon" id="current_password"
+                                           placeholder="Enter current password" required>
+                                </div>
+                            </div>
+
+                            <div class="sp-divider"></div>
+
+                            <div class="sp-row-2">
+                                <div class="sp-field">
+                                    <label class="sp-label">New Password</label>
+                                    <div class="sp-input-wrap">
+                                        <i class="fas fa-key sp-input-icon"></i>
+                                        <input type="password" class="sp-input sp-input--icon" id="new_password"
+                                               placeholder="Min. 6 characters" required minlength="6">
+                                    </div>
+                                    <div class="sp-hint">Minimum 6 characters</div>
+                                </div>
+                                <div class="sp-field">
+                                    <label class="sp-label">Confirm New Password</label>
+                                    <div class="sp-input-wrap">
+                                        <i class="fas fa-key sp-input-icon"></i>
+                                        <input type="password" class="sp-input sp-input--icon" id="confirm_password"
+                                               placeholder="Re-enter new password" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="pwMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                            <div class="sp-form-actions">
+                                <button type="button" class="sp-btn sp-btn--ghost" onclick="showTab('view')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="sp-btn sp-btn--primary" id="changePwBtn">
+                                    <i class="fas fa-key"></i> Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="sp-toast" class="sp-toast" style="display:none;">
+    <div class="sp-toast-inner">
+        <i id="sp-toast-icon" class="fas fa-check-circle"></i>
+        <span id="sp-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --super:      #0a1929;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 15px; }
+
+/* ── Wrapper ──────────────── */
+.sp-wrapper { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.sp-topbar {
+    display: flex; align-items: center;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.sp-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sp-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.9rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.sp-back-btn:hover { background: var(--super); border-color: var(--super); color: #fff; }
+.sp-topbar-title { font-size: 1.05rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.sp-topbar-title i { color: #d97706; }
+.sp-topbar-sub   { font-size: 0.82rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Layout ───────────────── */
+.sp-body { display: grid; grid-template-columns: 260px 1fr; gap: 1.25rem; align-items: start; }
+
+/* ── Profile card ─────────── */
+.sp-profile-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
+.sp-profile-banner { height: 72px; background: linear-gradient(135deg, #0a1929, #1a3a5f); }
+.sp-profile-body {
+    padding: 0 1.25rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.sp-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    border: 4px solid var(--white); box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    margin-top: -36px; margin-bottom: 0.75rem;
+}
+.sp-profile-name  { font-size: 1.05rem; font-weight: 800; color: var(--ink); margin-bottom: 0.25rem; }
+.sp-profile-email { font-size: 0.78rem; color: var(--ink-3); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
+.sp-role-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: var(--warning-bg); color: var(--warning);
+    border: 1px solid var(--warning-border);
+    font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.875rem; border-radius: 999px;
+}
+
+/* ── Nav ──────────────────── */
+.sp-nav { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+.sp-nav-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    width: 100%; padding: 0.9rem 1.1rem;
+    background: none; border: none; border-bottom: 1px solid var(--rule);
+    font-size: 0.9rem; font-weight: 600; color: var(--ink-3);
+    cursor: pointer; font-family: inherit; text-align: left;
+    transition: background 0.15s, color 0.15s;
+}
+.sp-nav-item:last-child { border-bottom: none; }
+.sp-nav-item i { width: 16px; text-align: center; }
+.sp-nav-item:hover { background: var(--surface); color: var(--brand); }
+.sp-nav-item--active { background: var(--info-bg) !important; color: var(--brand) !important; border-left: 3px solid var(--brand); }
+
+/* ── Cards ────────────────── */
+.sp-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.sp-card:last-child { margin-bottom: 0; }
+.sp-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.sp-card-header i { font-size: 0.78rem; }
+.sp-card-body { padding: 1.35rem; }
+
+/* ── Details ──────────────── */
+.sp-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.sp-detail-label { font-size: 0.72rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; }
+.sp-detail-value { font-size: 0.95rem; color: var(--ink-2); font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
+.sp-detail-empty { font-size: 0.875rem; color: var(--ink-3); font-style: italic; font-weight: 400; }
+.sp-detail-icon  { color: var(--ink-3); font-size: 0.75rem; }
+
+.sp-status-pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 999px; }
+.sp-status-pill--active   { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.sp-status-pill--inactive { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* ── Form ─────────────────── */
+.sp-section-label { font-size: 0.75rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.07em; padding-bottom: 0.5rem; border-bottom: 1.5px solid var(--rule); margin-bottom: 0.9rem; margin-top: 1.1rem; }
+.sp-section-label:first-child { margin-top: 0; }
+.sp-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 0.9rem; }
+.sp-field { display: flex; flex-direction: column; margin-bottom: 1rem; }
+.sp-field:last-of-type { margin-bottom: 0; }
+.sp-label { font-size: 0.875rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.4rem; }
+.sp-hint  { font-size: 0.75rem; color: var(--ink-3); margin-top: 0.28rem; }
+.sp-divider { height: 1px; background: var(--rule); margin: 1.1rem 0; }
+
+.sp-input-wrap { position: relative; }
+.sp-input-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 0.78rem; color: var(--ink-3); pointer-events: none; }
+
+.sp-input {
+    width: 100%; padding: 0.8rem 0.975rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.95rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.sp-input--icon  { padding-left: 2.5rem; }
+.sp-input::placeholder { color: #8fa8c0; }
+.sp-input:focus  { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.sp-input.sp-invalid { border-color: var(--danger) !important; }
+.sp-input.sp-valid   { border-color: #059669 !important; }
+
+.sp-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); margin-top: 1.25rem; }
+
+/* Inline messages */
+.sp-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.8rem 1rem; font-size: 0.9rem; }
+.sp-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.sp-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.sp-msg--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+/* Buttons */
+.sp-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; font-weight: 600; font-family: inherit; padding: 0.75rem 1.4rem; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.sp-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.sp-btn--primary { background: linear-gradient(135deg, var(--super), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(10,25,41,0.25); }
+.sp-btn--primary:hover { color: #fff; }
+.sp-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* Toast */
+.sp-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.sp-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 860px) { .sp-body { grid-template-columns: 1fr; } .sp-details-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .sp-wrapper { padding: 1rem; } .sp-row-2 { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+function showTab(tab) {
+    ['view','edit','password'].forEach(t => {
+        document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
+        document.getElementById(`tab-${t}`).classList.toggle('sp-nav-item--active', t === tab);
+    });
+}
+
+document.getElementById('profileEditForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    btn.disabled = true;
+
+    const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name:  document.getElementById('last_name').value,
+        phone:      document.getElementById('phone').value || ''
+    };
+
+    try {
+        const res  = await fetch('/api/profile/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formData) });
+        const data = await res.json();
+        if (res.ok) {
+            showInlineMsg('editMessage', 'Profile updated successfully!', 'success');
+            showToast('Profile updated successfully', true);
+            setTimeout(() => location.reload(), 1600);
+        } else {
+            showInlineMsg('editMessage', data.error || 'Failed to update profile', 'danger');
+        }
+    } catch { showInlineMsg('editMessage', 'Network error. Please try again.', 'danger'); }
+    finally { btn.innerHTML = orig; btn.disabled = false; }
+});
+
+document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const np = document.getElementById('new_password').value;
+    const cp = document.getElementById('confirm_password').value;
+    if (np !== cp)    { showInlineMsg('pwMessage', 'Passwords do not match', 'warning'); return; }
+    if (np.length < 6){ showInlineMsg('pwMessage', 'Password must be at least 6 characters', 'warning'); return; }
+
+    const btn = document.getElementById('changePwBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing...';
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch('/api/profile/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password: document.getElementById('current_password').value, new_password: np }) });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Password changed successfully', true);
+            this.reset();
+            showTab('view');
+        } else {
+            showInlineMsg('pwMessage', data.error || 'Failed to change password', 'danger');
+        }
+    } catch { showInlineMsg('pwMessage', 'Network error. Please try again.', 'danger'); }
+    finally { btn.innerHTML = orig; btn.disabled = false; }
+});
+
+document.getElementById('confirm_password')?.addEventListener('input', function() {
+    const match = this.value === document.getElementById('new_password').value;
+    this.classList.toggle('sp-invalid', !match);
+    this.classList.toggle('sp-valid', match && this.value.length > 0);
+});
+document.getElementById('new_password')?.addEventListener('input', function() {
+    const cp = document.getElementById('confirm_password');
+    if (!cp.value) return;
+    const match = cp.value === this.value;
+    cp.classList.toggle('sp-invalid', !match);
+    cp.classList.toggle('sp-valid', match);
+});
+
+function showInlineMsg(id, text, type) {
+    const icons = { success:'check-circle', danger:'times-circle', warning:'exclamation-triangle' };
+    const div = document.getElementById(id);
+    div.innerHTML = `<div class="sp-msg sp-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.style.display = 'block';
+    setTimeout(() => { div.style.display = 'none'; }, 5000);
+}
+
+function showToast(msg, success) {
+    const t = document.getElementById('sp-toast');
+    t.querySelector('.sp-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('sp-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('sp-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+
+// Keep original function names for compatibility
+function showEditForm()      { showTab('edit'); }
+function hideEditForm()      { showTab('view'); }
+function showChangePassword(){ showTab('password'); }
+function hidePasswordForm()  { showTab('view'); }
+</script>
+
+{% endblock %}

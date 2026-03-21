@@ -1,0 +1,684 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="po-wrapper">
+
+    <!-- Top Bar -->
+    <div class="po-topbar">
+        <div class="po-topbar-left">
+            <a href="{{ url_for('admin.dashboard') }}" class="po-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="po-topbar-title"><i class="fas fa-user-clock"></i> Pending Officer Approvals</div>
+                <div class="po-topbar-sub">Review and approve new officer registrations in {{ user.district }} District</div>
+            </div>
+        </div>
+        <button class="po-refresh-btn" onclick="refreshList()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+
+    <!-- Main Card -->
+    <div class="po-card">
+
+        <!-- Filters -->
+        <div class="po-filters">
+            <div class="po-search-wrap">
+                <i class="fas fa-search po-search-icon"></i>
+                <input type="text" class="po-search" id="searchInput"
+                       placeholder="Search by name, email or officer ID...">
+            </div>
+            <select class="po-select" id="statusFilter">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="denied">Denied</option>
+            </select>
+            <select class="po-select" id="dateFilter">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last7days">Last 7 Days</option>
+                <option value="last30days">Last 30 Days</option>
+            </select>
+            <select class="po-select" id="emailTypeFilter">
+                <option value="all">All Email Types</option>
+                <option value="government">Government</option>
+                <option value="personal">Personal</option>
+            </select>
+            <button class="po-clear-btn" onclick="clearFilters()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+
+        <!-- Active filters -->
+        <div id="activeFilters" class="po-active-filters"></div>
+
+        <!-- Results bar -->
+        <div class="po-results-bar">
+            <span class="po-results-count">
+                <i class="fas fa-list"></i>
+                <span id="resultCount">{{ pending_officers|length }}</span> results
+            </span>
+            <div class="po-results-actions">
+                <button class="po-action-btn" onclick="exportToCSV()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+                <button class="po-action-btn" onclick="printReport()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        {% if pending_officers %}
+        <div class="po-table-wrap">
+            <table class="po-table" id="pendingOfficersTable">
+                <thead>
+                    <tr>
+                        <th>Officer</th>
+                        <th onclick="sortTable(1)" class="po-sortable">Name <i class="fas fa-sort"></i></th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Officer ID</th>
+                        <th>Department</th>
+                        <th>Email Type</th>
+                        <th onclick="sortTable(8)" class="po-sortable">Registered <i class="fas fa-sort"></i></th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for item in pending_officers %}
+                    <tr id="row-{{ item.officer.id }}"
+                        data-status="{{ item.status }}"
+                        data-email-type="{{ item.email_type }}"
+                        data-created="{{ item.created_at.strftime('%Y-%m-%d') }}"
+                        data-name="{{ item.officer.first_name }} {{ item.officer.last_name }}"
+                        data-email="{{ item.officer.email }}"
+                        data-officer-id="{{ item.officer.officer_id }}"
+                        class="po-row po-row--{{ item.status }}">
+
+                        <!-- Avatar -->
+                        <td>
+                            <img src="https://ui-avatars.com/api/?name={{ item.officer.first_name }}+{{ item.officer.last_name }}&background=1a3a5c&color=fff&size=40"
+                                 class="po-avatar">
+                        </td>
+
+                        <!-- Name -->
+                        <td>
+                            <div class="po-name">{{ item.officer.first_name }} {{ item.officer.last_name }}</div>
+                        </td>
+
+                        <!-- Contact -->
+                        <td>
+                            <div class="po-cell-main">{{ item.officer.email }}</div>
+                            <div class="po-cell-sub">{{ item.officer.phone }}</div>
+                        </td>
+
+                        <!-- Location -->
+                        <td>
+                            <div class="po-cell-main">{{ item.officer.sector }} Sector</div>
+                            <div class="po-cell-sub">{{ item.officer.district }}</div>
+                        </td>
+
+                        <!-- Officer ID -->
+                        <td>
+                            <span class="po-id-tag">{{ item.officer.officer_id }}</span>
+                        </td>
+
+                        <!-- Department -->
+                        <td>
+                            <div class="po-cell-main">{{ item.officer.department }}</div>
+                        </td>
+
+                        <!-- Email Type -->
+                        <td>
+                            {% if item.email_type == 'government' %}
+                            <span class="po-pill po-pill--gov"><i class="fas fa-building"></i> Government</span>
+                            {% else %}
+                            <span class="po-pill po-pill--personal"><i class="fas fa-user"></i> Personal</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Registered -->
+                        <td>
+                            <div class="po-cell-main">{{ item.created_at.strftime('%d %b %Y') }}</div>
+                            <div class="po-cell-sub">{{ item.created_at|timeago }}</div>
+                            {% if item.reviewed_at and item.status != 'pending' %}
+                            <div class="po-cell-sub po-cell-sub--{{ 'success' if item.status == 'approved' else 'danger' }}">
+                                <i class="fas fa-check-circle"></i> {{ item.reviewed_at|timeago }}
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            {% if item.status == 'pending' %}
+                            <span class="po-status po-status--pending"><i class="fas fa-clock"></i> Pending</span>
+                            {% elif item.status == 'approved' %}
+                            <span class="po-status po-status--approved"><i class="fas fa-check-circle"></i> Approved</span>
+                            {% elif item.status == 'denied' %}
+                            <span class="po-status po-status--denied"><i class="fas fa-times-circle"></i> Denied</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="po-actions">
+                                {% if item.status == 'pending' %}
+                                <button class="po-act-btn po-act-btn--approve" onclick="showApproveModal({{ item.officer.id }})" title="Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="po-act-btn po-act-btn--deny" onclick="showDenyModal({{ item.officer.id }})" title="Deny">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% elif item.status == 'denied' %}
+                                <button class="po-act-btn po-act-btn--approve" onclick="showApproveModal({{ item.officer.id }})" title="Approve Now">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% elif item.status == 'approved' %}
+                                <button class="po-act-btn po-act-btn--disabled" disabled title="Approved">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% endif %}
+                                <button class="po-act-btn po-act-btn--view" onclick="viewDetails({{ item.officer.id }})" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="po-empty">
+            <div class="po-empty-icon"><i class="fas fa-user-check"></i></div>
+            <div class="po-empty-title">No Pending Approvals</div>
+            <p class="po-empty-sub">All officer registrations have been processed.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="po-modal-overlay" id="approveModal" style="display:none;">
+    <div class="po-modal">
+        <div class="po-modal-header po-modal-header--success">
+            <div class="po-modal-title"><i class="fas fa-check-circle"></i> Approve Officer</div>
+            <button class="po-modal-close" onclick="closeModal('approveModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="po-modal-body">
+            <div class="po-modal-icon po-modal-icon--success"><i class="fas fa-user-check"></i></div>
+            <div class="po-modal-heading">Approve Officer Registration</div>
+            <p class="po-modal-desc">Are you sure you want to approve this officer? They will be able to log in immediately.</p>
+            <div class="po-modal-note po-modal-note--info">
+                <i class="fas fa-info-circle"></i>
+                The officer will receive a notification and can log in immediately after approval.
+            </div>
+        </div>
+        <div class="po-modal-footer">
+            <button class="po-btn po-btn--ghost" onclick="closeModal('approveModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="po-btn po-btn--success" id="confirmApproveBtn"><i class="fas fa-check"></i> Approve Officer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Deny Modal -->
+<div class="po-modal-overlay" id="denyModal" style="display:none;">
+    <div class="po-modal">
+        <div class="po-modal-header po-modal-header--danger">
+            <div class="po-modal-title"><i class="fas fa-exclamation-triangle"></i> Deny Registration</div>
+            <button class="po-modal-close" onclick="closeModal('denyModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="po-modal-body">
+            <div class="po-modal-icon po-modal-icon--danger"><i class="fas fa-user-times"></i></div>
+            <div class="po-modal-heading">Deny Registration</div>
+            <p class="po-modal-desc">Please provide a reason for denying this officer's registration.</p>
+            <div class="po-field">
+                <label class="po-field-label">Reason for Denial</label>
+                <textarea class="po-textarea" id="denyReason" rows="4"
+                          placeholder="e.g., Invalid officer ID, Wrong department, etc."></textarea>
+            </div>
+            <div class="po-modal-note po-modal-note--warning">
+                <i class="fas fa-exclamation-circle"></i>
+                The officer will be notified of this decision and the reason provided.
+            </div>
+        </div>
+        <div class="po-modal-footer">
+            <button class="po-btn po-btn--ghost" onclick="closeModal('denyModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="po-btn po-btn--danger" id="confirmDenyBtn"><i class="fas fa-times"></i> Deny Registration</button>
+        </div>
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="po-modal-overlay" id="viewModal" style="display:none;">
+    <div class="po-modal po-modal--wide">
+        <div class="po-modal-header po-modal-header--brand">
+            <div class="po-modal-title"><i class="fas fa-user"></i> Officer Details</div>
+            <button class="po-modal-close" onclick="closeModal('viewModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="po-modal-body" id="officerDetails">
+            <div class="po-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading officer details...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="po-toast" class="po-toast" style="display:none;">
+    <div class="po-toast-inner">
+        <i id="po-toast-icon" class="fas fa-check-circle"></i>
+        <div>
+            <div id="po-toast-title" class="po-toast-title"></div>
+            <div id="po-toast-msg" class="po-toast-msg"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --pending:    #92400e;
+    --pending-bg: #fef3c7;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.po-wrapper { max-width: 1300px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.po-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.po-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.po-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.po-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.po-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.po-topbar-title i { color: var(--brand); }
+.po-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.po-refresh-btn  { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.po-refresh-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* ── Main Card ────────────── */
+.po-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+
+/* ── Filters ──────────────── */
+.po-filters {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+}
+.po-search-wrap { position: relative; flex: 1; min-width: 200px; }
+.po-search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--ink-3); pointer-events: none; }
+.po-search { width: 100%; padding: 0.65rem 0.875rem 0.65rem 2.2rem; border: 1.5px solid var(--rule); border-radius: 9px; font-size: 0.875rem; color: var(--ink); background: var(--white); outline: none; font-family: inherit; transition: border-color 0.15s; }
+.po-search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(26,58,92,0.07); }
+.po-select { padding: 0.65rem 2rem 0.65rem 0.875rem; border: 1.5px solid var(--rule); border-radius: 9px; font-size: 0.825rem; color: var(--ink-2); background: var(--white); outline: none; font-family: inherit; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; transition: border-color 0.15s; }
+.po-select:focus { border-color: var(--brand); }
+.po-clear-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.65rem 1rem; border: 1.5px solid var(--rule); border-radius: 9px; background: var(--white); color: var(--ink-3); font-size: 0.825rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+.po-clear-btn:hover { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
+
+/* Active filters */
+.po-active-filters { padding: 0.5rem 1.25rem; font-size: 0.78rem; color: var(--ink-3); background: var(--surface); border-bottom: 1px solid var(--rule); min-height: 0; }
+.po-active-filters:empty { display: none; }
+.po-filter-clear-link { color: var(--accent); text-decoration: none; font-weight: 600; margin-left: 0.5rem; }
+
+/* Results bar */
+.po-results-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--white);
+}
+.po-results-count { font-size: 0.8rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.4rem; }
+.po-results-count i { color: var(--brand); }
+.po-results-actions { display: flex; gap: 0.5rem; }
+.po-action-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.875rem; border: 1.5px solid var(--rule); border-radius: 7px; background: var(--white); color: var(--ink-2); font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.po-action-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* ── Table ────────────────── */
+.po-table-wrap { overflow-x: auto; }
+.po-table { width: 100%; border-collapse: collapse; }
+.po-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.po-table th { padding: 0.75rem 1rem; font-size: 0.72rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.po-table th.po-sortable { cursor: pointer; user-select: none; }
+.po-table th.po-sortable:hover { color: var(--brand); }
+.po-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.po-table tbody tr:last-child td { border-bottom: none; }
+.po-table tbody tr:hover { background: var(--surface); }
+
+.po-row--approved { background: #f0fdf4 !important; }
+.po-row--approved:hover { background: #ecfdf5 !important; }
+.po-row--denied   { background: #fef2f2 !important; }
+.po-row--denied:hover   { background: #fef2f2 !important; }
+
+.po-avatar { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--rule); }
+.po-name { font-size: 0.875rem; font-weight: 700; color: var(--ink); }
+.po-cell-main { font-size: 0.825rem; color: var(--ink-2); }
+.po-cell-sub  { font-size: 0.75rem; color: var(--ink-3); margin-top: 2px; }
+.po-cell-sub--success { color: var(--success); }
+.po-cell-sub--danger  { color: var(--danger); }
+
+.po-id-tag { font-family: monospace; font-size: 0.78rem; font-weight: 700; background: var(--info-bg); color: var(--info); padding: 0.25rem 0.6rem; border-radius: 5px; border: 1px solid var(--info-border); }
+
+.po-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600; padding: 0.28rem 0.65rem; border-radius: 999px; }
+.po-pill--gov      { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.po-pill--personal { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+.po-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 999px; }
+.po-status--pending  { background: var(--pending-bg);  color: var(--pending); }
+.po-status--approved { background: var(--success-bg);  color: var(--success); }
+.po-status--denied   { background: var(--danger-bg);   color: var(--danger);  }
+
+/* Actions */
+.po-actions { display: flex; align-items: center; gap: 0.4rem; }
+.po-act-btn { width: 30px; height: 30px; border-radius: 7px; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.po-act-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.po-act-btn--approve  { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.po-act-btn--deny     { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.po-act-btn--view     { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.po-act-btn--disabled { background: var(--surface);    color: var(--ink-3);   border: 1px solid var(--rule); cursor: not-allowed; opacity: 0.6; }
+
+/* Empty */
+.po-empty { text-align: center; padding: 4rem 2rem; }
+.po-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.po-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.po-empty-sub   { font-size: 0.85rem; color: var(--ink-3); }
+
+/* ── Modals ───────────────── */
+.po-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.po-modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+.po-modal--wide { max-width: 620px; }
+
+.po-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; }
+.po-modal-header--brand   { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; }
+.po-modal-header--success { background: linear-gradient(135deg, #065f46, #059669); color: #fff; }
+.po-modal-header--danger  { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; }
+.po-modal-title { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+.po-modal-close { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
+.po-modal-close:hover { background: rgba(255,255,255,0.25); }
+.po-modal-body    { padding: 1.5rem 1.25rem; text-align: center; }
+.po-modal-footer  { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+
+.po-modal-icon { width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; }
+.po-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.po-modal-icon--danger  { background: var(--danger-bg);  color: var(--danger); }
+.po-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.po-modal-desc    { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 1rem; }
+.po-modal-note    { display: flex; align-items: flex-start; gap: 0.5rem; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; line-height: 1.5; text-align: left; }
+.po-modal-note--info    { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.po-modal-note--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+/* Field */
+.po-field { text-align: left; margin-bottom: 0.875rem; }
+.po-field-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.po-textarea { width: 100%; padding: 0.75rem; border: 1.5px solid var(--rule); border-radius: 9px; font-size: 0.875rem; font-family: inherit; color: var(--ink); background: var(--surface); outline: none; resize: vertical; transition: border-color 0.15s; }
+.po-textarea:focus { border-color: var(--brand); background: var(--white); }
+
+/* Buttons */
+.po-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.po-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.po-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.po-btn--success { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 3px 10px rgba(5,150,105,0.25); }
+.po-btn--danger  { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; box-shadow: 0 3px 10px rgba(220,38,38,0.25); }
+
+/* Loading */
+.po-loading { display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 2.5rem; font-size: 0.9rem; color: var(--ink-3); }
+.po-loading i { color: var(--brand); font-size: 1.2rem; }
+
+/* Officer details inside modal */
+.po-details-grid { display: grid; grid-template-columns: auto 1fr; gap: 0.65rem 1.25rem; text-align: left; font-size: 0.875rem; }
+.po-detail-key { font-weight: 700; color: var(--ink-3); white-space: nowrap; }
+.po-detail-val { color: var(--ink-2); }
+
+/* Toast */
+.po-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.po-toast-inner { display: flex; align-items: center; gap: 0.75rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 260px; }
+.po-toast-inner i { font-size: 1rem; flex-shrink: 0; }
+.po-toast-title { font-weight: 700; font-size: 0.875rem; }
+.po-toast-msg   { font-size: 0.8rem; opacity: 0.8; margin-top: 1px; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(60px); } }
+.row-deleted { animation: fadeOut 0.3s ease-out forwards; }
+
+/* Responsive */
+@media (max-width: 900px) { .po-filters { gap: 0.5rem; } .po-select { min-width: 120px; } }
+@media (max-width: 600px) { .po-wrapper { padding: 1rem; } .po-topbar { flex-direction: column; align-items: flex-start; } }
+</style>
+
+<script>
+let currentOfficerId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    ['searchInput','statusFilter','dateFilter','emailTypeFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(id === 'searchInput' ? 'keyup' : 'change', filterTable);
+    });
+});
+
+function filterTable() {
+    const search    = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const status    = document.getElementById('statusFilter')?.value || 'all';
+    const date      = document.getElementById('dateFilter')?.value || 'all';
+    const emailType = document.getElementById('emailTypeFilter')?.value || 'all';
+    const rows      = document.querySelectorAll('#tableBody tr');
+    let count = 0;
+
+    rows.forEach(row => {
+        let show = true;
+        if (search) {
+            const name  = row.getAttribute('data-name')?.toLowerCase() || '';
+            const email = row.getAttribute('data-email')?.toLowerCase() || '';
+            const oid   = row.getAttribute('data-officer-id')?.toLowerCase() || '';
+            if (!name.includes(search) && !email.includes(search) && !oid.includes(search)) show = false;
+        }
+        if (show && status !== 'all' && row.getAttribute('data-status') !== status) show = false;
+        if (show && emailType !== 'all' && row.getAttribute('data-email-type') !== emailType) show = false;
+        if (show && date !== 'all') {
+            const rd = new Date(row.getAttribute('data-created')); rd.setHours(0,0,0,0);
+            const td = new Date(); td.setHours(0,0,0,0);
+            if (date === 'today' && rd.getTime() !== td.getTime()) show = false;
+            if (date === 'yesterday') { const y=new Date(td); y.setDate(y.getDate()-1); if(rd.getTime()!==y.getTime()) show=false; }
+            if (date === 'last7days') { const d=new Date(td); d.setDate(d.getDate()-7); if(rd<d) show=false; }
+            if (date === 'last30days'){ const d=new Date(td); d.setDate(d.getDate()-30); if(rd<d) show=false; }
+        }
+        row.style.display = show ? '' : 'none';
+        if (show) count++;
+    });
+
+    document.getElementById('resultCount').textContent = count;
+    updateActiveFilters();
+
+    const tbody = document.getElementById('tableBody');
+    let nr = document.getElementById('noResultsRow');
+    if (count === 0 && rows.length > 0) {
+        if (!nr) {
+            nr = document.createElement('tr'); nr.id = 'noResultsRow';
+            nr.innerHTML = `<td colspan="10" style="text-align:center;padding:3rem;color:var(--ink-3);">
+                <div style="font-size:1.5rem;margin-bottom:0.5rem;"><i class="fas fa-search"></i></div>
+                <div style="font-weight:700;">No results found</div>
+                <div style="font-size:0.8rem;margin-top:0.25rem;">Try adjusting your filters</div>
+            </td>`;
+            tbody.appendChild(nr);
+        }
+    } else if (nr) nr.remove();
+}
+
+function updateActiveFilters() {
+    const filters = [];
+    const s = document.getElementById('searchInput')?.value;
+    const st = document.getElementById('statusFilter')?.value;
+    const dt = document.getElementById('dateFilter')?.value;
+    const et = document.getElementById('emailTypeFilter')?.value;
+    const dateLabels = { today:'Today', yesterday:'Yesterday', last7days:'Last 7 Days', last30days:'Last 30 Days' };
+    if (s)  filters.push(`Search: "${s}"`);
+    if (st && st !== 'all') filters.push(`Status: ${st.charAt(0).toUpperCase()+st.slice(1)}`);
+    if (dt && dt !== 'all') filters.push(`Date: ${dateLabels[dt]}`);
+    if (et && et !== 'all') filters.push(`Email: ${et.charAt(0).toUpperCase()+et.slice(1)}`);
+    const c = document.getElementById('activeFilters');
+    c.innerHTML = filters.length ? `<i class="fas fa-filter"></i> Active: ${filters.join(' · ')} <a href="#" class="po-filter-clear-link" onclick="clearFilters();return false;">Clear all</a>` : '';
+}
+
+function clearFilters() {
+    ['searchInput','statusFilter','dateFilter','emailTypeFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = el.tagName === 'SELECT' ? 'all' : '';
+    });
+    filterTable();
+}
+
+let sortDir = {};
+function sortTable(col) {
+    const tbody = document.getElementById('tableBody');
+    const rows  = Array.from(tbody.querySelectorAll('tr:not(#noResultsRow)'));
+    sortDir[col] = !sortDir[col];
+    rows.sort((a,b) => {
+        const av = col===1 ? a.getAttribute('data-name') : a.getAttribute('data-created') || '';
+        const bv = col===1 ? b.getAttribute('data-name') : b.getAttribute('data-created') || '';
+        return sortDir[col] ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+['approveModal','denyModal','viewModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', function(e) { if(e.target===this) closeModal(id); });
+});
+
+function showApproveModal(id) { currentOfficerId = id; document.getElementById('approveModal').style.display = 'flex'; }
+function showDenyModal(id)    { currentOfficerId = id; document.getElementById('denyReason').value = ''; document.getElementById('denyModal').style.display = 'flex'; }
+
+function viewDetails(officerId) {
+    document.getElementById('officerDetails').innerHTML = `<div class="po-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading officer details...</span></div>`;
+    document.getElementById('viewModal').style.display = 'flex';
+    fetch(`/admin/api/pending-officers/${officerId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const o = data.officer;
+                document.getElementById('officerDetails').innerHTML = `
+                    <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--rule);">
+                        <img src="https://ui-avatars.com/api/?name=${o.first_name}+${o.last_name}&background=1a3a5c&color=fff&size=80" style="width:72px;height:72px;border-radius:50%;border:3px solid var(--rule);">
+                        <div>
+                            <div style="font-size:1.1rem;font-weight:800;color:var(--ink);">${o.first_name} ${o.last_name}</div>
+                            <div style="font-size:0.8rem;color:var(--ink-3);margin-top:3px;">${o.email}</div>
+                            <span class="po-pill ${data.email_type==='government'?'po-pill--gov':'po-pill--personal'}" style="margin-top:6px;display:inline-flex;">
+                                ${data.email_type==='government'?'<i class="fas fa-building"></i> Government':'<i class="fas fa-user"></i> Personal'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="po-details-grid">
+                        <span class="po-detail-key">Phone</span><span class="po-detail-val">${o.phone}</span>
+                        <span class="po-detail-key">Officer ID</span><span class="po-detail-val"><span class="po-id-tag">${o.officer_id}</span></span>
+                        <span class="po-detail-key">Department</span><span class="po-detail-val">${o.department}</span>
+                        <span class="po-detail-key">Province</span><span class="po-detail-val">${o.province}</span>
+                        <span class="po-detail-key">District</span><span class="po-detail-val">${o.district}</span>
+                        <span class="po-detail-key">Sector</span><span class="po-detail-val">${o.sector}</span>
+                        <span class="po-detail-key">Cell</span><span class="po-detail-val">${o.cell}</span>
+                        <span class="po-detail-key">Village</span><span class="po-detail-val">${o.village}</span>
+                        <span class="po-detail-key">Registered</span><span class="po-detail-val">${data.created_at}</span>
+                    </div>`;
+            } else {
+                document.getElementById('officerDetails').innerHTML = `<div class="po-modal-note po-modal-note--warning"><i class="fas fa-exclamation-circle"></i> Error loading officer details</div>`;
+            }
+        })
+        .catch(() => { document.getElementById('officerDetails').innerHTML = `<div class="po-modal-note po-modal-note--warning"><i class="fas fa-exclamation-circle"></i> Failed to load officer details</div>`; });
+}
+
+document.getElementById('confirmApproveBtn')?.addEventListener('click', function() {
+    if (!currentOfficerId) return;
+    const btn = this; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
+    fetch(`/admin/api/pending-officers/${currentOfficerId}/approve`, { method:'POST', headers:{'Content-Type':'application/json'} })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { closeModal('approveModal'); showToast('success','Approved','Officer approved and can now log in.'); setTimeout(()=>location.reload(),2000); }
+            else { showToast('danger','Error',data.error); btn.disabled=false; btn.innerHTML='<i class="fas fa-check"></i> Approve Officer'; }
+        }).catch(()=>{ showToast('danger','Error','Failed to approve officer'); btn.disabled=false; btn.innerHTML='<i class="fas fa-check"></i> Approve Officer'; });
+});
+
+document.getElementById('confirmDenyBtn')?.addEventListener('click', function() {
+    if (!currentOfficerId) return;
+    const reason = document.getElementById('denyReason').value.trim();
+    if (!reason) { showToast('danger','Error','Please provide a reason for denial'); return; }
+    const btn = this; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    fetch(`/admin/api/pending-officers/${currentOfficerId}/deny`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({reason}) })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { closeModal('denyModal'); showToast('warning','Denied','Officer has been notified of the denial.'); setTimeout(()=>location.reload(),2000); }
+            else { showToast('danger','Error',data.error); btn.disabled=false; btn.innerHTML='<i class="fas fa-times"></i> Deny Registration'; }
+        }).catch(()=>{ showToast('danger','Error','Failed to deny registration'); btn.disabled=false; btn.innerHTML='<i class="fas fa-times"></i> Deny Registration'; });
+});
+
+function refreshList() { location.reload(); }
+
+function showToast(type, title, message) {
+    const t = document.getElementById('po-toast');
+    const colors = { success:'#059669', danger:'#dc2626', warning:'#d97706' };
+    const icons  = { success:'fas fa-check-circle', danger:'fas fa-exclamation-circle', warning:'fas fa-exclamation-triangle' };
+    t.querySelector('.po-toast-inner').style.background = colors[type] || colors.success;
+    document.getElementById('po-toast-icon').className = icons[type] || icons.success;
+    document.getElementById('po-toast-title').textContent = title;
+    document.getElementById('po-toast-msg').textContent   = message;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+function exportToCSV() {
+    const rows = [['Name','Email','Phone','Sector','Officer ID','Department','Email Type','Registered','Status']];
+    document.querySelectorAll('#tableBody tr:not(#noResultsRow)').forEach(row => {
+        if (row.style.display !== 'none') rows.push([
+            `"${row.getAttribute('data-name')}"`, `"${row.getAttribute('data-email')}"`,
+            `"${row.cells[2]?.textContent.trim()}"`, `"${row.cells[3]?.textContent.trim()}"`,
+            `"${row.getAttribute('data-officer-id')}"`, `"${row.cells[5]?.textContent.trim()}"`,
+            `"${row.cells[6]?.textContent.trim()}"`, `"${row.cells[7]?.textContent.trim()}"`,
+            `"${row.getAttribute('data-status')}"`
+        ]);
+    });
+    if (rows.length <= 1) { showToast('warning','Empty','No records to export'); return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')], {type:'text/csv'}));
+    a.download = `officers-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+function printReport() { window.print(); }
+</script>
+{% endblock %}

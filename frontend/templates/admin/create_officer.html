@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="co-wrapper">
+
+    <!-- Top Bar -->
+    <div class="co-topbar">
+        <div class="co-topbar-left">
+            <a href="/admin/dashboard" class="co-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="co-topbar-title"><i class="fas fa-user-plus"></i> Create New Officer</div>
+                <div class="co-topbar-sub">Add a new sector officer to the system</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="co-body">
+
+        <!-- LEFT — Form -->
+        <div class="co-main">
+            <form id="createOfficerForm">
+
+                <!-- Personal Details -->
+                <div class="co-card">
+                    <div class="co-card-header">
+                        <i class="fas fa-user"></i> Personal Details
+                    </div>
+                    <div class="co-card-body">
+                        <div class="co-row-2">
+                            <div class="co-field">
+                                <label class="co-label">First Name <span class="co-req">*</span></label>
+                                <input type="text" class="co-input" id="first_name" name="first_name"
+                                       placeholder="First name" required>
+                            </div>
+                            <div class="co-field">
+                                <label class="co-label">Last Name <span class="co-req">*</span></label>
+                                <input type="text" class="co-input" id="last_name" name="last_name"
+                                       placeholder="Last name" required>
+                            </div>
+                        </div>
+                        <div class="co-row-2">
+                            <div class="co-field">
+                                <label class="co-label">Email Address <span class="co-req">*</span></label>
+                                <div class="co-input-wrap">
+                                    <i class="fas fa-envelope co-input-icon"></i>
+                                    <input type="email" class="co-input co-input--icon" id="email" name="email"
+                                           placeholder="officer@example.com" required>
+                                </div>
+                            </div>
+                            <div class="co-field">
+                                <label class="co-label">Phone Number</label>
+                                <div class="co-input-wrap">
+                                    <i class="fas fa-phone co-input-icon"></i>
+                                    <input type="tel" class="co-input co-input--icon" id="phone" name="phone"
+                                           placeholder="078X XXX XXX">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Officer Details -->
+                <div class="co-card">
+                    <div class="co-card-header">
+                        <i class="fas fa-id-card"></i> Officer Details
+                    </div>
+                    <div class="co-card-body">
+                        <div class="co-row-2">
+                            <div class="co-field">
+                                <label class="co-label">Officer ID / Badge Number</label>
+                                <div class="co-input-wrap">
+                                    <i class="fas fa-hashtag co-input-icon"></i>
+                                    <input type="text" class="co-input co-input--icon" id="officer_id" name="officer_id"
+                                           placeholder="e.g., RNP-2024-001">
+                                </div>
+                            </div>
+                            <div class="co-field">
+                                <label class="co-label">Department / Unit</label>
+                                <div class="co-input-wrap">
+                                    <i class="fas fa-building co-input-icon"></i>
+                                    <input type="text" class="co-input co-input--icon" id="department" name="department"
+                                           placeholder="e.g., CID, Community Policing">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Location -->
+                <div class="co-card">
+                    <div class="co-card-header">
+                        <i class="fas fa-map-marker-alt"></i> Assigned Location
+                    </div>
+                    <div class="co-card-body">
+                        <div class="co-row-2">
+                            <div class="co-field">
+                                <label class="co-label">Province</label>
+                                <select class="co-input co-select" id="province" name="province">
+                                    <option value="Kigali City">Kigali City</option>
+                                    <option value="Eastern">Eastern Province</option>
+                                    <option value="Southern">Southern Province</option>
+                                    <option value="Western">Western Province</option>
+                                    <option value="Northern">Northern Province</option>
+                                </select>
+                            </div>
+                            <div class="co-field">
+                                <label class="co-label">District</label>
+                                <input type="text" class="co-input" id="district" name="district"
+                                       placeholder="e.g., Gasabo">
+                            </div>
+                        </div>
+                        <div class="co-row-3">
+                            <div class="co-field">
+                                <label class="co-label">Sector <span class="co-req">*</span></label>
+                                <input type="text" class="co-input" id="sector" name="sector"
+                                       placeholder="e.g., Remera" required>
+                                <div class="co-hint">Primary sector this officer will handle</div>
+                            </div>
+                            <div class="co-field">
+                                <label class="co-label">Cell</label>
+                                <input type="text" class="co-input" id="cell" name="cell"
+                                       placeholder="e.g., Gishushu">
+                            </div>
+                            <div class="co-field">
+                                <label class="co-label">Village</label>
+                                <input type="text" class="co-input" id="village" name="village"
+                                       placeholder="e.g., Amahoro">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="co-card">
+                    <div class="co-card-header">
+                        <i class="fas fa-toggle-on"></i> Account Settings
+                    </div>
+                    <div class="co-card-body">
+                        <div class="co-toggle-row">
+                            <div>
+                                <div class="co-toggle-label">Active Account</div>
+                                <div class="co-toggle-sub">Officer can log in immediately after creation</div>
+                            </div>
+                            <label class="co-toggle">
+                                <input type="checkbox" id="is_active" checked>
+                                <span class="co-toggle-track"></span>
+                            </label>
+                        </div>
+                        <div class="co-info-note">
+                            <i class="fas fa-key"></i>
+                            <div>
+                                <strong>Auto-generated Password:</strong> A secure password will be generated automatically and shown once after creation. The officer can change it after first login.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="co-actions">
+                    <a href="/admin/dashboard" class="co-btn co-btn--ghost">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="co-btn co-btn--primary" id="createBtn">
+                        <i class="fas fa-user-plus"></i> Create Officer Account
+                    </button>
+                </div>
+
+                <div id="message" style="display:none; margin-top:1rem;"></div>
+
+            </form>
+        </div>
+
+        <!-- RIGHT — Sidebar -->
+        <div class="co-sidebar">
+
+            <div class="co-card">
+                <div class="co-card-header">
+                    <i class="fas fa-lightbulb"></i> Quick Tips
+                </div>
+                <div class="co-card-body">
+                    <div class="co-tips">
+                        <div class="co-tip">
+                            <div class="co-tip-icon"><i class="fas fa-check"></i></div>
+                            <div>
+                                <div class="co-tip-title">Required Fields</div>
+                                <div class="co-tip-desc">First Name, Last Name, Email, and Sector are mandatory.</div>
+                            </div>
+                        </div>
+                        <div class="co-tip">
+                            <div class="co-tip-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="co-tip-title">Email Format</div>
+                                <div class="co-tip-desc">Use official .gov.rw emails when possible for verification.</div>
+                            </div>
+                        </div>
+                        <div class="co-tip">
+                            <div class="co-tip-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <div class="co-tip-title">Sector Assignment</div>
+                                <div class="co-tip-desc">Assign officers to their primary sector of responsibility.</div>
+                            </div>
+                        </div>
+                        <div class="co-tip">
+                            <div class="co-tip-icon"><i class="fas fa-key"></i></div>
+                            <div>
+                                <div class="co-tip-title">Temporary Password</div>
+                                <div class="co-tip-desc">Shown once after creation — save it before closing.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="co-card">
+                <div class="co-card-header">
+                    <i class="fas fa-shield-alt"></i> Officer Responsibilities
+                </div>
+                <div class="co-card-body">
+                    <p class="co-resp-intro">Sector officers will be able to:</p>
+                    <div class="co-resp-list">
+                        <div class="co-resp-item"><i class="fas fa-file-alt"></i> View assigned reports in their sector</div>
+                        <div class="co-resp-item"><i class="fas fa-sync-alt"></i> Update report status and progress</div>
+                        <div class="co-resp-item"><i class="fas fa-comments"></i> Add comments and case updates</div>
+                        <div class="co-resp-item"><i class="fas fa-comment-dots"></i> Communicate with citizens</div>
+                        <div class="co-resp-item"><i class="fas fa-chart-bar"></i> Generate sector reports</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="co-modal-overlay" id="successModal" style="display:none;">
+    <div class="co-modal">
+        <div class="co-modal-header co-modal-header--success">
+            <div class="co-modal-title"><i class="fas fa-check-circle"></i> Officer Created Successfully</div>
+        </div>
+        <div class="co-modal-body">
+            <div class="co-success-avatar" id="successAvatar"></div>
+            <div class="co-success-name" id="successName"></div>
+            <div class="co-success-email" id="successEmail"></div>
+            <div class="co-password-box">
+                <div class="co-password-label"><i class="fas fa-key"></i> Temporary Password</div>
+                <div class="co-password-value" id="successPassword"></div>
+                <div class="co-password-note">Save this password — it will not be shown again.</div>
+            </div>
+            <div class="co-modal-note co-modal-note--info">
+                <i class="fas fa-info-circle"></i>
+                The officer can log in with this email and password, then change it in their profile settings.
+            </div>
+        </div>
+        <div class="co-modal-footer">
+            <button class="co-btn co-btn--ghost" onclick="closeSuccessModal()"><i class="fas fa-times"></i> Close</button>
+            <a href="/admin/dashboard" class="co-btn co-btn--primary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="co-toast" class="co-toast" style="display:none;">
+    <div class="co-toast-inner">
+        <i id="co-toast-icon" class="fas fa-check-circle"></i>
+        <span id="co-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --warning-bg: #fffbeb;
+    --warning:    #92400e;
+    --warning-border: #fde68a;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.co-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.co-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.co-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.co-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.co-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.co-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.co-topbar-title i { color: var(--brand); }
+.co-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Body layout ──────────── */
+.co-body { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.co-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.co-card:last-child { margin-bottom: 0; }
+.co-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.co-card-header i { font-size: 0.75rem; }
+.co-card-body { padding: 1.25rem; }
+
+/* ── Form fields ──────────── */
+.co-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 0.875rem; }
+.co-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+.co-field { display: flex; flex-direction: column; }
+
+.co-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.co-req   { color: var(--accent); }
+.co-hint  { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.3rem; }
+
+.co-input-wrap { position: relative; }
+.co-input-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--ink-3); pointer-events: none; }
+
+.co-input {
+    width: 100%; padding: 0.75rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink);
+    background: var(--surface); outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.co-input--icon { padding-left: 2.3rem; }
+.co-input::placeholder { color: #8fa8c0; }
+.co-input:focus {
+    border-color: var(--brand); background: var(--white);
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
+}
+
+.co-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    padding-right: 2.25rem;
+    cursor: pointer;
+}
+
+/* Toggle switch */
+.co-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 0; margin-bottom: 1rem;
+    border-bottom: 1px solid var(--rule);
+}
+.co-toggle-label { font-size: 0.9rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.co-toggle-sub   { font-size: 0.78rem; color: var(--ink-3); }
+
+.co-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.co-toggle input { opacity: 0; width: 0; height: 0; }
+.co-toggle-track {
+    position: absolute; inset: 0;
+    background: var(--rule); border-radius: 999px;
+    cursor: pointer; transition: background 0.2s;
+}
+.co-toggle-track::before {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; left: 3px; top: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.co-toggle input:checked + .co-toggle-track { background: var(--brand); }
+.co-toggle input:checked + .co-toggle-track::before { transform: translateX(20px); }
+
+/* Info note */
+.co-info-note {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    background: var(--info-bg); border: 1px solid var(--info-border);
+    border-radius: 9px; padding: 0.75rem 0.875rem;
+    font-size: 0.825rem; color: var(--info); line-height: 1.5;
+}
+.co-info-note i { flex-shrink: 0; margin-top: 1px; }
+
+/* Form actions */
+.co-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; margin-top: 0.25rem; }
+
+/* Buttons */
+.co-btn { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.9rem; font-weight: 600; font-family: inherit; padding: 0.75rem 1.4rem; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.co-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.co-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(15,36,64,0.22); }
+.co-btn--primary:hover { color: #fff; }
+.co-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* Error/success message */
+.co-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.85rem; }
+.co-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.co-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+/* ── Sidebar ──────────────── */
+.co-tips { display: flex; flex-direction: column; gap: 1rem; }
+.co-tip  { display: flex; align-items: flex-start; gap: 0.75rem; }
+.co-tip-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--info-bg); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; }
+.co-tip-title { font-size: 0.825rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.co-tip-desc  { font-size: 0.775rem; color: var(--ink-3); line-height: 1.5; }
+
+.co-resp-intro { font-size: 0.82rem; color: var(--ink-3); margin-bottom: 0.875rem; }
+.co-resp-list  { display: flex; flex-direction: column; gap: 0.6rem; }
+.co-resp-item  { display: flex; align-items: center; gap: 0.6rem; font-size: 0.825rem; color: var(--ink-2); }
+.co-resp-item i { width: 16px; text-align: center; color: var(--brand); font-size: 0.75rem; }
+
+/* ── Modal ────────────────── */
+.co-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.co-modal { background: var(--white); border-radius: 18px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+.co-modal-header { padding: 1.1rem 1.25rem; }
+.co-modal-header--success { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); }
+.co-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+.co-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.co-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.co-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 1rem; }
+.co-modal-note--info { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); }
+
+.co-success-avatar { width: 68px; height: 68px; border-radius: 50%; background: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; margin: 0 auto 0.875rem; font-weight: 700; }
+.co-success-name  { font-size: 1.1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.2rem; }
+.co-success-email { font-size: 0.825rem; color: var(--ink-3); margin-bottom: 1.25rem; }
+
+.co-password-box { background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 10px; padding: 1rem; margin-bottom: 0; }
+.co-password-label { font-size: 0.75rem; font-weight: 700; color: var(--warning); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem; }
+.co-password-value { font-family: monospace; font-size: 1.1rem; font-weight: 800; color: var(--ink); background: var(--white); border: 1px solid var(--warning-border); border-radius: 7px; padding: 0.6rem 1rem; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+.co-password-note  { font-size: 0.75rem; color: var(--warning); }
+
+/* Toast */
+.co-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.co-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .co-body { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .co-wrapper { padding: 1rem; } .co-row-2 { grid-template-columns: 1fr; } .co-row-3 { grid-template-columns: 1fr; } .co-actions { flex-direction: column; } .co-btn { width: 100%; justify-content: center; } }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('createOfficerForm');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+            first_name:  document.getElementById('first_name').value,
+            last_name:   document.getElementById('last_name').value,
+            email:       document.getElementById('email').value,
+            phone:       document.getElementById('phone').value || '',
+            officer_id:  document.getElementById('officer_id').value || '',
+            department:  document.getElementById('department').value || '',
+            province:    document.getElementById('province').value || 'Kigali City',
+            district:    document.getElementById('district').value || '',
+            sector:      document.getElementById('sector').value,
+            cell:        document.getElementById('cell').value || '',
+            village:     document.getElementById('village').value || '',
+            is_active:   document.getElementById('is_active').checked
+        };
+
+        const btn  = document.getElementById('createBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/admin/api/create-officer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                showSuccessModal(data.officer);
+                form.reset();
+            } else {
+                showMessage('Error: ' + (data.error || 'Failed to create officer'), 'danger');
+                btn.innerHTML = orig; btn.disabled = false;
+            }
+        } catch (err) {
+            showMessage('Network error. Please try again.', 'danger');
+            btn.innerHTML = orig; btn.disabled = false;
+        }
+    });
+
+    function showSuccessModal(officer) {
+        const initials = (officer.name || '').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+        document.getElementById('successAvatar').textContent   = initials;
+        document.getElementById('successName').textContent     = officer.name;
+        document.getElementById('successEmail').textContent    = officer.email;
+        document.getElementById('successPassword').textContent = officer.password;
+        document.getElementById('successModal').style.display  = 'flex';
+        document.getElementById('createBtn').innerHTML = '<i class="fas fa-user-plus"></i> Create Officer Account';
+        document.getElementById('createBtn').disabled  = false;
+    }
+
+    function showMessage(text, type) {
+        const div = document.getElementById('message');
+        const icons = { danger:'exclamation-circle', success:'check-circle' };
+        div.innerHTML = `<div class="co-msg co-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+        div.style.display = 'block';
+        div.scrollIntoView({ behavior:'smooth' });
+        setTimeout(() => { div.style.display = 'none'; }, 5000);
+    }
+});
+
+function closeSuccessModal() {
+    document.getElementById('successModal').style.display = 'none';
+}
+
+document.getElementById('successModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSuccessModal();
+});
+</script>
+{% endblock %}

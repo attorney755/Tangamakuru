@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cd-wrapper">
+
+    <!-- Welcome Header -->
+    <div class="cd-header">
+        <div class="cd-header-left">
+            <div class="cd-header-avatar">
+                {{ user.first_name[0] }}{{ user.last_name[0] if user.last_name else '' }}
+            </div>
+            <div>
+                <div class="cd-header-greeting">Good day, {{ user.first_name }}!</div>
+                <div class="cd-header-sub">Here's an overview of your submitted reports</div>
+            </div>
+        </div>
+        <a href="/submit-report" class="cd-new-btn">
+            <i class="fas fa-plus-circle"></i> New Report
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="cd-stats">
+        <div class="cd-stat">
+            <div class="cd-stat-left">
+                <div class="cd-stat-icon cd-stat-icon--total"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <div class="cd-stat-num">{{ stats.total_reports }}</div>
+                    <div class="cd-stat-label">Total Reports</div>
+                </div>
+            </div>
+            <div class="cd-stat-bar cd-stat-bar--total"></div>
+        </div>
+        <div class="cd-stat">
+            <div class="cd-stat-left">
+                <div class="cd-stat-icon cd-stat-icon--pending"><i class="fas fa-clock"></i></div>
+                <div>
+                    <div class="cd-stat-num">{{ stats.pending }}</div>
+                    <div class="cd-stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="cd-stat-bar cd-stat-bar--pending"></div>
+        </div>
+        <div class="cd-stat">
+            <div class="cd-stat-left">
+                <div class="cd-stat-icon cd-stat-icon--progress"><i class="fas fa-sync-alt"></i></div>
+                <div>
+                    <div class="cd-stat-num">{{ stats.in_progress }}</div>
+                    <div class="cd-stat-label">In Progress</div>
+                </div>
+            </div>
+            <div class="cd-stat-bar cd-stat-bar--progress"></div>
+        </div>
+        <div class="cd-stat">
+            <div class="cd-stat-left">
+                <div class="cd-stat-icon cd-stat-icon--resolved"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="cd-stat-num">{{ stats.resolved }}</div>
+                    <div class="cd-stat-label">Resolved</div>
+                </div>
+            </div>
+            <div class="cd-stat-bar cd-stat-bar--resolved"></div>
+        </div>
+    </div>
+
+    <!-- Reports Card -->
+    <div class="cd-card">
+        <div class="cd-card-header">
+            <div class="cd-card-title"><i class="fas fa-file-alt"></i> Recent Reports</div>
+            <a href="/reports" class="cd-view-all">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        {% if reports %}
+        <div class="cd-table-wrap">
+            <table class="cd-table" id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td><span class="cd-report-id">{{ report.report_id }}</span></td>
+                        <td class="cd-report-title">{{ report.title }}</td>
+                        <td class="cd-category">{{ report.category }}</td>
+                        <td>
+                            <span class="cd-status cd-status--{{ report.status|lower|replace(' ', '_') }}">
+                                {% if report.status == 'pending' %}<i class="fas fa-clock"></i>
+                                {% elif report.status == 'in_progress' %}<i class="fas fa-spinner"></i>
+                                {% elif report.status == 'resolved' %}<i class="fas fa-check-circle"></i>
+                                {% endif %}
+                                {{ report.status|replace('_',' ')|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="cd-priority cd-priority--{{ report.priority|lower }}">
+                                {{ report.priority|title }}
+                            </span>
+                        </td>
+                        <td class="cd-date"><i class="far fa-calendar-alt"></i> {{ report.date }}</td>
+                        <td>
+                            <a href="/view-report/{{ report.id }}" class="cd-view-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if reports|length > 3 %}
+        <div class="cd-scroll-hint">
+            <i class="fas fa-mouse"></i> Scroll to see more &nbsp;·&nbsp;
+            <a href="/reports">View all {{ reports|length }} reports</a>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="cd-empty">
+            <div class="cd-empty-illustration">
+                <div class="cd-empty-circle cd-empty-circle--outer"></div>
+                <div class="cd-empty-circle cd-empty-circle--inner"></div>
+                <i class="fas fa-file-alt cd-empty-icon-main"></i>
+            </div>
+            <div class="cd-empty-title">No Reports Yet</div>
+            <p class="cd-empty-sub">You haven't submitted any reports yet. Help keep your community safe by reporting incidents.</p>
+            <a href="/submit-report" class="cd-empty-btn">
+                <i class="fas fa-plus-circle"></i> Submit Your First Report
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Info Strip -->
+    <div class="cd-info-strip">
+        <div class="cd-info-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>Your reports are <strong>confidential</strong> and handled securely</span>
+        </div>
+        <div class="cd-info-sep"></div>
+        <div class="cd-info-item">
+            <i class="fas fa-bell"></i>
+            <span>You'll be <strong>notified</strong> when your report status changes</span>
+        </div>
+        <div class="cd-info-sep"></div>
+        <div class="cd-info-item">
+            <i class="fas fa-headset"></i>
+            <span>Need help? Call emergency: <strong>112</strong></span>
+        </div>
+    </div>
+
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.cd-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Welcome Header ───────── */
+.cd-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+    border-radius: 18px; padding: 1.75rem 2rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+}
+.cd-header::after {
+    content: '';
+    position: absolute; right: -40px; top: -40px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); pointer-events: none;
+}
+.cd-header-left { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
+.cd-header-avatar {
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.5px;
+}
+.cd-header-greeting { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.cd-header-sub      { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 3px; }
+.cd-new-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--accent); color: #fff;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.7rem 1.4rem; border-radius: 10px; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+    transition: opacity 0.15s, transform 0.15s;
+    position: relative; z-index: 1; white-space: nowrap;
+}
+.cd-new-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Stats ────────────────── */
+.cd-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.cd-stat {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    transition: transform 0.15s, box-shadow 0.15s; overflow: hidden;
+    position: relative;
+}
+.cd-stat:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.07); }
+.cd-stat-left { display: flex; align-items: center; gap: 0.875rem; }
+
+.cd-stat-icon {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+}
+.cd-stat-icon--total    { background: var(--info-bg);    color: var(--info); }
+.cd-stat-icon--pending  { background: var(--warning-bg); color: var(--warning); }
+.cd-stat-icon--progress { background: var(--info-bg);    color: #0891b2; }
+.cd-stat-icon--resolved { background: var(--success-bg); color: var(--success); }
+
+.cd-stat-num   { font-size: 1.75rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.cd-stat-label { font-size: 0.72rem; color: var(--ink-3); font-weight: 500; margin-top: 2px; }
+
+/* Colored bottom bar */
+.cd-stat-bar { height: 3px; border-radius: 999px; margin-top: 0; }
+.cd-stat-bar--total    { background: var(--info); }
+.cd-stat-bar--pending  { background: #d97706; }
+.cd-stat-bar--progress { background: #0891b2; }
+.cd-stat-bar--resolved { background: #059669; }
+
+/* ── Reports Card ─────────── */
+.cd-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; margin-bottom: 1.1rem; }
+
+.cd-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+}
+.cd-card-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; }
+.cd-card-title i { font-size: 0.8rem; }
+.cd-view-all {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--brand);
+    text-decoration: none; border-bottom: 1.5px solid transparent;
+    transition: border-color 0.15s;
+}
+.cd-view-all:hover { border-bottom-color: var(--brand); color: var(--brand); }
+
+/* ── Table ────────────────── */
+.cd-table-wrap {
+    overflow-y: auto; overflow-x: auto;
+    max-height: 300px;
+}
+.cd-table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+.cd-table-wrap::-webkit-scrollbar-track { background: var(--surface); }
+.cd-table-wrap::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+.cd-table { width: 100%; border-collapse: collapse; }
+.cd-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); position: sticky; top: 0; z-index: 1; }
+.cd-table th { padding: 0.7rem 1rem; font-size: 0.69rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.cd-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.cd-table tbody tr:last-child td { border-bottom: none; }
+.cd-table tbody tr:hover { background: #f8fafb; }
+
+.cd-report-id { font-family: monospace; font-size: 0.75rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.2rem 0.55rem; border-radius: 5px; }
+.cd-report-title { font-size: 0.875rem; font-weight: 600; color: var(--ink); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cd-category { font-size: 0.8rem; color: var(--ink-3); }
+.cd-date { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Status */
+.cd-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+.cd-status--pending     { background: var(--warning-bg); color: var(--warning); }
+.cd-status--in_progress { background: var(--info-bg);    color: var(--info); }
+.cd-status--resolved    { background: var(--success-bg); color: var(--success); }
+
+/* Priority */
+.cd-priority { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 5px; white-space: nowrap; }
+.cd-priority--urgent { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); animation: urgentPulse 2s infinite; }
+.cd-priority--high   { background: #fef3c7;            color: #b45309;       border: 1px solid #fde68a; }
+.cd-priority--medium { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.cd-priority--low    { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+@keyframes urgentPulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+
+.cd-view-btn {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--info-bg); color: var(--info);
+    border: 1px solid var(--info-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; text-decoration: none;
+    transition: opacity 0.15s, transform 0.15s;
+}
+.cd-view-btn:hover { opacity: 0.8; transform: translateY(-1px); color: var(--info); }
+
+/* Scroll hint */
+.cd-scroll-hint {
+    text-align: center; padding: 0.6rem 1rem;
+    font-size: 0.75rem; color: var(--ink-3);
+    border-top: 1px solid var(--rule); background: var(--surface);
+}
+.cd-scroll-hint a { color: var(--brand); font-weight: 600; text-decoration: none; }
+.cd-scroll-hint a:hover { text-decoration: underline; }
+
+/* ── Empty State ──────────── */
+.cd-empty { text-align: center; padding: 3.5rem 2rem; }
+.cd-empty-illustration { position: relative; width: 90px; height: 90px; margin: 0 auto 1.25rem; }
+.cd-empty-circle { position: absolute; border-radius: 50%; }
+.cd-empty-circle--outer { width: 90px; height: 90px; background: var(--info-bg); opacity: 0.5; }
+.cd-empty-circle--inner { width: 60px; height: 60px; background: var(--info-bg); top: 15px; left: 15px; }
+.cd-empty-icon-main { position: absolute; font-size: 1.75rem; color: var(--brand); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.cd-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.4rem; }
+.cd-empty-sub   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.6; margin-bottom: 1.25rem; max-width: 380px; margin-left: auto; margin-right: auto; }
+.cd-empty-btn {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; font-size: 0.9rem; font-weight: 600;
+    padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(15,36,64,0.22);
+    transition: opacity 0.15s, transform 0.15s;
+}
+.cd-empty-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Info Strip ───────────── */
+.cd-info-strip {
+    display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 0.875rem 1.5rem;
+    flex-wrap: wrap;
+}
+.cd-info-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--ink-3); }
+.cd-info-item i { color: var(--brand); font-size: 0.78rem; }
+.cd-info-item strong { color: var(--ink-2); }
+.cd-info-sep { width: 1px; height: 20px; background: var(--rule); flex-shrink: 0; }
+
+/* Responsive */
+@media (max-width: 900px) { .cd-stats { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px) { .cd-wrapper { padding: 1rem; } .cd-header { flex-direction: column; align-items: flex-start; padding: 1.5rem; } .cd-stats { grid-template-columns: 1fr 1fr; } .cd-info-strip { flex-direction: column; gap: 0.75rem; } .cd-info-sep { display: none; } }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide flash messages after 2.5 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                bsAlert.close();
+            }, 2500);
+        });
+    }, 500);
+
+    // Animate table rows
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(6px)';
+        row.style.transition = `opacity 0.3s ease ${index * 0.05}s, transform 0.3s ease ${index * 0.05}s`;
+        setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'translateY(0)'; }, 50);
+    });
+
+    // Sticky thead shadow on scroll
+    const wrap = document.querySelector('.cd-table-wrap');
+    if (wrap) {
+        wrap.addEventListener('scroll', function() {
+            const thead = this.querySelector('thead');
+            if (thead) thead.style.boxShadow = this.scrollTop > 0 ? '0 2px 6px rgba(0,0,0,0.08)' : 'none';
+        });
+    }
+});
+</script>
+
+{% endblock %}

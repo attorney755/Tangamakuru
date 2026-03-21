@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="sa-wrapper">
+
+    <!-- Top Bar -->
+    <div class="sa-topbar">
+        <div class="sa-topbar-left">
+            <a href="{{ url_for('super_admin.dashboard') }}" class="sa-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="sa-topbar-title"><i class="fas fa-tower-broadcast"></i> System Announcements</div>
+                <div class="sa-topbar-sub">Manage system maintenance and important notifications</div>
+            </div>
+        </div>
+        <a href="{{ url_for('super_admin.create_announcement') }}" class="sa-create-btn">
+            <i class="fas fa-plus"></i> New Announcement
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="sa-stats">
+        <div class="sa-stat-card">
+            <div class="sa-stat-icon sa-stat-icon--amber"><i class="fas fa-bullhorn"></i></div>
+            <div>
+                <div class="sa-stat-num">{{ announcements|length }}</div>
+                <div class="sa-stat-label">Total Announcements</div>
+            </div>
+        </div>
+        <div class="sa-stat-card">
+            <div class="sa-stat-icon sa-stat-icon--blue"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="sa-stat-num">{{ announcements|length }}</div>
+                <div class="sa-stat-label">Active</div>
+            </div>
+        </div>
+        <div class="sa-stat-card">
+            <div class="sa-stat-icon sa-stat-icon--green"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="sa-stat-num">—</div>
+                <div class="sa-stat-label">Total Recipients</div>
+            </div>
+        </div>
+        <div class="sa-stat-card">
+            <div class="sa-stat-icon sa-stat-icon--red"><i class="fas fa-exclamation-triangle"></i></div>
+            <div>
+                <div class="sa-stat-num">{{ announcements|selectattr('priority', 'equalto', 'urgent')|list|length }}</div>
+                <div class="sa-stat-label">Urgent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="sa-card">
+        <div class="sa-card-header">
+            <div class="sa-card-title"><i class="fas fa-list"></i> All Announcements</div>
+            <span class="sa-total-badge">{{ announcements|length }} total</span>
+        </div>
+
+        {% if announcements %}
+        <div class="sa-list">
+            {% for announcement in announcements %}
+            <div class="sa-item sa-item--{{ announcement.priority }} {% if '[SYSTEM MAINTENANCE]' in announcement.content %}sa-item--maintenance{% endif %}"
+                 data-id="{{ announcement.id }}"
+                 id="announcement-{{ announcement.id }}">
+
+                <!-- Icon -->
+                <div class="sa-icon
+                    {% if '[SYSTEM MAINTENANCE]' in announcement.content %}sa-icon--maintenance
+                    {% elif announcement.priority == 'urgent' %}sa-icon--urgent
+                    {% elif announcement.priority == 'important' %}sa-icon--important
+                    {% else %}sa-icon--normal{% endif %}">
+                    {% if '[SYSTEM MAINTENANCE]' in announcement.content %}
+                    <i class="fas fa-tools"></i>
+                    {% elif announcement.priority == 'urgent' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% elif announcement.priority == 'important' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div class="sa-content">
+                    <div class="sa-content-top">
+                        <div class="sa-title-row">
+                            <h5 class="sa-title">{{ announcement.title }}</h5>
+                            <div class="sa-badges">
+                                {% if announcement.priority == 'urgent' %}
+                                <span class="sa-pill sa-pill--urgent"><i class="fas fa-fire"></i> Urgent</span>
+                                {% elif announcement.priority == 'important' %}
+                                <span class="sa-pill sa-pill--important"><i class="fas fa-exclamation"></i> Important</span>
+                                {% endif %}
+                                {% if '[SYSTEM MAINTENANCE]' in announcement.content %}
+                                <span class="sa-pill sa-pill--maintenance"><i class="fas fa-tools"></i> Maintenance</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button class="sa-delete-btn" onclick="deleteAnnouncement({{ announcement.id }})" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="sa-meta">
+                        <span class="sa-meta-item"><i class="far fa-calendar-alt"></i> {{ announcement.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+                        <span class="sa-meta-item"><i class="fas fa-users"></i> {{ announcement.target_audience|title }}</span>
+                        {% if announcement.target_sector %}
+                        <span class="sa-meta-item"><i class="fas fa-map-marker-alt"></i> {{ announcement.target_sector }}</span>
+                        {% else %}
+                        <span class="sa-meta-item"><i class="fas fa-globe"></i> All Sectors</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="sa-body">{{ announcement.content|replace('\n', '<br>')|safe }}</div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="sa-empty">
+            <div class="sa-empty-icon"><i class="fas fa-bullhorn"></i></div>
+            <div class="sa-empty-title">No Announcements Yet</div>
+            <p class="sa-empty-sub">Create your first system announcement to notify administrators and officers.</p>
+            <a href="{{ url_for('super_admin.create_announcement') }}" class="sa-btn sa-btn--primary">
+                <i class="fas fa-plus"></i> Create Announcement
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content sa-modal">
+            <div class="modal-header sa-modal-header sa-modal-header--danger">
+                <h5 class="modal-title sa-modal-title"><i class="fas fa-trash-alt"></i> Delete Announcement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body sa-modal-body">
+                <div class="sa-modal-icon"><i class="fas fa-trash-alt"></i></div>
+                <div class="sa-modal-heading">Are you sure?</div>
+                <p class="sa-modal-desc">This announcement will be permanently deleted and cannot be recovered.</p>
+            </div>
+            <div class="modal-footer sa-modal-footer">
+                <button type="button" class="sa-btn sa-btn--ghost" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                <button type="button" class="sa-btn sa-btn--danger" id="confirmDelete"><i class="fas fa-trash-alt"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="sa-toast" class="sa-toast" style="display:none;">
+    <div class="sa-toast-inner">
+        <i id="sa-toast-icon" class="fas fa-check-circle"></i>
+        <span id="sa-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --super:      #0a1929;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --maintenance-bg:     #ecfeff;
+    --maintenance-border: #a5f3fc;
+    --maintenance-color:  #0e7490;
+    --maintenance-left:   #06b6d4;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.sa-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.sa-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.sa-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sa-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.sa-back-btn:hover { background: var(--super); border-color: var(--super); color: #fff; }
+.sa-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.sa-topbar-title i { color: var(--brand); }
+.sa-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.sa-create-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, var(--super), var(--brand));
+    color: #fff; font-size: 0.875rem; font-weight: 600;
+    padding: 0.6rem 1.25rem; border-radius: 9px; text-decoration: none;
+    box-shadow: 0 3px 10px rgba(10,25,41,0.2);
+    transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+}
+.sa-create-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Stats ────────────────── */
+.sa-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.sa-stat-card {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.sa-stat-card:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.08); }
+.sa-stat-icon { width: 44px; height: 44px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+.sa-stat-icon--amber { background: var(--warning-bg); color: var(--warning); }
+.sa-stat-icon--blue  { background: var(--info-bg);    color: var(--info); }
+.sa-stat-icon--green { background: var(--success-bg); color: var(--success); }
+.sa-stat-icon--red   { background: var(--danger-bg);  color: var(--danger); }
+.sa-stat-num   { font-size: 1.5rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.sa-stat-label { font-size: 0.72rem; color: var(--ink-3); font-weight: 500; margin-top: 3px; }
+
+/* ── Main Card ────────────── */
+.sa-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+.sa-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+}
+.sa-card-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; }
+.sa-card-title i { font-size: 0.8rem; }
+.sa-total-badge { font-size: 0.75rem; font-weight: 600; color: var(--ink-3); background: var(--white); border: 1px solid var(--rule); padding: 0.25rem 0.75rem; border-radius: 999px; }
+
+/* ── Announcement Items ───── */
+.sa-list { display: flex; flex-direction: column; }
+
+.sa-item {
+    display: flex; gap: 1.1rem; align-items: flex-start;
+    padding: 1.35rem 1.5rem;
+    border-bottom: 1px solid var(--rule);
+    border-left: 4px solid var(--rule);
+    transition: background 0.15s, transform 0.15s;
+}
+.sa-item:last-child { border-bottom: none; }
+.sa-item:hover { background: var(--surface); transform: translateX(2px); }
+.sa-item--urgent      { border-left-color: #dc2626; }
+.sa-item--important   { border-left-color: #d97706; }
+.sa-item--normal      { border-left-color: var(--brand); }
+.sa-item--maintenance { border-left-color: var(--maintenance-left); }
+
+/* Icons */
+.sa-icon { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin-top: 2px; }
+.sa-icon--urgent      { background: var(--danger-bg);      color: var(--danger); }
+.sa-icon--important   { background: var(--warning-bg);     color: var(--warning); }
+.sa-icon--normal      { background: var(--info-bg);        color: var(--info); }
+.sa-icon--maintenance { background: var(--maintenance-bg); color: var(--maintenance-color); }
+
+/* Content */
+.sa-content { flex: 1; min-width: 0; }
+.sa-content-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.sa-title-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; flex: 1; }
+.sa-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin: 0; }
+
+.sa-badges { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.sa-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; }
+.sa-pill--urgent      { background: var(--danger-bg);      color: var(--danger);             border: 1px solid var(--danger-border); }
+.sa-pill--important   { background: var(--warning-bg);     color: var(--warning);            border: 1px solid var(--warning-border); }
+.sa-pill--maintenance { background: var(--maintenance-bg); color: var(--maintenance-color);  border: 1px solid var(--maintenance-border); }
+
+.sa-delete-btn {
+    width: 30px; height: 30px; border-radius: 7px; border: none; flex-shrink: 0;
+    background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border);
+    display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
+    cursor: pointer; transition: opacity 0.15s, transform 0.15s;
+}
+.sa-delete-btn:hover { opacity: 0.82; transform: translateY(-1px); }
+
+.sa-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.sa-meta-item { font-size: 0.75rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.35rem; }
+.sa-meta-item i { font-size: 0.68rem; }
+
+.sa-body {
+    font-size: 0.875rem; color: var(--ink-2); line-height: 1.65;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 9px; padding: 0.875rem 1rem;
+    word-break: break-word;
+}
+
+/* Empty */
+.sa-empty { text-align: center; padding: 4rem 2rem; }
+.sa-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.sa-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.sa-empty-sub   { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 1.25rem; line-height: 1.55; }
+
+/* Buttons */
+.sa-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.7rem 1.35rem; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.sa-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.sa-btn--primary { background: linear-gradient(135deg, var(--super), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(10,25,41,0.2); }
+.sa-btn--primary:hover { color: #fff; }
+.sa-btn--ghost  { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.sa-btn--danger { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; box-shadow: 0 3px 10px rgba(220,38,38,0.2); }
+
+/* Modal */
+.sa-modal { border: none; border-radius: 16px; overflow: hidden; }
+.sa-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.sa-modal-header--danger { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.sa-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.sa-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.sa-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.sa-modal-icon   { width: 56px; height: 56px; border-radius: 14px; background: var(--danger-bg); color: var(--danger); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.3rem; }
+.sa-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.sa-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; }
+
+/* Toast */
+.sa-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.sa-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .sa-stats { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px) { .sa-wrapper { padding: 1rem; } .sa-stats { grid-template-columns: 1fr 1fr; } .sa-topbar { flex-direction: column; align-items: flex-start; } .sa-item { padding: 1rem; gap: 0.75rem; } }
+</style>
+
+<script>
+let deleteId = null;
+
+function deleteAnnouncement(id) {
+    deleteId = id;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+document.getElementById('confirmDelete').onclick = function() {
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+
+    fetch(`/super-admin/api/announcements/${deleteId}/delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = document.getElementById(`announcement-${deleteId}`);
+            if (item) {
+                item.style.transition = 'all 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(40px)';
+                setTimeout(() => {
+                    item.remove();
+                    if (!document.querySelector('.sa-item')) setTimeout(() => location.reload(), 400);
+                }, 300);
+            }
+            showToast('Announcement deleted successfully', true);
+        } else {
+            showToast('Failed to delete announcement', false);
+        }
+    })
+    .catch(() => showToast('Network error. Please try again.', false));
+};
+
+function showToast(msg, success) {
+    const t = document.getElementById('sa-toast');
+    t.querySelector('.sa-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('sa-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('sa-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+
+{% endblock %}

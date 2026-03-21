@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Officer Registration - TANGAMAKURU</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a237e'/%3E%3Cstop offset='100%25' stop-color='%233949ab'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23grad)' d='M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z'/%3E%3Ctext x='50' y='68' font-size='48' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial, sans-serif'%3ET%3C/text%3E%3C/svg%3E">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --brand:      #1a3a5c;
+        --brand-dark: #0f2440;
+        --ink:        #1a2332;
+        --ink-2:      #2d3f55;
+        --ink-3:      #5a7290;
+        --rule:       #d4dde8;
+        --surface:    #eef2f7;
+        --white:      #ffffff;
+        --success:    #065f46;
+        --success-bg: #d1fae5;
+        --success-border: #a7f3d0;
+        --danger:     #991b1b;
+        --danger-bg:  #fef2f2;
+        --danger-border: #fecaca;
+        --warning:    #92400e;
+        --warning-bg: #fffbeb;
+        --warning-border: #fde68a;
+        --info:       #1e40af;
+        --info-bg:    #dbeafe;
+        --info-border:#bfdbfe;
+    }
+
+    body {
+        font-family: 'Inter', system-ui, sans-serif;
+        background: var(--surface);
+        min-height: 100vh;
+        font-size: 14px;
+    }
+
+    /* ── Page Layout ─────────── */
+    .or-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 2rem 1rem 3rem;
+    }
+
+    .or-container {
+        width: 100%;
+        max-width: 960px;
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    /* ── Left Panel ──────────── */
+    .or-left {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .or-brand-card {
+        background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+        border-radius: 18px;
+        padding: 2.5rem 1.75rem;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 1.1rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .or-brand-card::before {
+        content: '';
+        position: absolute; top: -50px; right: -50px;
+        width: 160px; height: 160px; border-radius: 50%;
+        background: rgba(255,255,255,0.05); pointer-events: none;
+    }
+    .or-brand-icon {
+        width: 70px; height: 70px; border-radius: 18px;
+        background: rgba(255,255,255,0.12);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.25rem; font-size: 1.8rem; color: #fff;
+        position: relative; z-index: 1;
+    }
+    .or-brand-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; position: relative; z-index: 1; }
+    .or-brand-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.5); position: relative; z-index: 1; }
+
+    .or-info-card {
+        background: var(--white); border: 1px solid var(--rule);
+        border-radius: 14px; overflow: hidden; margin-bottom: 1.1rem;
+    }
+    .or-info-card:last-child { margin-bottom: 0; }
+    .or-info-header {
+        display: flex; align-items: center; gap: 0.45rem;
+        font-size: 0.78rem; font-weight: 700; color: var(--brand);
+        text-transform: uppercase; letter-spacing: 0.06em;
+        padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--rule);
+        background: var(--surface);
+    }
+    .or-info-header i { font-size: 0.72rem; }
+    .or-info-body { padding: 1rem 1.1rem; }
+
+    .or-feature { display: flex; align-items: flex-start; gap: 0.65rem; margin-bottom: 0.875rem; }
+    .or-feature:last-child { margin-bottom: 0; }
+    .or-feature-icon {
+        width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
+    }
+    .or-feature-icon--blue  { background: var(--info-bg);    color: var(--info); }
+    .or-feature-icon--green { background: var(--success-bg); color: var(--success); }
+    .or-feature-icon--amber { background: var(--warning-bg); color: var(--warning); }
+    .or-feature-title { font-size: 0.8rem; font-weight: 700; color: var(--ink); margin-bottom: 0.15rem; }
+    .or-feature-desc  { font-size: 0.72rem; color: var(--ink-3); line-height: 1.5; }
+
+    .or-back-link {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        font-size: 0.82rem; font-weight: 600; color: var(--ink-3);
+        text-decoration: none; padding: 0.5rem 0;
+        transition: color 0.15s;
+    }
+    .or-back-link:hover { color: var(--brand); }
+
+    /* ── Right — Form ─────────── */
+    .or-form-card {
+        background: var(--white); border: 1px solid var(--rule);
+        border-radius: 16px; overflow: hidden;
+    }
+
+    .or-form-section {
+        border-bottom: 1px solid var(--rule);
+        padding: 1.35rem 1.5rem;
+    }
+    .or-form-section:last-child { border-bottom: none; }
+
+    .or-section-title {
+        display: flex; align-items: center; gap: 0.5rem;
+        font-size: 0.78rem; font-weight: 700; color: var(--brand);
+        text-transform: uppercase; letter-spacing: 0.07em;
+        margin-bottom: 1.1rem; padding-bottom: 0.6rem;
+        border-bottom: 1.5px solid var(--rule);
+    }
+    .or-section-title i { font-size: 0.72rem; }
+
+    /* Email type toggle */
+    .or-email-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .or-email-option {
+        display: flex; align-items: center; gap: 0.65rem;
+        padding: 0.75rem 1rem; border: 1.5px solid var(--rule);
+        border-radius: 10px; background: var(--surface); cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+    }
+    .or-email-option input[type="radio"] { display: none; }
+    .or-email-option:hover { border-color: var(--brand); }
+    .or-email-option--active { border-color: var(--brand); background: var(--info-bg); }
+    .or-email-opt-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; flex-shrink: 0; }
+    .or-email-opt-icon--gov     { background: var(--info-bg);    color: var(--info); }
+    .or-email-opt-icon--personal{ background: var(--warning-bg); color: var(--warning); }
+    .or-email-opt-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+    .or-email-opt-sub   { font-size: 0.68rem; color: var(--ink-3); margin-top: 1px; }
+
+    /* Warning banner */
+    .or-warning-banner {
+        display: flex; align-items: flex-start; gap: 0.6rem;
+        background: var(--warning-bg); border: 1px solid var(--warning-border);
+        border-radius: 9px; padding: 0.75rem 1rem;
+        font-size: 0.82rem; color: var(--warning); line-height: 1.55;
+        margin-top: 0.875rem;
+    }
+    .or-warning-banner i { flex-shrink: 0; margin-top: 1px; }
+
+    /* Form fields */
+    .or-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+    .or-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+    .or-field { display: flex; flex-direction: column; margin-bottom: 0.875rem; }
+    .or-field:last-child { margin-bottom: 0; }
+
+    .or-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+    .or-req   { color: #dc2626; }
+    .or-hint  { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.25rem; }
+
+    .or-input-wrap { position: relative; }
+    .or-input-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 0.78rem; color: var(--ink-3); pointer-events: none; }
+    .or-input-icon--textarea { top: 0.9rem; transform: none; }
+
+    .or-input {
+        width: 100%; padding: 0.75rem 0.9rem;
+        border: 1.5px solid var(--rule); border-radius: 9px;
+        font-size: 0.9rem; color: var(--ink); background: var(--surface);
+        outline: none; font-family: inherit;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .or-input--icon { padding-left: 2.5rem; }
+    .or-input--pw   { padding-right: 2.75rem; }
+    .or-input::placeholder { color: #8fa8c0; }
+    .or-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+    .or-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .or-select {
+        width: 100%; padding: 0.75rem 2.25rem 0.75rem 0.9rem;
+        border: 1.5px solid var(--rule); border-radius: 9px;
+        font-size: 0.9rem; color: var(--ink); background: var(--surface);
+        outline: none; font-family: inherit; cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 0.875rem center; background-size: 10px;
+        transition: border-color 0.15s;
+    }
+    .or-select:focus { border-color: var(--brand); }
+    .or-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Password toggle button */
+    .or-pw-toggle {
+        position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; color: var(--ink-3); cursor: pointer;
+        font-size: 0.8rem; padding: 0.25rem;
+        transition: color 0.15s;
+    }
+    .or-pw-toggle:hover { color: var(--brand); }
+
+    /* Checkbox */
+    .or-check { display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-size: 0.85rem; color: var(--ink-2); }
+    .or-check-box { width: 18px; height: 18px; border: 1.5px solid var(--rule); border-radius: 5px; flex-shrink: 0; background: var(--surface); margin-top: 1px; transition: background 0.15s, border-color 0.15s; }
+    .or-check input:checked + .or-check-box { background: var(--brand); border-color: var(--brand); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M2 6l3 3 5-5' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+    .or-check input { display: none; }
+    .or-check a { color: var(--brand); text-decoration: none; font-weight: 600; }
+    .or-check a:hover { text-decoration: underline; }
+
+    /* Submit */
+    .or-submit-section { padding: 1.25rem 1.5rem; background: var(--surface); border-top: 1px solid var(--rule); }
+    .or-submit-btn {
+        width: 100%; padding: 0.875rem;
+        background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+        color: #fff; font-size: 0.95rem; font-weight: 700;
+        border: none; border-radius: 11px; cursor: pointer;
+        font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        box-shadow: 0 4px 14px rgba(15,36,64,0.22);
+        transition: opacity 0.15s, transform 0.15s; margin-bottom: 0.875rem;
+    }
+    .or-submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .or-submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .or-login-link { text-align: center; font-size: 0.82rem; color: var(--ink-3); }
+    .or-login-link a { color: var(--brand); font-weight: 600; text-decoration: none; }
+    .or-login-link a:hover { text-decoration: underline; }
+
+    /* Email help text */
+    .or-email-help { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--ink-3); margin-top: 0.3rem; }
+    .or-email-help--success { color: var(--success); }
+    .or-email-help--warning { color: var(--warning); }
+
+    /* ── Modal ────────────────── */
+    .or-modal-content { border: none; border-radius: 16px; overflow: hidden; }
+    .or-modal-header  { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: linear-gradient(135deg, #065f46, #059669); border: none; }
+    .or-modal-title   { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+    .or-modal-body    { padding: 1.75rem 1.5rem; text-align: center; }
+    .or-modal-icon    { width: 64px; height: 64px; border-radius: 16px; background: var(--warning-bg); color: var(--warning); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; }
+    .or-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+    .or-modal-desc    { font-size: 0.875rem; color: var(--ink-3); margin-bottom: 1rem; line-height: 1.6; }
+    .or-modal-note    { display: flex; align-items: flex-start; gap: 0.5rem; background: var(--info-bg); border: 1px solid var(--info-border); border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--info); line-height: 1.5; text-align: left; }
+    .or-modal-footer  { display: flex; align-items: center; justify-content: flex-end; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+    .or-modal-btn     { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.7rem 1.35rem; border-radius: 9px; border: none; cursor: pointer; background: linear-gradient(135deg, #065f46, #059669); color: #fff; transition: opacity 0.15s; }
+    .or-modal-btn:hover { opacity: 0.85; }
+
+    /* Responsive */
+    @media (max-width: 860px) { .or-container { grid-template-columns: 1fr; } .or-left { position: static; } }
+    @media (max-width: 600px) { .or-page { padding: 1rem; } .or-row-2 { grid-template-columns: 1fr; } .or-row-3 { grid-template-columns: 1fr; } .or-email-toggle { grid-template-columns: 1fr; } .or-form-section { padding: 1.1rem 1.1rem; } .or-submit-section { padding: 1rem 1.1rem; } }
+    </style>
+</head>
+<body>
+
+<div class="or-page">
+    <div class="or-container">
+
+        <!-- ── Left Panel ── -->
+        <div class="or-left">
+
+            <div class="or-brand-card">
+                <div class="or-brand-icon"><i class="fas fa-user-shield"></i></div>
+                <div class="or-brand-title">Officer Registration</div>
+                <div class="or-brand-sub">Join as a law enforcement officer</div>
+            </div>
+
+            <div class="or-info-card">
+                <div class="or-info-header"><i class="fas fa-info-circle"></i> How it works</div>
+                <div class="or-info-body">
+                    <div class="or-feature">
+                        <div class="or-feature-icon or-feature-icon--blue"><i class="fas fa-file-alt"></i></div>
+                        <div>
+                            <div class="or-feature-title">Submit Application</div>
+                            <div class="or-feature-desc">Fill in your personal, location, and officer details to apply.</div>
+                        </div>
+                    </div>
+                    <div class="or-feature">
+                        <div class="or-feature-icon or-feature-icon--amber"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="or-feature-title">Admin Review</div>
+                            <div class="or-feature-desc">Your district admin will review and verify your account within 24 hours.</div>
+                        </div>
+                    </div>
+                    <div class="or-feature">
+                        <div class="or-feature-icon or-feature-icon--green"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="or-feature-title">Get Access</div>
+                            <div class="or-feature-desc">Once approved, log in to manage and respond to sector incidents.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/" class="or-back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+
+        </div>
+
+        <!-- ── Right — Form ── -->
+        <div class="or-form-card">
+
+            <!-- Email Type -->
+            <div class="or-form-section">
+                <div class="or-section-title"><i class="fas fa-envelope"></i> Email Type</div>
+
+                <div class="or-email-toggle" id="emailToggle">
+                    <label class="or-email-option or-email-option--active" id="opt-gov">
+                        <input type="radio" name="email_type" id="govEmail" value="government" autocomplete="off" checked>
+                        <div class="or-email-opt-icon or-email-opt-icon--gov"><i class="fas fa-building"></i></div>
+                        <div>
+                            <div class="or-email-opt-title">Government Email</div>
+                            <div class="or-email-opt-sub">Auto-verified</div>
+                        </div>
+                    </label>
+                    <label class="or-email-option" id="opt-personal">
+                        <input type="radio" name="email_type" id="personalEmail" value="personal" autocomplete="off">
+                        <div class="or-email-opt-icon or-email-opt-icon--personal"><i class="fas fa-user"></i></div>
+                        <div>
+                            <div class="or-email-opt-title">Personal Email</div>
+                            <div class="or-email-opt-sub">Requires verification</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="or-warning-banner" id="emailWarning" style="display:none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span><strong>Notice:</strong> Personal email registrations require verification by your district admin. You will receive a notification within 24 hours after verification.</span>
+                </div>
+            </div>
+
+            <form id="officerRegisterForm">
+
+                <!-- Account Details -->
+                <div class="or-form-section">
+                    <div class="or-section-title"><i class="fas fa-lock"></i> Account Details</div>
+
+                    <div class="or-field">
+                        <label class="or-label" for="email">Email Address <span class="or-req">*</span></label>
+                        <div class="or-input-wrap">
+                            <i class="fas fa-envelope or-input-icon"></i>
+                            <input type="email" class="or-input or-input--icon" id="email" name="email"
+                                   placeholder="e.g., officer@example.com" required>
+                        </div>
+                        <div class="or-email-help or-email-help--success" id="emailHelp">
+                            <i class="fas fa-check-circle"></i> Government email — automatic verification
+                        </div>
+                    </div>
+
+                    <div class="or-row-2">
+                        <div class="or-field">
+                            <label class="or-label" for="password">Password <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-lock or-input-icon"></i>
+                                <input type="password" class="or-input or-input--icon or-input--pw" id="password" name="password"
+                                       pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                       title="Must contain at least one number, one uppercase and lowercase letter, and at least 8 characters"
+                                       required>
+                                <button class="or-pw-toggle" type="button" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <div class="or-hint">Min 8 chars · uppercase, lowercase, number</div>
+                        </div>
+                        <div class="or-field">
+                            <label class="or-label" for="confirm_password">Confirm Password <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-lock or-input-icon"></i>
+                                <input type="password" class="or-input or-input--icon" id="confirm_password" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="or-form-section">
+                    <div class="or-section-title"><i class="fas fa-user"></i> Personal Information</div>
+
+                    <div class="or-row-2">
+                        <div class="or-field">
+                            <label class="or-label" for="first_name">First Name <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-user or-input-icon"></i>
+                                <input type="text" class="or-input or-input--icon" id="first_name" name="first_name" placeholder="First name" required>
+                            </div>
+                        </div>
+                        <div class="or-field">
+                            <label class="or-label" for="last_name">Last Name <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-user or-input-icon"></i>
+                                <input type="text" class="or-input or-input--icon" id="last_name" name="last_name" placeholder="Last name" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="or-field">
+                        <label class="or-label" for="phone">Phone Number <span class="or-req">*</span></label>
+                        <div class="or-input-wrap">
+                            <i class="fas fa-phone or-input-icon"></i>
+                            <input type="tel" class="or-input or-input--icon" id="phone" name="phone"
+                                   placeholder="e.g., 0788888888" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Officer Details -->
+                <div class="or-form-section">
+                    <div class="or-section-title"><i class="fas fa-id-card"></i> Officer Details</div>
+
+                    <div class="or-row-2">
+                        <div class="or-field">
+                            <label class="or-label" for="officer_id">Officer ID / Badge <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-id-card or-input-icon"></i>
+                                <input type="text" class="or-input or-input--icon" id="officer_id" name="officer_id"
+                                       placeholder="e.g., OFF-001" required>
+                            </div>
+                        </div>
+                        <div class="or-field">
+                            <label class="or-label" for="department">Department / Unit <span class="or-req">*</span></label>
+                            <select class="or-select" id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Patrol">Patrol</option>
+                                <option value="Investigations">Investigations</option>
+                                <option value="Traffic">Traffic</option>
+                                <option value="Community Policing">Community Policing</option>
+                                <option value="Administration">Administration</option>
+                                <option value="Special Operations">Special Operations</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="or-form-section">
+                    <div class="or-section-title"><i class="fas fa-map-marker-alt"></i> Location</div>
+
+                    <div class="or-field">
+                        <label class="or-label" for="province">Province <span class="or-req">*</span></label>
+                        <select class="or-select" id="province" name="province" required>
+                            <option value="">Select Province</option>
+                            <option value="Kigali City">Kigali City</option>
+                            <option value="Eastern">Eastern Province</option>
+                            <option value="Western">Western Province</option>
+                            <option value="Northern">Northern Province</option>
+                            <option value="Southern">Southern Province</option>
+                        </select>
+                    </div>
+
+                    <div class="or-row-2">
+                        <div class="or-field">
+                            <label class="or-label" for="district">District <span class="or-req">*</span></label>
+                            <select class="or-select" id="district" name="district" required>
+                                <option value="">Select District</option>
+                            </select>
+                        </div>
+                        <div class="or-field">
+                            <label class="or-label" for="sector">Sector <span class="or-req">*</span></label>
+                            <select class="or-select" id="sector" name="sector" required>
+                                <option value="">Select Sector</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="or-row-2">
+                        <div class="or-field">
+                            <label class="or-label" for="cell">Cell <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-map-pin or-input-icon"></i>
+                                <input type="text" class="or-input or-input--icon" id="cell" name="cell"
+                                       placeholder="e.g., Gishushu" required>
+                            </div>
+                            <div class="or-hint">Enter your cell name</div>
+                        </div>
+                        <div class="or-field">
+                            <label class="or-label" for="village">Village <span class="or-req">*</span></label>
+                            <div class="or-input-wrap">
+                                <i class="fas fa-home or-input-icon"></i>
+                                <input type="text" class="or-input or-input--icon" id="village" name="village"
+                                       placeholder="e.g., Amahoro" required>
+                            </div>
+                            <div class="or-hint">Enter your village name</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms & Submit -->
+                <div class="or-submit-section">
+                    <label class="or-check" style="margin-bottom:1.1rem;">
+                        <input type="checkbox" id="terms" required>
+                        <span class="or-check-box"></span>
+                        <span>
+                            I agree to the <a href="/terms" target="_blank">Terms of Service</a> and
+                            <a href="/privacy" target="_blank">Privacy Policy</a>
+                            <span class="or-req">*</span>
+                        </span>
+                    </label>
+
+                    <button type="submit" class="or-submit-btn" id="submitBtn">
+                        <i class="fas fa-user-plus"></i> Register as Officer
+                    </button>
+
+                    <div class="or-login-link">
+                        Already have an account? <a href="/login">Login here</a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content or-modal-content">
+            <div class="or-modal-header">
+                <h5 class="or-modal-title"><i class="fas fa-check-circle"></i> Registration Submitted</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body or-modal-body">
+                <div class="or-modal-icon"><i class="fas fa-clock"></i></div>
+                <div class="or-modal-heading">Your registration is pending approval</div>
+                <p class="or-modal-desc" id="successMessage"></p>
+                <div class="or-modal-note">
+                    <i class="fas fa-bell" style="flex-shrink:0;margin-top:1px;"></i>
+                    <span>You will be redirected to the notification center to track your application status.</span>
+                </div>
+            </div>
+            <div class="or-modal-footer">
+                <button type="button" class="or-modal-btn" data-bs-dismiss="modal" onclick="redirectToNotifications()">
+                    <i class="fas fa-bell"></i> Go to Notification Center
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ── All original JS logic preserved exactly ──────────────
+
+const rwandaLocations = {
+    "Kigali City": {
+        districts: ["Gasabo", "Kicukiro", "Nyarugenge"],
+        sectors: {
+            "Gasabo": ["Bumbogo", "Gatsata", "Jabana", "Kacyiru", "Kimihurura", "Kimironko", "Remera", "Rusororo", "Nduba"],
+            "Kicukiro": ["Gahanga", "Gikondo", "Kagarama", "Kanombe", "Kicukiro", "Masaka", "Niboye", "Nyarugunga"],
+            "Nyarugenge": ["Gitega", "Kanyinya", "Kigali", "Kimisagara", "Mageragere", "Muhima", "Nyakabanda", "Nyamirambo"]
+        }
+    },
+    "Eastern": {
+        districts: ["Bugesera", "Gatsibo", "Kayonza", "Kirehe", "Ngoma", "Nyagatare", "Rwamagana"],
+        sectors: {
+            "Bugesera": ["Mareba", "Mayange", "Musenyi", "Mwogo", "Ngeruka", "Nyamata", "Nyarugenge", "Rilima", "Ruhuha", "Rweru", "Shyara"],
+            "Gatsibo": ["Gasange", "Gatsibo", "Gitoki", "Kabarore", "Kageyo", "Kiramuruzi", "Kiziguro", "Muhura", "Murambi", "Ngarama", "Nyagihanga", "Nyamirama"]
+        }
+    },
+    "Western": {
+        districts: ["Karongi", "Ngororero", "Nyabihu", "Nyamasheke", "Rubavu", "Rusizi", "Rutsiro"],
+        sectors: {
+            "Rubavu": ["Bugeshi", "Busasamana", "Cyanzarwe", "Gisenyi", "Kanama", "Kanzenze", "Mudende", "Nyakiliba", "Nyamyumba", "Nyundo", "Rubavu", "Rugerero"],
+            "Rusizi": ["Bugarama", "Butare", "Bweyeye", "Gashonga", "Giheke", "Gikundamvura", "Kamembe", "Mururu", "Nkanka", "Nkombo", "Nshili", "Nyakabuye"]
+        }
+    },
+    "Northern": {
+        districts: ["Burera", "Gakenke", "Gicumbi", "Musanze", "Rulindo"],
+        sectors: {
+            "Musanze": ["Busogo", "Cyuve", "Gacaca", "Gashaki", "Gataraga", "Kimonyi", "Kinigi", "Muhoza", "Muko", "Musanze", "Nkotsi", "Nyange", "Remera", "Rwaza", "Shingiro"],
+            "Burera": ["Bungwe", "Butaro", "Cyanika", "Cyeru", "Gahunga", "Gatebe", "Gitovu", "Kagogo", "Kinoni", "Kinyababa", "Kivuye", "Nemba", "Rugarama", "Rugengabari", "Ruhunde", "Rusarabuye", "Rwerere"]
+        }
+    },
+    "Southern": {
+        districts: ["Gisagara", "Huye", "Kamonyi", "Muhanga", "Nyamagabe", "Nyanza", "Nyaruguru", "Ruhango"],
+        sectors: {
+            "Huye": ["Gishamvu", "Huye", "Karama", "Kigoma", "Kinazi", "Maraba", "Mbazi", "Mukura", "Ngoma", "Ruhashya", "Rusatira", "Rwaniro", "Simbi", "Tumba"],
+            "Muhanga": ["Cyeza", "Kabacuzi", "Kibangu", "Kiyumba", "Muhanga", "Mushishiro", "Nyabinoni", "Nyamabuye", "Nyarusange", "Rongi", "Rugendabari", "Shyogwe"]
+        }
+    }
+};
+
+// Email type toggle
+document.querySelectorAll('input[name="email_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const emailWarning = document.getElementById('emailWarning');
+        const emailHelp    = document.getElementById('emailHelp');
+        const optGov       = document.getElementById('opt-gov');
+        const optPersonal  = document.getElementById('opt-personal');
+
+        if (this.value === 'personal') {
+            emailWarning.style.display = 'flex';
+            emailHelp.className = 'or-email-help or-email-help--warning';
+            emailHelp.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Personal email requires admin verification (24hrs)';
+            optPersonal.classList.add('or-email-option--active');
+            optGov.classList.remove('or-email-option--active');
+        } else {
+            emailWarning.style.display = 'none';
+            emailHelp.className = 'or-email-help or-email-help--success';
+            emailHelp.innerHTML = '<i class="fas fa-check-circle"></i> Government email — automatic verification';
+            optGov.classList.add('or-email-option--active');
+            optPersonal.classList.remove('or-email-option--active');
+        }
+    });
+});
+
+// Province change
+document.getElementById('province').addEventListener('change', function() {
+    const province       = this.value;
+    const districtSelect = document.getElementById('district');
+    const sectorSelect   = document.getElementById('sector');
+
+    districtSelect.innerHTML = '<option value="">Select District</option>';
+    sectorSelect.innerHTML   = '<option value="">Select Sector</option>';
+    sectorSelect.disabled    = true;
+
+    if (province && rwandaLocations[province]) {
+        districtSelect.disabled = false;
+        rwandaLocations[province].districts.forEach(district => {
+            districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+        });
+    } else {
+        districtSelect.disabled = true;
+    }
+});
+
+// District change
+document.getElementById('district').addEventListener('change', function() {
+    const province     = document.getElementById('province').value;
+    const district     = this.value;
+    const sectorSelect = document.getElementById('sector');
+
+    sectorSelect.innerHTML = '<option value="">Select Sector</option>';
+
+    if (province && district && rwandaLocations[province]?.sectors[district]) {
+        sectorSelect.disabled = false;
+        rwandaLocations[province].sectors[district].forEach(sector => {
+            sectorSelect.innerHTML += `<option value="${sector}">${sector}</option>`;
+        });
+    } else {
+        sectorSelect.disabled = true;
+    }
+});
+
+// Password toggle
+function togglePassword() {
+    const password = document.getElementById('password');
+    const icon     = document.getElementById('toggleIcon');
+    if (password.type === 'password') {
+        password.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        password.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+// Form submission
+document.getElementById('officerRegisterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm_password').value;
+    if (password !== confirm) { alert('Passwords do not match!'); return; }
+
+    const emailType = document.querySelector('input[name="email_type"]:checked').value;
+
+    const formData = {
+        email:      document.getElementById('email').value,
+        first_name: document.getElementById('first_name').value,
+        last_name:  document.getElementById('last_name').value,
+        phone:      document.getElementById('phone').value,
+        province:   document.getElementById('province').value,
+        district:   document.getElementById('district').value,
+        sector:     document.getElementById('sector').value,
+        cell:       document.getElementById('cell').value,
+        village:    document.getElementById('village').value,
+        officer_id: document.getElementById('officer_id').value,
+        department: document.getElementById('department').value,
+        password:   password,
+        email_type: emailType
+    };
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    try {
+        const response = await fetch('/auth/officer/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById('successMessage').innerHTML = data.message;
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+            sessionStorage.setItem('pendingApproval', 'true');
+            sessionStorage.setItem('userEmail', formData.email);
+            this.reset();
+        } else {
+            alert('Error: ' + data.error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Register as Officer';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Register as Officer';
+    }
+});
+
+function redirectToNotifications() {
+    window.location.href = '/notifications';
+}
+</script>
+
+</body>
+</html>

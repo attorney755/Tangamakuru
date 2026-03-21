@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="an-wrapper">
+
+    <!-- Top Bar -->
+    <div class="an-topbar">
+        <div class="an-topbar-left">
+            <a href="/officer/dashboard" class="an-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="an-topbar-title"><i class="fas fa-bullhorn"></i> Announcements</div>
+                <div class="an-topbar-sub">Important updates from administration</div>
+            </div>
+        </div>
+        {% if announcements %}
+        <div class="an-topbar-right">
+            <span class="an-count-badge">{{ announcements|length }} announcement{{ 's' if announcements|length != 1 }}</span>
+            {% set unread = announcements|rejectattr('is_read')|list|length %}
+            {% if unread > 0 %}
+            <span class="an-unread-badge">{{ unread }} unread</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Announcements -->
+    <div class="an-list">
+        {% if announcements %}
+            {% for announcement in announcements %}
+            <div class="an-item an-item--{{ announcement.priority }} {% if not announcement.is_read %}an-item--unread{% endif %}"
+                 data-id="{{ announcement.id }}" data-read="{{ announcement.is_read|lower }}"
+                 id="announcement-{{ announcement.id }}">
+
+                <!-- Icon -->
+                <div class="an-icon an-icon--{{ announcement.priority }}">
+                    {% if announcement.priority == 'urgent' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% elif announcement.priority == 'important' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% else %}
+                    <i class="fas fa-bullhorn"></i>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div class="an-content">
+                    <div class="an-content-top">
+                        <div class="an-title-row">
+                            <h5 class="an-title">{{ announcement.title }}</h5>
+                            <div class="an-badges">
+                                {% if announcement.priority == 'urgent' %}
+                                <span class="an-pill an-pill--urgent"><i class="fas fa-fire"></i> Urgent</span>
+                                {% elif announcement.priority == 'important' %}
+                                <span class="an-pill an-pill--important"><i class="fas fa-exclamation"></i> Important</span>
+                                {% endif %}
+                                {% if not announcement.is_read %}
+                                <span class="an-pill an-pill--new" id="new-badge-{{ announcement.id }}">New</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="an-time">
+                            <i class="far fa-clock"></i>
+                            {{ announcement.created_at.strftime('%d %b %Y, %H:%M') }}
+                        </div>
+                    </div>
+                    <p class="an-body">{{ announcement.content }}</p>
+                    <div class="an-actions">
+                        {% if not announcement.is_read %}
+                        <button class="an-btn an-btn--read" onclick="markAsRead({{ announcement.id }})">
+                            <i class="fas fa-check"></i> Mark as Read
+                        </button>
+                        {% endif %}
+                        <button class="an-btn an-btn--delete" onclick="deleteUserAnnouncement({{ announcement.id }})">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="an-empty">
+            <div class="an-empty-icon"><i class="fas fa-bullhorn"></i></div>
+            <div class="an-empty-title">No Announcements</div>
+            <p class="an-empty-sub">There are no announcements at this time. Check back later.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteOfficerAnnouncementModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Announcement
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-4">
+                    <i class="fas fa-trash-alt fa-4x text-danger"></i>
+                </div>
+                <h5 class="mb-3">Are you sure?</h5>
+                <p class="text-muted mb-4">
+                    This announcement will be permanently removed from your list. This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmOfficerDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="officerSuccessToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <small>just now</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            Announcement deleted successfully!
+        </div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --urgent-bg:  #fef2f2;
+    --urgent-border: #fca5a5;
+    --urgent-left: #dc2626;
+    --important-bg: #fffbeb;
+    --important-border: #fde68a;
+    --important-left: #d97706;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.an-wrapper { max-width: 860px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.an-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.an-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.an-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.an-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.an-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.an-topbar-title i { color: var(--brand); }
+.an-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.an-topbar-right { display: flex; align-items: center; gap: 0.5rem; }
+.an-count-badge  { font-size: 0.75rem; font-weight: 600; color: var(--ink-3); background: var(--surface); border: 1px solid var(--rule); padding: 0.3rem 0.75rem; border-radius: 999px; }
+.an-unread-badge { font-size: 0.75rem; font-weight: 700; color: var(--info); background: var(--info-bg); border: 1px solid var(--info-border); padding: 0.3rem 0.75rem; border-radius: 999px; }
+
+/* ── Announcement items ───── */
+.an-list { display: flex; flex-direction: column; gap: 0.875rem; }
+
+.an-item {
+    display: flex; gap: 1.1rem;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.25rem 1.5rem;
+    border-left: 4px solid var(--rule);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.an-item:hover { box-shadow: 0 3px 14px rgba(0,0,0,0.07); transform: translateY(-1px); }
+.an-item--urgent    { background: var(--urgent-bg);    border-color: var(--urgent-border);    border-left-color: var(--urgent-left); }
+.an-item--important { background: var(--important-bg); border-color: var(--important-border); border-left-color: var(--important-left); }
+.an-item--unread    { box-shadow: 0 0 0 2px rgba(30,64,175,0.1); }
+
+/* Icon */
+.an-icon {
+    width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; margin-top: 2px;
+}
+.an-icon--urgent    { background: var(--danger-bg);  color: var(--danger); }
+.an-icon--important { background: var(--warning-bg); color: var(--warning); }
+.an-icon--normal    { background: var(--info-bg);    color: var(--info); }
+
+/* Content */
+.an-content { flex: 1; min-width: 0; }
+.an-content-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+.an-title-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.an-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+.an-badges { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.an-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; }
+.an-pill--urgent   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.an-pill--important{ background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.an-pill--new      { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.an-time { font-size: 0.72rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+.an-body { font-size: 0.875rem; color: var(--ink-2); line-height: 1.65; margin-bottom: 1rem; }
+.an-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+/* Buttons */
+.an-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 600; font-family: inherit; padding: 0.5rem 0.9rem; border-radius: 8px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.an-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.an-btn--read   { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.an-btn--delete { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.an-btn--ghost  { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.an-btn--danger { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; box-shadow: 0 3px 10px rgba(220,38,38,0.2); }
+
+/* Empty state */
+.an-empty { text-align: center; padding: 4rem 2rem; background: var(--white); border: 1px solid var(--rule); border-radius: 14px; }
+.an-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.an-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.an-empty-sub   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; }
+
+/* ── Modal ────────────────── */
+.modal-content {
+    border: none;
+    border-radius: 16px;
+}
+.modal-header.bg-danger {
+    background: linear-gradient(135deg, #991b1b, #dc2626);
+    border-radius: 16px 16px 0 0;
+}
+.modal-header .btn-close-white {
+    filter: brightness(0) invert(1);
+}
+.modal-footer {
+    border-top: 1px solid var(--rule);
+    padding: 1rem 1.25rem;
+}
+
+/* Toast */
+.toast {
+    background: transparent;
+    border: none;
+}
+.toast-header.bg-success {
+    background: #059669 !important;
+    border-radius: 12px 12px 0 0;
+}
+.toast-body {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    padding: 0.875rem 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .an-wrapper { padding: 1rem; }
+    .an-item { flex-direction: column; gap: 0.75rem; padding: 1rem; }
+    .an-content-top { flex-direction: column; gap: 0.4rem; }
+    .an-topbar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
+<script>
+function markAsRead(announcementId) {
+    fetch(`/officer/api/announcements/${announcementId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`new-badge-${announcementId}`)?.remove();
+            const item = document.querySelector(`.an-item[data-id="${announcementId}"]`);
+            if (item) {
+                item.classList.remove('an-item--unread');
+                item.dataset.read = 'true';
+                const markBtn = item.querySelector('.an-btn--read');
+                if (markBtn) markBtn.remove();
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+let officerAnnouncementToDelete = null;
+
+function deleteUserAnnouncement(announcementId) {
+    officerAnnouncementToDelete = announcementId;
+    
+    // Show the modal
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteOfficerAnnouncementModal'));
+    deleteModal.show();
+    
+    // Set up the confirm button
+    document.getElementById('confirmOfficerDeleteBtn').onclick = function() {
+        performOfficerDelete(officerAnnouncementToDelete);
+    };
+}
+
+function performOfficerDelete(announcementId) {
+    // Close the modal
+    bootstrap.Modal.getInstance(document.getElementById('deleteOfficerAnnouncementModal')).hide();
+    
+    fetch(`/officer/api/announcements/${announcementId}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success toast
+            const toast = new bootstrap.Toast(document.getElementById('officerSuccessToast'));
+            toast.show();
+            
+            // Remove the announcement from DOM with animation
+            const item = document.getElementById(`announcement-${announcementId}`);
+            if (item) {
+                item.style.transition = 'all 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(100px)';
+                
+                setTimeout(() => {
+                    item.remove();
+                    
+                    // Check if any announcements left
+                    const remaining = document.querySelectorAll('.an-item').length;
+                    if (remaining === 0) {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
+                    }
+                }, 300);
+            }
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to delete announcement');
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,905 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="sr-wrapper">
+
+    <!-- Page Title -->
+    <div class="sr-page-title">
+        <div class="sr-page-title-icon"><i class="fas fa-shield-alt"></i></div>
+        <div>
+            <div class="sr-page-title-text">Submit Secure Report</div>
+            <div class="sr-page-title-sub">Report crimes or service claims securely and confidentially</div>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="sr-progress-card">
+        <div class="sr-steps">
+            <div class="sr-step sr-step--active" id="prog-step1">
+                <div class="sr-step-circle"><i class="fas fa-clipboard-check"></i></div>
+                <div class="sr-step-label">Details</div>
+            </div>
+            <div class="sr-step-line" id="line1"></div>
+            <div class="sr-step" id="prog-step2">
+                <div class="sr-step-circle"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="sr-step-label">Location</div>
+            </div>
+            <div class="sr-step-line" id="line2"></div>
+            <div class="sr-step" id="prog-step3">
+                <div class="sr-step-circle"><i class="fas fa-paper-plane"></i></div>
+                <div class="sr-step-label">Submit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="sr-body">
+
+        <!-- LEFT — Form -->
+        <div class="sr-main">
+            <div class="sr-card">
+
+                <!-- ── Step 1 ── -->
+                <div class="sr-step-panel sr-step-panel--active" id="step1">
+                    <div class="sr-step-heading">
+                        <div class="sr-step-heading-icon"><i class="fas fa-info-circle"></i></div>
+                        <div>
+                            <div class="sr-step-heading-title">Basic Details</div>
+                            <div class="sr-step-heading-sub">Tell us what happened</div>
+                        </div>
+                    </div>
+
+                    <!-- Report Type -->
+                    <div class="sr-field">
+                        <label class="sr-label">Report Type <span class="sr-req">*</span></label>
+                        <div class="sr-type-group">
+                            <label class="sr-type-option sr-type-option--active" id="type-crime">
+                                <input type="radio" name="reportType" id="crime" value="crime" checked>
+                                <div class="sr-type-icon sr-type-icon--crime"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div>
+                                    <div class="sr-type-title">Crime Report</div>
+                                    <div class="sr-type-sub">Theft, assault, fraud, etc.</div>
+                                </div>
+                            </label>
+                            <label class="sr-type-option" id="type-claim">
+                                <input type="radio" name="reportType" id="claim" value="claim">
+                                <div class="sr-type-icon sr-type-icon--claim"><i class="fas fa-file-contract"></i></div>
+                                <div>
+                                    <div class="sr-type-title">Service Claim</div>
+                                    <div class="sr-type-sub">Complaints, rights violations, etc.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Incident Date -->
+                    <div class="sr-field">
+                        <label class="sr-label" for="incidentDate"><i class="fas fa-calendar-day sr-label-icon"></i> Incident Date <span class="sr-req">*</span></label>
+                        <div class="sr-input-wrap">
+                            <i class="fas fa-calendar sr-input-icon"></i>
+                            <input type="date" class="sr-input sr-input--icon" id="incidentDate" required>
+                        </div>
+                    </div>
+
+                    <!-- Title & Category -->
+                    <div class="sr-row-2">
+                        <div class="sr-field">
+                            <label class="sr-label" for="title"><i class="fas fa-heading sr-label-icon"></i> Report Title <span class="sr-req">*</span></label>
+                            <input type="text" class="sr-input" id="title" placeholder="Brief descriptive title" required>
+                        </div>
+                        <div class="sr-field">
+                            <label class="sr-label" for="category"><i class="fas fa-tags sr-label-icon"></i> Category <span class="sr-req">*</span></label>
+                            <select class="sr-input sr-select" id="category" required>
+                                <option value="">Select category</option>
+                                <optgroup label="🚨 Crime Categories">
+                                    <option value="theft">Theft & Robbery</option>
+                                    <option value="assault">Assault & Violence</option>
+                                    <option value="corruption">Corruption</option>
+                                    <option value="vandalism">Vandalism</option>
+                                    <option value="fraud">Fraud & Scams</option>
+                                    <option value="cyber">Cyber Crime</option>
+                                </optgroup>
+                                <optgroup label="📋 Claim Categories">
+                                    <option value="service">Service Complaint</option>
+                                    <option value="property">Property Damage</option>
+                                    <option value="rights">Rights Violation</option>
+                                    <option value="environment">Environmental Issue</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="sr-field">
+                        <label class="sr-label" for="description"><i class="fas fa-align-left sr-label-icon"></i> Detailed Description <span class="sr-req">*</span></label>
+                        <textarea class="sr-textarea" id="description" rows="5" required
+                                  placeholder="Describe what happened in detail..."></textarea>
+                        <div class="sr-hint">Include: What happened? When? Where? Who was involved?</div>
+                    </div>
+
+                    <div id="message" class="sr-inline-msg" style="display:none;"></div>
+
+                    <div class="sr-nav sr-nav--right">
+                        <button type="button" class="sr-btn sr-btn--primary next-step" data-next="step2">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Step 2 ── -->
+                <div class="sr-step-panel" id="step2" style="display:none;">
+                    <div class="sr-step-heading">
+                        <div class="sr-step-heading-icon sr-step-heading-icon--2"><i class="fas fa-map-marked-alt"></i></div>
+                        <div>
+                            <div class="sr-step-heading-title">Location & Details</div>
+                            <div class="sr-step-heading-sub">Where did this happen?</div>
+                        </div>
+                    </div>
+
+                    <div class="sr-row-2">
+                        <div class="sr-field">
+                            <label class="sr-label" for="province">Province <span class="sr-req">*</span></label>
+                            <select class="sr-input sr-select" id="province" required>
+                                <option value="">Select Province</option>
+                                <option value="Kigali City">Kigali City</option>
+                                <option value="Eastern">Eastern Province</option>
+                                <option value="Southern">Southern Province</option>
+                                <option value="Western">Western Province</option>
+                                <option value="Northern">Northern Province</option>
+                            </select>
+                        </div>
+                        <div class="sr-field">
+                            <label class="sr-label" for="district">District <span class="sr-req">*</span></label>
+                            <input type="text" class="sr-input" id="district" placeholder="e.g., Gasabo" required>
+                        </div>
+                    </div>
+
+                    <div class="sr-row-3">
+                        <div class="sr-field">
+                            <label class="sr-label" for="sector">Sector <span class="sr-req">*</span></label>
+                            <input type="text" class="sr-input" id="sector" placeholder="e.g., Remera" required>
+                        </div>
+                        <div class="sr-field">
+                            <label class="sr-label" for="cell">Cell <span class="sr-req">*</span></label>
+                            <input type="text" class="sr-input" id="cell" placeholder="e.g., Gishushu" required>
+                        </div>
+                        <div class="sr-field">
+                            <label class="sr-label" for="village">Village <span class="sr-req">*</span></label>
+                            <input type="text" class="sr-input" id="village" placeholder="e.g., Amahoro" required>
+                        </div>
+                    </div>
+
+                    <div class="sr-field" style="position:relative;">
+                        <label class="sr-label" for="specific_location"><i class="fas fa-map-pin sr-label-icon"></i> Specific Address / Landmark <span class="sr-req">*</span></label>
+                        <div class="sr-input-wrap">
+                            <i class="fas fa-map-marker-alt sr-input-icon"></i>
+                            <input type="text" class="sr-input sr-input--icon" id="specific_location" placeholder="Street, building, or landmark..." required>
+                        </div>
+                        <div class="sr-hint">Start typing to see suggestions</div>
+                        <div id="address-suggestions" class="dropdown-menu" style="display:none;"></div>
+                    </div>
+
+                    <div class="sr-row-2">
+                        <div class="sr-field">
+                            <label class="sr-label" for="priority">Priority Level</label>
+                            <select class="sr-input sr-select" id="priority">
+                                <option value="low">Low Priority</option>
+                                <option value="medium" selected>Medium Priority</option>
+                                <option value="high">High Priority</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="sr-field">
+                            <label class="sr-label">Privacy Settings</label>
+                            <div class="sr-check-group">
+                                <label class="sr-check">
+                                    <input type="checkbox" id="is_anonymous">
+                                    <span class="sr-check-box"></span>
+                                    <span><i class="fas fa-user-secret sr-check-icon"></i> Report Anonymously</span>
+                                </label>
+                                <label class="sr-check">
+                                    <input type="checkbox" id="allow_contact" checked>
+                                    <span class="sr-check-box"></span>
+                                    <span><i class="fas fa-phone sr-check-icon"></i> Allow Officer Contact</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sr-field">
+                        <label class="sr-label" for="witness_info"><i class="fas fa-user-friends sr-label-icon"></i> Witness Information <span class="sr-optional">(Optional)</span></label>
+                        <textarea class="sr-textarea" id="witness_info" rows="2" placeholder="Names, contacts, or descriptions of witnesses"></textarea>
+                    </div>
+
+                    <div class="sr-field">
+                        <label class="sr-label" for="evidence_details"><i class="fas fa-file-alt sr-label-icon"></i> Evidence Description <span class="sr-optional">(Optional)</span></label>
+                        <textarea class="sr-textarea" id="evidence_details" rows="2" placeholder="Describe any evidence you have..."></textarea>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="sr-field">
+                        <label class="sr-label"><i class="fas fa-cloud-upload-alt sr-label-icon"></i> Upload Evidence <span class="sr-optional">(Optional)</span></label>
+                        <label class="sr-upload-zone" for="evidence_uploads">
+                            <i class="fas fa-cloud-upload-alt sr-upload-icon"></i>
+                            <div class="sr-upload-text">Click to upload or drag files here</div>
+                            <div class="sr-upload-hint">Max 5MB per file · Images, PDF, Word</div>
+                            <input type="file" id="evidence_uploads" accept="image/*,.pdf,.doc,.docx" multiple style="display:none;">
+                        </label>
+                        <div id="file-preview" style="display:none; margin-top:0.75rem;">
+                            <div class="sr-file-list" id="preview-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="sr-nav sr-nav--between">
+                        <button type="button" class="sr-btn sr-btn--ghost prev-step" data-prev="step1">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="sr-btn sr-btn--primary next-step" data-next="step3">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Step 3 ── -->
+                <div class="sr-step-panel" id="step3" style="display:none;">
+                    <div class="sr-step-heading">
+                        <div class="sr-step-heading-icon sr-step-heading-icon--3"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="sr-step-heading-title">Review & Submit</div>
+                            <div class="sr-step-heading-sub">Confirm your report before submitting</div>
+                        </div>
+                    </div>
+
+                    <!-- Review Summary -->
+                    <div class="sr-review-card" id="reviewSummary"></div>
+
+                    <!-- Legal Declaration -->
+                    <div class="sr-legal-card">
+                        <div class="sr-legal-title"><i class="fas fa-gavel"></i> Legal Declaration</div>
+                        <label class="sr-check sr-check--legal">
+                            <input type="checkbox" id="confirm_accurate" required>
+                            <span class="sr-check-box"></span>
+                            <span>I confirm that the information provided is accurate to the best of my knowledge</span>
+                        </label>
+                        <label class="sr-check sr-check--legal" style="margin-top:0.75rem;">
+                            <input type="checkbox" id="confirm_terms" required>
+                            <span class="sr-check-box"></span>
+                            <span>I agree to the Terms of Service and understand that false reporting may have legal consequences</span>
+                        </label>
+                    </div>
+
+                    <div class="sr-nav sr-nav--between">
+                        <button type="button" class="sr-btn sr-btn--ghost prev-step" data-prev="step2">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="sr-btn sr-btn--submit" id="finalSubmit">
+                            <i class="fas fa-paper-plane"></i> Submit Report
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT — Sidebar -->
+        <div class="sr-sidebar">
+
+            <!-- Privacy & Safety -->
+            <div class="sr-info-card">
+                <div class="sr-info-header sr-info-header--blue">
+                    <i class="fas fa-shield-alt"></i> Your Safety & Privacy
+                </div>
+                <div class="sr-info-body">
+                    <div class="sr-info-item">
+                        <div class="sr-info-icon sr-info-icon--green"><i class="fas fa-user-shield"></i></div>
+                        <div>
+                            <div class="sr-info-title">Protected Identity</div>
+                            <div class="sr-info-desc">Your identity is encrypted and only visible to authorized officers.</div>
+                        </div>
+                    </div>
+                    <div class="sr-info-item">
+                        <div class="sr-info-icon sr-info-icon--blue"><i class="fas fa-lock"></i></div>
+                        <div>
+                            <div class="sr-info-title">Secure Encryption</div>
+                            <div class="sr-info-desc">All reports are encrypted with military-grade security.</div>
+                        </div>
+                    </div>
+                    <div class="sr-info-item">
+                        <div class="sr-info-icon sr-info-icon--amber"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="sr-info-title">Quick Response</div>
+                            <div class="sr-info-desc">Reports are reviewed within 24 hours by sector officers.</div>
+                        </div>
+                    </div>
+                    <div class="sr-info-item">
+                        <div class="sr-info-icon sr-info-icon--teal"><i class="fas fa-history"></i></div>
+                        <div>
+                            <div class="sr-info-title">Track Progress</div>
+                            <div class="sr-info-desc">Monitor your report status in your personal dashboard.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="sr-info-card">
+                <div class="sr-info-header sr-info-header--amber">
+                    <i class="fas fa-lightbulb"></i> How to Report Effectively
+                </div>
+                <div class="sr-info-body">
+                    <div class="sr-tips-section">
+                        <div class="sr-tips-title sr-tips-title--crime"><i class="fas fa-exclamation-triangle"></i> For Crime Reports:</div>
+                        <ul class="sr-tips-list">
+                            <li>Report immediately after incident</li>
+                            <li>Provide exact time and location</li>
+                            <li>Include witness information</li>
+                            <li>Preserve any evidence</li>
+                        </ul>
+                    </div>
+                    <div class="sr-tips-section" style="margin-top:1rem;">
+                        <div class="sr-tips-title sr-tips-title--claim"><i class="fas fa-file-contract"></i> For Service Claims:</div>
+                        <ul class="sr-tips-list">
+                            <li>Include service details</li>
+                            <li>Provide reference numbers</li>
+                            <li>Attach relevant documents</li>
+                            <li>Note previous resolution attempts</li>
+                        </ul>
+                    </div>
+                    <div class="sr-legal-note">
+                        <i class="fas fa-gavel"></i>
+                        <strong>Legal Note:</strong> False reporting is a criminal offense. Always provide accurate information.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.sr-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Page Title ───────────── */
+.sr-page-title {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.sr-page-title-icon {
+    width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; box-shadow: 0 4px 12px rgba(15,36,64,0.2);
+}
+.sr-page-title-text { font-size: 1.2rem; font-weight: 800; color: var(--ink); }
+.sr-page-title-sub  { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Progress ─────────────── */
+.sr-progress-card {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.25rem 2rem;
+    margin-bottom: 1.25rem;
+}
+.sr-steps { display: flex; align-items: center; justify-content: center; gap: 0; }
+.sr-step  { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+.sr-step-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--rule);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95rem; color: var(--ink-3);
+    transition: all 0.25s;
+}
+.sr-step--active .sr-step-circle { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 0 0 5px rgba(26,58,92,0.1); }
+.sr-step-label { font-size: 0.72rem; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+.sr-step--active .sr-step-label { color: var(--brand); }
+.sr-step-line { flex: 1; height: 2px; background: var(--rule); margin: 0 0.75rem; margin-bottom: 1.25rem; min-width: 60px; transition: background 0.25s; }
+.sr-step-line--active { background: var(--brand); }
+
+/* ── Body Layout ──────────── */
+.sr-body { display: grid; grid-template-columns: 1fr 280px; gap: 1.25rem; align-items: start; }
+
+/* ── Form Card ────────────── */
+.sr-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+
+/* Step panel */
+.sr-step-panel { padding: 1.5rem 1.75rem; }
+
+.sr-step-heading { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); }
+.sr-step-heading-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; background: var(--info-bg); color: var(--info); }
+.sr-step-heading-icon--2 { background: #ecfdf5; color: #059669; }
+.sr-step-heading-icon--3 { background: var(--success-bg); color: var(--success); }
+.sr-step-heading-title { font-size: 1rem; font-weight: 800; color: var(--ink); }
+.sr-step-heading-sub   { font-size: 0.75rem; color: var(--ink-3); margin-top: 2px; }
+
+/* Form fields */
+.sr-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.sr-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+.sr-field { display: flex; flex-direction: column; margin-bottom: 1rem; }
+.sr-field:last-of-type { margin-bottom: 0; }
+.sr-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
+.sr-label-icon { color: var(--ink-3); font-size: 0.75rem; }
+.sr-req      { color: #dc2626; }
+.sr-optional { font-weight: 400; font-size: 0.75rem; color: var(--ink-3); }
+.sr-hint     { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.28rem; }
+
+.sr-input-wrap { position: relative; }
+.sr-input-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 0.78rem; color: var(--ink-3); pointer-events: none; }
+
+.sr-input {
+    width: 100%; padding: 0.75rem 0.9rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.9rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.sr-input--icon { padding-left: 2.5rem; }
+.sr-input::placeholder { color: #8fa8c0; }
+.sr-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.sr-input.is-invalid { border-color: var(--accent) !important; }
+
+.sr-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; background-size: 10px; padding-right: 2.25rem; cursor: pointer; }
+
+.sr-textarea {
+    width: 100%; padding: 0.75rem 0.9rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.9rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; resize: vertical;
+    transition: border-color 0.15s, background 0.15s;
+}
+.sr-textarea::placeholder { color: #8fa8c0; }
+.sr-textarea:focus { border-color: var(--brand); background: var(--white); }
+
+/* Report type selector */
+.sr-type-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.sr-type-option {
+    display: flex; align-items: center; gap: 0.875rem;
+    padding: 1rem; border: 1.5px solid var(--rule);
+    border-radius: 11px; background: var(--surface);
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.sr-type-option input { display: none; }
+.sr-type-option:hover { border-color: var(--brand); }
+.sr-type-option--active { border-color: var(--brand); background: var(--info-bg); }
+.sr-type-icon { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+.sr-type-icon--crime { background: var(--danger-bg);  color: var(--accent); }
+.sr-type-icon--claim { background: var(--info-bg);    color: var(--info); }
+.sr-type-title { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+.sr-type-sub   { font-size: 0.72rem; color: var(--ink-3); margin-top: 1px; }
+
+/* Checkboxes */
+.sr-check-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.sr-check { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.85rem; color: var(--ink-2); }
+.sr-check-box { width: 18px; height: 18px; border: 1.5px solid var(--rule); border-radius: 5px; flex-shrink: 0; background: var(--surface); transition: background 0.15s, border-color 0.15s; }
+.sr-check input:checked + .sr-check-box { background: var(--brand); border-color: var(--brand); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M10 3L5 8 2 5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+.sr-check-icon { color: var(--ink-3); font-size: 0.78rem; }
+.sr-check--legal { font-size: 0.82rem; color: var(--ink-2); margin-bottom: 0; align-items: flex-start; }
+.sr-check--legal .sr-check-box { margin-top: 2px; }
+
+/* File upload */
+.sr-upload-zone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.4rem; padding: 1.5rem;
+    border: 2px dashed var(--rule); border-radius: 11px;
+    background: var(--surface); cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.sr-upload-zone:hover { border-color: var(--brand); background: var(--info-bg); }
+.sr-upload-icon { font-size: 1.5rem; color: var(--ink-3); }
+.sr-upload-text { font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+.sr-upload-hint { font-size: 0.72rem; color: var(--ink-3); }
+
+.sr-file-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.sr-file-item { display: flex; align-items: center; gap: 0.75rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 0.55rem 0.875rem; }
+.sr-file-icon { font-size: 0.85rem; color: var(--brand); flex-shrink: 0; }
+.sr-file-name { font-size: 0.8rem; color: var(--ink-2); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-file-remove { width: 24px; height: 24px; border-radius: 6px; border: none; background: var(--danger-bg); color: var(--danger); cursor: pointer; flex-shrink: 0; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; }
+
+/* Navigation */
+.sr-nav { display: flex; align-items: center; padding-top: 1.25rem; border-top: 1px solid var(--rule); margin-top: 1.25rem; }
+.sr-nav--right    { justify-content: flex-end; }
+.sr-nav--between  { justify-content: space-between; }
+
+/* Buttons */
+.sr-btn { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.9rem; font-weight: 600; font-family: inherit; padding: 0.75rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.sr-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.sr-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(15,36,64,0.22); }
+.sr-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.sr-btn--submit  { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,0.25); }
+
+/* Review card */
+.sr-review-card {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 11px; padding: 1.25rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;
+    margin-bottom: 1.25rem;
+}
+.sr-review-item {}
+.sr-review-label { font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.sr-review-value { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+
+/* Legal card */
+.sr-legal-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 11px; padding: 1.25rem; margin-bottom: 1.25rem; }
+.sr-legal-title { font-size: 0.85rem; font-weight: 700; color: var(--ink-2); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.875rem; }
+.sr-legal-title i { color: var(--brand); }
+
+/* Inline message */
+.sr-inline-msg { margin-top: 0.875rem; }
+.sr-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.875rem; }
+.sr-msg--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.sr-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.sr-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+/* ── Sidebar ──────────────── */
+.sr-info-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.1rem; }
+.sr-info-card:last-child { margin-bottom: 0; }
+.sr-info-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; padding: 0.875rem 1.1rem; border-bottom: 1px solid var(--rule); text-transform: uppercase; letter-spacing: 0.05em; }
+.sr-info-header--blue  { background: var(--info-bg);    color: var(--info); border-bottom-color: var(--info-border); }
+.sr-info-header--amber { background: var(--warning-bg); color: var(--warning); border-bottom-color: var(--warning-border); }
+.sr-info-body { padding: 1.1rem; }
+
+.sr-info-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.875rem; }
+.sr-info-item:last-child { margin-bottom: 0; }
+.sr-info-icon { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+.sr-info-icon--green { background: var(--success-bg); color: var(--success); }
+.sr-info-icon--blue  { background: var(--info-bg);    color: var(--info); }
+.sr-info-icon--amber { background: var(--warning-bg); color: var(--warning); }
+.sr-info-icon--teal  { background: #ecfeff; color: #0e7490; }
+.sr-info-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.sr-info-desc  { font-size: 0.75rem; color: var(--ink-3); line-height: 1.5; }
+
+.sr-tips-section {}
+.sr-tips-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+.sr-tips-title--crime { color: var(--accent); }
+.sr-tips-title--claim { color: var(--info); }
+.sr-tips-list { list-style: none; padding: 0; margin: 0; }
+.sr-tips-list li { font-size: 0.78rem; color: var(--ink-3); padding: 0.2rem 0 0.2rem 1rem; position: relative; }
+.sr-tips-list li::before { content: '→'; position: absolute; left: 0; color: var(--brand); font-size: 0.72rem; }
+.sr-legal-note { display: flex; align-items: flex-start; gap: 0.5rem; background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.76rem; color: var(--warning); line-height: 1.5; margin-top: 1rem; }
+.sr-legal-note i { flex-shrink: 0; margin-top: 1px; }
+
+/* Responsive */
+@media (max-width: 900px) { .sr-body { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .sr-wrapper { padding: 1rem; } .sr-row-2 { grid-template-columns: 1fr; } .sr-row-3 { grid-template-columns: 1fr; } .sr-type-group { grid-template-columns: 1fr; } .sr-review-card { grid-template-columns: 1fr; } }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('incidentDate').value = new Date().toISOString().split('T')[0];
+    initFileUpload();
+});
+
+// ── Report type toggle ───────
+document.querySelectorAll('input[name="reportType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.sr-type-option').forEach(o => o.classList.remove('sr-type-option--active'));
+        this.closest('.sr-type-option').classList.add('sr-type-option--active');
+    });
+});
+
+// ── Step Navigation ──────────
+document.querySelectorAll('.next-step').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const currentStep = this.closest('.sr-step-panel');
+        if (!validateStep(currentStep.id)) return;
+        currentStep.style.display = 'none';
+        const nextId = this.dataset.next;
+        document.getElementById(nextId).style.display = 'block';
+        updateProgress(nextId);
+        if (nextId === 'step3') updateReview();
+    });
+});
+
+document.querySelectorAll('.prev-step').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.closest('.sr-step-panel').style.display = 'none';
+        const prevId = this.dataset.prev;
+        document.getElementById(prevId).style.display = 'block';
+        updateProgress(prevId);
+    });
+});
+
+function updateProgress(stepId) {
+    const circles = document.querySelectorAll('.sr-step');
+    const lines    = document.querySelectorAll('.sr-step-line');
+    circles.forEach(c => c.classList.remove('sr-step--active'));
+    lines.forEach(l   => l.classList.remove('sr-step-line--active'));
+    if (stepId === 'step1') {
+        circles[0].classList.add('sr-step--active');
+    } else if (stepId === 'step2') {
+        circles[0].classList.add('sr-step--active');
+        circles[1].classList.add('sr-step--active');
+        lines[0].classList.add('sr-step-line--active');
+    } else if (stepId === 'step3') {
+        circles.forEach(c => c.classList.add('sr-step--active'));
+        lines.forEach(l   => l.classList.add('sr-step-line--active'));
+    }
+}
+
+// ── Validation ───────────────
+function validateStep(stepId) {
+    const step = document.getElementById(stepId);
+    const inputs = step.querySelectorAll('input[required], select[required], textarea[required]');
+    let valid = true;
+    inputs.forEach(input => {
+        if (!input.value.trim()) { input.classList.add('is-invalid'); valid = false; }
+        else input.classList.remove('is-invalid');
+    });
+    if (!valid) showMessage('Please fill in all required fields marked with *', 'warning');
+    return valid;
+}
+
+// ── Review ───────────────────
+function updateReview() {
+    const catEl = document.getElementById('category');
+    const data = {
+        type:     document.querySelector('input[name="reportType"]:checked').value === 'crime' ? 'Crime Report' : 'Service Claim',
+        date:     new Date(document.getElementById('incidentDate').value).toLocaleDateString(),
+        category: catEl.options[catEl.selectedIndex].text,
+        title:    document.getElementById('title').value,
+        location: `${document.getElementById('district').value}, ${document.getElementById('sector').value}`,
+        priority: document.getElementById('priority').value.charAt(0).toUpperCase() + document.getElementById('priority').value.slice(1),
+        anon:     document.getElementById('is_anonymous').checked ? 'Yes' : 'No',
+        files:    window.uploadedFiles ? window.uploadedFiles.length : 0
+    };
+
+    const priorityColors = { Low:'var(--success)', Medium:'var(--warning)', High:'var(--danger)', Urgent:'var(--danger)' };
+
+    document.getElementById('reviewSummary').innerHTML = [
+        ['Report Type', data.type],
+        ['Incident Date', data.date],
+        ['Category', data.category],
+        ['Title', data.title],
+        ['Location', data.location],
+        ['Priority', `<span style="color:${priorityColors[data.priority]||'var(--ink)'};font-weight:700;">${data.priority}</span>`],
+        ['Anonymous', data.anon],
+        ['Attachments', `${data.files} file(s)`]
+    ].map(([label, value]) => `
+        <div class="sr-review-item">
+            <div class="sr-review-label">${label}</div>
+            <div class="sr-review-value">${value}</div>
+        </div>
+    `).join('');
+}
+
+// ── Submit ───────────────────
+document.getElementById('finalSubmit').addEventListener('click', async function(e) {
+    e.preventDefault();
+    if (!document.getElementById('confirm_accurate').checked || !document.getElementById('confirm_terms').checked) {
+        showMessage('Please confirm both declarations before submitting', 'warning');
+        return;
+    }
+
+    const btn = this;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('title',             document.getElementById('title').value.trim());
+    formData.append('description',       document.getElementById('description').value.trim());
+    formData.append('category',          document.getElementById('category').value);
+    formData.append('incident_date',     document.getElementById('incidentDate').value);
+    formData.append('report_type',       document.querySelector('input[name="reportType"]:checked').value);
+    formData.append('province',          document.getElementById('province').value);
+    formData.append('district',          document.getElementById('district').value.trim());
+    formData.append('sector',            document.getElementById('sector').value.trim());
+    formData.append('cell',              document.getElementById('cell').value.trim());
+    formData.append('village',           document.getElementById('village').value.trim());
+    formData.append('specific_location', document.getElementById('specific_location').value.trim());
+    formData.append('priority',          document.getElementById('priority').value);
+    formData.append('is_anonymous',      document.getElementById('is_anonymous').checked);
+    formData.append('witness_info',      document.getElementById('witness_info').value.trim());
+    formData.append('evidence_details',  document.getElementById('evidence_details').value.trim());
+    if (window.uploadedFiles) window.uploadedFiles.forEach(f => formData.append('evidence_files', f));
+
+    try {
+        const response = await fetch('/reports/submit', { method: 'POST', body: formData });
+        if (response.status === 401) {
+            showMessage('Please login to submit a report. Redirecting...', 'warning');
+            setTimeout(() => { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname); }, 1500);
+            return;
+        }
+        const data = await response.json();
+        if (response.ok) {
+            showSuccessModal(data.report);
+            resetForm();
+        } else {
+            showMessage('Error: ' + (data.error || 'Failed to submit report'), 'danger');
+            btn.innerHTML = orig; btn.disabled = false;
+        }
+    } catch (error) {
+        showMessage('Network error: ' + error.message, 'danger');
+        btn.innerHTML = orig; btn.disabled = false;
+    }
+});
+
+// ── Messages ─────────────────
+function showMessage(text, type) {
+    const icons = { warning:'exclamation-triangle', danger:'times-circle', success:'check-circle', info:'info-circle' };
+    const div = document.getElementById('message');
+    div.innerHTML = `<div class="sr-msg sr-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.style.display = 'block';
+    div.scrollIntoView({ behavior: 'smooth' });
+    if (type !== 'success') setTimeout(() => { div.style.display = 'none'; }, 5000);
+}
+
+// ── Reset ─────────────────────
+function resetForm() {
+    const form = document.querySelector('form');
+    if (form) form.reset();
+    window.uploadedFiles = [];
+    const fi = document.getElementById('evidence_uploads');
+    if (fi) fi.value = '';
+    const fp = document.getElementById('file-preview');
+    if (fp) fp.style.display = 'none';
+    const pl = document.getElementById('preview-list');
+    if (pl) pl.innerHTML = '';
+    document.querySelectorAll('.sr-step-panel').forEach(s => s.style.display = 'none');
+    document.getElementById('step1').style.display = 'block';
+    updateProgress('step1');
+    document.getElementById('incidentDate').value = new Date().toISOString().split('T')[0];
+}
+
+// ── File Upload ───────────────
+function initFileUpload() {
+    const fileInput = document.getElementById('evidence_uploads');
+    if (!fileInput) return;
+    window.uploadedFiles = [];
+
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const maxSize = 5 * 1024 * 1024;
+        if (files.length > 5) { showMessage('Maximum 5 files allowed', 'warning'); this.value = ''; return; }
+
+        const previewList = document.getElementById('preview-list');
+        const previewContainer = document.getElementById('file-preview');
+        if (previewList) previewList.innerHTML = '';
+
+        files.forEach((file, index) => {
+            if (file.size > maxSize) { showMessage(`"${file.name}" exceeds 5MB limit`, 'warning'); return; }
+            const validTypes = ['image/jpeg','image/png','image/gif','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!validTypes.includes(file.type)) { showMessage(`"${file.name}" has invalid type`, 'warning'); return; }
+            window.uploadedFiles.push(file);
+
+            if (previewList) {
+                const item = document.createElement('div');
+                item.className = 'sr-file-item';
+                const icon = document.createElement('i');
+                icon.className = file.type.startsWith('image/') ? 'fas fa-image sr-file-icon' : 'fas fa-file sr-file-icon';
+                const name = document.createElement('span');
+                name.className = 'sr-file-name'; name.textContent = file.name;
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button'; removeBtn.className = 'sr-file-remove';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.onclick = function() {
+                    window.uploadedFiles.splice(index, 1);
+                    item.remove();
+                    if (window.uploadedFiles.length === 0 && previewContainer) previewContainer.style.display = 'none';
+                };
+                item.appendChild(icon); item.appendChild(name); item.appendChild(removeBtn);
+                previewList.appendChild(item);
+            }
+        });
+
+        if (window.uploadedFiles.length > 0 && previewContainer) previewContainer.style.display = 'block';
+    });
+}
+
+// ── Address autocomplete ──────
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('specific_location');
+    if (!input) return;
+    input.addEventListener('input', async function(e) {
+        const query = e.target.value.trim();
+        const suggestions = document.getElementById('address-suggestions');
+        if (query.length < 3) { if (suggestions) suggestions.style.display = 'none'; return; }
+        try {
+            const res = await fetch(`/reports/address/search?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (data.suggestions && data.suggestions.length > 0 && suggestions) {
+                suggestions.innerHTML = '';
+                data.suggestions.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button'; btn.className = 'dropdown-item small py-2';
+                    btn.textContent = item.display_name;
+                    btn.onclick = function() {
+                        input.value = item.display_name;
+                        suggestions.style.display = 'none';
+                        if (item.province) { const s = document.getElementById('province'); for (let o of s.options) { if (o.value === item.province) { s.value = item.province; break; } } }
+                        if (item.district) document.getElementById('district').value = item.district;
+                    };
+                    suggestions.appendChild(btn);
+                });
+                suggestions.style.display = 'block';
+                suggestions.style.width = input.offsetWidth + 'px';
+            } else if (suggestions) suggestions.style.display = 'none';
+        } catch { if (suggestions) suggestions.style.display = 'none'; }
+    });
+    document.addEventListener('click', function(e) {
+        const s = document.getElementById('address-suggestions');
+        if (s && !input.contains(e.target) && !s.contains(e.target)) s.style.display = 'none';
+    });
+});
+
+// ── Success Modal ─────────────
+function showSuccessModal(reportData) {
+    const existingModal = document.getElementById('successModal');
+    if (existingModal) existingModal.remove();
+
+    document.body.insertAdjacentHTML('beforeend', `
+    <div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
+                <div class="modal-header" style="background:linear-gradient(135deg,#065f46,#059669);border:none;padding:1rem 1.25rem;">
+                    <h5 class="modal-title" style="color:#fff;font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fas fa-check-circle"></i> Report Submitted Successfully!
+                    </h5>
+                </div>
+                <div class="modal-body" style="padding:1.75rem 1.5rem;text-align:center;">
+                    <div style="width:62px;height:62px;border-radius:15px;background:var(--success-bg);color:var(--success);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5 style="font-size:1.05rem;font-weight:800;color:var(--ink);margin-bottom:0.35rem;">Thank You for Your Report</h5>
+                    <p style="font-size:0.85rem;color:var(--ink-3);margin-bottom:1.25rem;">Your report has been logged and will be reviewed by sector officers.</p>
+                    <div style="background:var(--surface);border:1px solid var(--rule);border-radius:11px;padding:1.1rem;display:grid;grid-template-columns:1fr 1fr;gap:0.875rem;text-align:left;margin-bottom:1.25rem;">
+                        <div><div style="font-size:0.68rem;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Report ID</div><div style="font-family:monospace;font-weight:700;color:var(--brand);">${reportData.report_id}</div></div>
+                        <div><div style="font-size:0.68rem;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Category</div><div style="font-size:0.875rem;font-weight:600;color:var(--ink);">${reportData.category}</div></div>
+                        <div><div style="font-size:0.68rem;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Status</div><span style="display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;font-weight:700;background:var(--warning-bg);color:var(--warning);border:1px solid var(--warning-border);padding:0.22rem 0.6rem;border-radius:999px;">⏳ Pending Review</span></div>
+                        <div><div style="font-size:0.68rem;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;">Expected Response</div><div style="font-size:0.875rem;font-weight:600;color:var(--ink);">Within 24 hours</div></div>
+                    </div>
+                    <div style="background:var(--success-bg);border:1px solid var(--success-border);border-radius:10px;padding:1rem;text-align:left;font-size:0.82rem;color:var(--success);">
+                        <div style="font-weight:700;margin-bottom:0.5rem;"><i class="fas fa-check-circle"></i> What happens next?</div>
+                        <ul style="padding-left:1.1rem;margin:0;line-height:2;">
+                            <li>Your report is now in our secure system</li>
+                            <li>An officer will review it within 24 hours</li>
+                            <li>Track progress in "My Reports"</li>
+                            <li>You'll receive updates on status changes</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding:1rem 1.25rem;border-top:1px solid var(--rule);gap:0.65rem;">
+                    <button type="button" class="sr-btn sr-btn--ghost" onclick="goToDashboard()"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+                    <button type="button" class="sr-btn sr-btn--primary" onclick="viewReport(${reportData.id})"><i class="fas fa-eye"></i> View Report</button>
+                </div>
+            </div>
+        </div>
+    </div>`);
+
+    new bootstrap.Modal(document.getElementById('successModal')).show();
+}
+
+function viewReport(id)  { window.location.href = `/view-report/${id}`; }
+function goToDashboard() { window.location.href = '/dashboard'; }
+</script>
+{% endblock %}

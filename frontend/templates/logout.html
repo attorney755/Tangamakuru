@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-sign-out-alt"></i> Logging Out</h5>
+            </div>
+            <div class="card-body py-5">
+                <!-- Animated spinner -->
+                <div class="spinner-border text-info mb-4" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                
+                <h4 class="text-info mb-3">Securing Your Session...</h4>
+                
+                <div class="progress mb-4" style="height: 6px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                         style="width: 100%"></div>
+                </div>
+                
+                <div class="text-start">
+                    <p class="mb-2">
+                        <i class="fas fa-check text-success"></i> 
+                        <span class="ms-2">Clearing authentication tokens</span>
+                    </p>
+                    <p class="mb-2">
+                        <i class="fas fa-check text-success"></i> 
+                        <span class="ms-2">Securing your personal data</span>
+                    </p>
+                    <p class="mb-0">
+                        <i class="fas fa-sync fa-spin text-info"></i> 
+                        <span class="ms-2">Redirecting to login page</span>
+                    </p>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt"></i>
+                    TANGAMAKURU - Your security is our priority
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Clear all user data
+localStorage.removeItem('tangamakuru_token');
+localStorage.removeItem('tangamakuru_user');
+sessionStorage.clear();
+
+// Clear any cookies
+document.cookie.split(";").forEach(function(c) {
+    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+});
+
+// Wait 2 seconds for UX, then redirect with success message
+setTimeout(function() {
+    window.location.href = '/login?logout=success&message=You have been successfully logged out';
+}, 2000);
+</script>
+{% endblock %}

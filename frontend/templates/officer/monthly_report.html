@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mr-wrapper">
+
+    <!-- Top Bar -->
+    <div class="mr-topbar">
+        <div class="mr-topbar-left">
+            <a href="{{ url_for('officer.dashboard') }}" class="mr-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="mr-topbar-title"><i class="fas fa-file-pdf"></i> Monthly Report</div>
+                <div class="mr-topbar-sub">Generate monthly reports for {{ user.sector }} Sector</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="mr-body">
+
+        <!-- LEFT — Generator -->
+        <div class="mr-main">
+
+            <!-- Period Selector -->
+            <div class="mr-card">
+                <div class="mr-card-header"><i class="fas fa-calendar-alt"></i> Select Report Period</div>
+                <div class="mr-card-body">
+
+                    <div class="mr-field">
+                        <label class="mr-label" for="reportPeriod">Month and Year</label>
+                        <div class="mr-input-wrap">
+                            <i class="fas fa-calendar mr-input-icon"></i>
+                            <input type="month" class="mr-input mr-input--icon" id="reportPeriod">
+                        </div>
+                        <div class="mr-hint">Choose any month to generate a detailed incident report</div>
+                    </div>
+
+                    <div id="previewBtnWrap">
+                        <button class="mr-btn mr-btn--primary mr-btn--full" onclick="previewReport()" id="previewBtn">
+                            <i class="fas fa-search"></i> Preview Report
+                        </button>
+                    </div>
+
+                    <!-- Loading -->
+                    <div id="loadingSpinner" class="mr-loading" style="display:none;">
+                        <div class="mr-spinner"></div>
+                        <span>Generating your report...</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Preview Result -->
+            <div class="mr-card mr-card--success" id="previewCard" style="display:none;">
+                <div class="mr-card-header mr-card-header--success">
+                    <i class="fas fa-check-circle"></i> Report Ready
+                </div>
+                <div class="mr-card-body">
+
+                    <div class="mr-success-note">
+                        <i class="fas fa-check-circle"></i>
+                        <span><strong>Success!</strong> Your report has been generated successfully.</span>
+                    </div>
+
+                    <div class="mr-preview-stats">
+                        <div class="mr-preview-stat">
+                            <div class="mr-preview-num" id="totalReports">0</div>
+                            <div class="mr-preview-label">Total Reports</div>
+                        </div>
+                        <div class="mr-preview-divider"></div>
+                        <div class="mr-preview-stat">
+                            <div class="mr-preview-num mr-preview-num--green" id="resolvedReports">0</div>
+                            <div class="mr-preview-label">Resolved</div>
+                        </div>
+                    </div>
+
+                    <div class="mr-preview-actions">
+                        <button class="mr-btn mr-btn--ghost" onclick="resetForm()">
+                            <i class="fas fa-redo"></i> Generate Another
+                        </button>
+                        <button class="mr-btn mr-btn--download" onclick="downloadReport()" id="downloadBtn">
+                            <i class="fas fa-download"></i> Download PDF
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT — Info Panel -->
+        <div class="mr-sidebar">
+
+            <!-- About -->
+            <div class="mr-card">
+                <div class="mr-card-header"><i class="fas fa-info-circle"></i> About This Report</div>
+                <div class="mr-card-body">
+                    <div class="mr-info-items">
+                        <div class="mr-info-item">
+                            <div class="mr-info-icon mr-info-icon--blue"><i class="fas fa-file-alt"></i></div>
+                            <div>
+                                <div class="mr-info-title">Incident Summary</div>
+                                <div class="mr-info-desc">Total incidents reported in your sector during the selected month.</div>
+                            </div>
+                        </div>
+                        <div class="mr-info-item">
+                            <div class="mr-info-icon mr-info-icon--green"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <div class="mr-info-title">Resolution Rate</div>
+                                <div class="mr-info-desc">Number of cases resolved compared to total reported.</div>
+                            </div>
+                        </div>
+                        <div class="mr-info-item">
+                            <div class="mr-info-icon mr-info-icon--amber"><i class="fas fa-tags"></i></div>
+                            <div>
+                                <div class="mr-info-title">Category Breakdown</div>
+                                <div class="mr-info-desc">Distribution of incidents by type and priority level.</div>
+                            </div>
+                        </div>
+                        <div class="mr-info-item">
+                            <div class="mr-info-icon mr-info-icon--red"><i class="fas fa-file-pdf"></i></div>
+                            <div>
+                                <div class="mr-info-title">PDF Format</div>
+                                <div class="mr-info-desc">Reports are exported as professional PDF documents ready for submission.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="mr-card">
+                <div class="mr-card-header"><i class="fas fa-lightbulb"></i> Quick Tips</div>
+                <div class="mr-card-body">
+                    <div class="mr-tips">
+                        <div class="mr-tip">
+                            <div class="mr-tip-dot"></div>
+                            <span>Select the current month to get a real-time snapshot of ongoing cases.</span>
+                        </div>
+                        <div class="mr-tip">
+                            <div class="mr-tip-dot"></div>
+                            <span>Past months provide complete data including all resolved cases.</span>
+                        </div>
+                        <div class="mr-tip">
+                            <div class="mr-tip-dot"></div>
+                            <span>Download and archive reports monthly for record keeping.</span>
+                        </div>
+                        <div class="mr-tip">
+                            <div class="mr-tip-dot"></div>
+                            <span>Share PDF reports with your sector administrator as needed.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.mr-wrapper { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.mr-topbar {
+    display: flex; align-items: center;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.mr-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.mr-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.mr-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.mr-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.mr-topbar-title i { color: var(--danger); }
+.mr-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Body Layout ──────────── */
+.mr-body { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.mr-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.mr-card:last-child { margin-bottom: 0; }
+.mr-card--success { border-color: var(--success-border); }
+
+.mr-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.mr-card-header i { font-size: 0.78rem; }
+.mr-card-header--success { background: var(--success-bg); color: var(--success); border-bottom-color: var(--success-border); }
+
+.mr-card-body { padding: 1.35rem; }
+
+/* ── Form ─────────────────── */
+.mr-field { margin-bottom: 1.25rem; }
+.mr-label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.42rem; }
+.mr-hint  { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.28rem; }
+
+.mr-input-wrap { position: relative; }
+.mr-input-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 0.78rem; color: var(--ink-3); pointer-events: none; }
+
+.mr-input {
+    width: 100%; padding: 0.85rem 0.975rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.95rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.mr-input--icon { padding-left: 2.5rem; }
+.mr-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+
+/* Buttons */
+.mr-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; font-size: 0.95rem; font-weight: 600; font-family: inherit; padding: 0.8rem 1.4rem; border-radius: 10px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; text-decoration: none; }
+.mr-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.mr-btn--full     { width: 100%; }
+.mr-btn--primary  { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(15,36,64,0.22); }
+.mr-btn--download { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,0.25); }
+.mr-btn--ghost    { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* Loading */
+.mr-loading { display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1.5rem; font-size: 0.875rem; color: var(--ink-3); margin-top: 1rem; }
+.mr-spinner { width: 22px; height: 22px; border: 2px solid var(--rule); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Success note */
+.mr-success-note {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: var(--success-bg); border: 1px solid var(--success-border);
+    border-radius: 9px; padding: 0.75rem 1rem;
+    font-size: 0.875rem; color: var(--success);
+    margin-bottom: 1.25rem;
+}
+.mr-success-note i { flex-shrink: 0; }
+
+/* Preview stats */
+.mr-preview-stats {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem;
+}
+.mr-preview-stat { flex: 1; text-align: center; }
+.mr-preview-divider { width: 1px; height: 50px; background: var(--rule); flex-shrink: 0; margin: 0 1.5rem; }
+.mr-preview-num { font-size: 2.5rem; font-weight: 800; color: var(--ink); line-height: 1; margin-bottom: 0.4rem; }
+.mr-preview-num--green { color: #059669; }
+.mr-preview-label { font-size: 0.78rem; color: var(--ink-3); font-weight: 500; }
+
+/* Preview actions */
+.mr-preview-actions { display: flex; gap: 0.75rem; }
+.mr-preview-actions .mr-btn { flex: 1; }
+
+/* ── Sidebar ──────────────── */
+.mr-info-items { display: flex; flex-direction: column; gap: 1rem; }
+.mr-info-item  { display: flex; align-items: flex-start; gap: 0.75rem; }
+.mr-info-icon  { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; }
+.mr-info-icon--blue  { background: var(--info-bg);    color: var(--info); }
+.mr-info-icon--green { background: var(--success-bg); color: var(--success); }
+.mr-info-icon--amber { background: var(--warning-bg); color: var(--warning); }
+.mr-info-icon--red   { background: var(--danger-bg);  color: var(--danger); }
+.mr-info-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.mr-info-desc  { font-size: 0.76rem; color: var(--ink-3); line-height: 1.5; }
+
+.mr-tips { display: flex; flex-direction: column; gap: 0.875rem; }
+.mr-tip  { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.8rem; color: var(--ink-3); line-height: 1.55; }
+.mr-tip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); flex-shrink: 0; margin-top: 6px; }
+
+/* Responsive */
+@media (max-width: 860px) { .mr-body { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .mr-wrapper { padding: 1rem; } .mr-preview-actions { flex-direction: column; } }
+</style>
+
+<script>
+let selectedMonth = null;
+let selectedYear  = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const year  = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    document.getElementById('reportPeriod').value = `${year}-${month}`;
+});
+
+function previewReport() {
+    const period = document.getElementById('reportPeriod').value;
+    if (!period) { alert('Please select a month'); return; }
+
+    const [year, month] = period.split('-');
+    selectedMonth = parseInt(month);
+    selectedYear  = parseInt(year);
+
+    document.getElementById('previewBtnWrap').style.display   = 'none';
+    document.getElementById('loadingSpinner').style.display   = 'flex';
+
+    fetch('/officer/api/report-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ month: selectedMonth, year: selectedYear })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        if (data.success) {
+            document.getElementById('totalReports').textContent    = data.data.stats.total;
+            document.getElementById('resolvedReports').textContent = data.data.stats.resolved;
+            document.getElementById('previewCard').style.display   = 'block';
+        } else {
+            alert('No data found for this period');
+            document.getElementById('previewBtnWrap').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to generate preview');
+        document.getElementById('loadingSpinner').style.display  = 'none';
+        document.getElementById('previewBtnWrap').style.display  = 'block';
+    });
+}
+
+function downloadReport() {
+    if (!selectedMonth || !selectedYear) return;
+    const btn  = document.getElementById('downloadBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+    btn.disabled  = true;
+
+    fetch('/officer/api/generate-monthly-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ month: selectedMonth, year: selectedYear })
+    })
+    .then(response => {
+        if (!response.ok) return response.json().then(err => { throw new Error(err.error); });
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url;
+        a.download = `monthly_report_${selectedMonth}_${selectedYear}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        btn.innerHTML = orig;
+        btn.disabled  = false;
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+        btn.innerHTML = orig;
+        btn.disabled  = false;
+    });
+}
+
+function resetForm() {
+    document.getElementById('previewCard').style.display    = 'none';
+    document.getElementById('previewBtnWrap').style.display = 'block';
+    const today = new Date();
+    const year  = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    document.getElementById('reportPeriod').value = `${year}-${month}`;
+    selectedMonth = null;
+    selectedYear  = null;
+}
+</script>
+
+{% endblock %}

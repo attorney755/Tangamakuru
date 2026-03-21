@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="sd-wrapper">
+
+    <!-- Welcome Header -->
+    <div class="sd-header">
+        <div class="sd-header-left">
+            <div class="sd-crown-icon"><i class="fas fa-crown"></i></div>
+            <div>
+                <div class="sd-welcome">Welcome back, {{ user.first_name }}</div>
+                <div class="sd-header-sub">Super Administrator · Full system control</div>
+            </div>
+        </div>
+        <div class="sd-header-right">
+            <div class="sd-header-stat">
+                <div class="sd-header-stat-num">{{ stats.total_admins }}</div>
+                <div class="sd-header-stat-label">Admins</div>
+            </div>
+            <div class="sd-header-divider"></div>
+            <div class="sd-header-stat">
+                <div class="sd-header-stat-num">{{ stats.total_officers }}</div>
+                <div class="sd-header-stat-label">Officers</div>
+            </div>
+            <div class="sd-header-divider"></div>
+            <div class="sd-header-stat">
+                <div class="sd-header-stat-num">{{ stats.total_citizens }}</div>
+                <div class="sd-header-stat-label">Citizens</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="sd-stats">
+        <div class="sd-stat-card sd-stat-card--admins">
+            <div class="sd-stat-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="sd-stat-body">
+                <div class="sd-stat-num">{{ stats.total_admins }}</div>
+                <div class="sd-stat-label">Total Admins</div>
+            </div>
+            <div class="sd-stat-watermark"><i class="fas fa-user-tie"></i></div>
+        </div>
+        <div class="sd-stat-card sd-stat-card--officers">
+            <div class="sd-stat-icon"><i class="fas fa-user-shield"></i></div>
+            <div class="sd-stat-body">
+                <div class="sd-stat-num">{{ stats.total_officers }}</div>
+                <div class="sd-stat-label">Active Officers</div>
+            </div>
+            <div class="sd-stat-watermark"><i class="fas fa-user-shield"></i></div>
+        </div>
+        <div class="sd-stat-card sd-stat-card--citizens">
+            <div class="sd-stat-icon"><i class="fas fa-users"></i></div>
+            <div class="sd-stat-body">
+                <div class="sd-stat-num">{{ stats.total_citizens }}</div>
+                <div class="sd-stat-label">Total Citizens</div>
+            </div>
+            <div class="sd-stat-watermark"><i class="fas fa-users"></i></div>
+        </div>
+        <div class="sd-stat-card sd-stat-card--announce">
+            <div class="sd-stat-icon"><i class="fas fa-bullhorn"></i></div>
+            <div class="sd-stat-body">
+                <div class="sd-stat-num">{{ announcements_count|default(0) }}</div>
+                <div class="sd-stat-label">Announcements</div>
+            </div>
+            <div class="sd-stat-watermark"><i class="fas fa-bullhorn"></i></div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="sd-section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+    <div class="sd-actions-grid">
+        <a href="{{ url_for('super_admin.create_admin') }}" class="sd-action-card sd-action-card--create">
+            <div class="sd-action-icon"><i class="fas fa-user-plus"></i></div>
+            <div class="sd-action-body">
+                <div class="sd-action-title">Create New Admin</div>
+                <div class="sd-action-sub">Add an administrator for a sector</div>
+            </div>
+            <i class="fas fa-arrow-right sd-action-arrow"></i>
+        </a>
+        <a href="{{ url_for('super_admin.announcements') }}" class="sd-action-card sd-action-card--announce">
+            <div class="sd-action-icon"><i class="fas fa-tower-broadcast"></i></div>
+            <div class="sd-action-body">
+                <div class="sd-action-title">System Announcement</div>
+                <div class="sd-action-sub">Broadcast alerts and maintenance notices</div>
+            </div>
+            <i class="fas fa-arrow-right sd-action-arrow"></i>
+        </a>
+        <a href="{{ url_for('super_admin.list_admins') }}" class="sd-action-card sd-action-card--manage">
+            <div class="sd-action-icon"><i class="fas fa-users-cog"></i></div>
+            <div class="sd-action-body">
+                <div class="sd-action-title">Manage Admins</div>
+                <div class="sd-action-sub">View, edit, and oversee all administrators</div>
+            </div>
+            <i class="fas fa-arrow-right sd-action-arrow"></i>
+        </a>
+    </div>
+
+    <!-- Recent Admins -->
+    <div class="sd-card">
+        <div class="sd-card-header">
+            <div class="sd-card-title"><i class="fas fa-user-tie"></i> Recently Created Admins</div>
+            <a href="{{ url_for('super_admin.list_admins') }}" class="sd-view-all">
+                View All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        {% if recent_admins %}
+        <div class="sd-table-wrap">
+            <table class="sd-table">
+                <thead>
+                    <tr>
+                        <th>Administrator</th>
+                        <th>Email</th>
+                        <th>District</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in recent_admins %}
+                    <tr>
+                        <td>
+                            <div class="sd-person">
+                                <img src="https://ui-avatars.com/api/?name={{ admin.first_name }}+{{ admin.last_name }}&background=0a1929&color=fff&size=40"
+                                     class="sd-avatar">
+                                <div class="sd-person-name">{{ admin.first_name }} {{ admin.last_name }}</div>
+                            </div>
+                        </td>
+                        <td class="sd-email">{{ admin.email }}</td>
+                        <td>
+                            <span class="sd-district-tag">{{ admin.district or 'Not set' }}</span>
+                        </td>
+                        <td class="sd-date">
+                            <i class="far fa-calendar-alt"></i>
+                            {{ admin.created_at.strftime('%d %b %Y') }}
+                        </td>
+                        <td>
+                            {% if admin.is_active %}
+                            <span class="sd-status sd-status--active"><i class="fas fa-check-circle"></i> Active</span>
+                            {% else %}
+                            <span class="sd-status sd-status--inactive"><i class="fas fa-ban"></i> Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="sd-empty">
+            <div class="sd-empty-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="sd-empty-title">No Admins Yet</div>
+            <p class="sd-empty-sub">Create your first administrator to get started.</p>
+            <a href="{{ url_for('super_admin.create_admin') }}" class="sd-btn sd-btn--primary">
+                <i class="fas fa-user-plus"></i> Create Admin
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --super:      #0a1929;
+    --super-mid:  #1a3a5f;
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.sd-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Welcome Header ───────── */
+.sd-header {
+    background: linear-gradient(135deg, var(--super) 0%, var(--super-mid) 100%);
+    border-radius: 18px;
+    padding: 2rem 2.25rem;
+    margin-bottom: 1.25rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+}
+/* Decorative circles */
+.sd-header::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); pointer-events: none;
+}
+.sd-header::after {
+    content: '';
+    position: absolute; bottom: -50px; left: 30%;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(255,255,255,0.03); pointer-events: none;
+}
+
+.sd-header-left { display: flex; align-items: center; gap: 1.1rem; position: relative; z-index: 1; }
+.sd-crown-icon {
+    width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+    background: rgba(253,186,116,0.15); border: 1.5px solid rgba(253,186,116,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; color: #fbbf24;
+}
+.sd-welcome    { font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.sd-header-sub { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 3px; }
+
+.sd-header-right { display: flex; align-items: center; gap: 1.5rem; position: relative; z-index: 1; }
+.sd-header-stat  { text-align: center; }
+.sd-header-stat-num   { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1; }
+.sd-header-stat-label { font-size: 0.68rem; color: rgba(255,255,255,0.4); margin-top: 3px; font-weight: 500; }
+.sd-header-divider    { width: 1px; height: 36px; background: rgba(255,255,255,0.1); }
+
+/* ── Stats Row ────────────── */
+.sd-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.sd-stat-card {
+    border-radius: 14px; padding: 1.25rem 1.35rem;
+    display: flex; align-items: center; gap: 1rem;
+    position: relative; overflow: hidden;
+    border: 1px solid transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.sd-stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+.sd-stat-card--admins  { background: #1e1b4b; border-color: #3730a3; }
+.sd-stat-card--officers{ background: #052e16; border-color: #166534; }
+.sd-stat-card--citizens{ background: #0c4a6e; border-color: #0369a1; }
+.sd-stat-card--announce{ background: #451a03; border-color: #92400e; }
+
+.sd-stat-icon {
+    width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.sd-stat-card--admins   .sd-stat-icon { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+.sd-stat-card--officers .sd-stat-icon { background: rgba(34,197,94,0.15); color: #86efac; }
+.sd-stat-card--citizens .sd-stat-icon { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+.sd-stat-card--announce .sd-stat-icon { background: rgba(251,191,36,0.15); color: #fcd34d; }
+
+.sd-stat-num   { font-size: 1.6rem; font-weight: 800; color: #fff; line-height: 1; }
+.sd-stat-label { font-size: 0.72rem; font-weight: 500; margin-top: 3px; }
+.sd-stat-card--admins   .sd-stat-label { color: rgba(165,180,252,0.7); }
+.sd-stat-card--officers .sd-stat-label { color: rgba(134,239,172,0.7); }
+.sd-stat-card--citizens .sd-stat-label { color: rgba(125,211,252,0.7); }
+.sd-stat-card--announce .sd-stat-label { color: rgba(252,211,77,0.7); }
+
+.sd-stat-watermark {
+    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+    font-size: 3rem; opacity: 0.07; pointer-events: none; color: #fff;
+}
+
+/* ── Section title ────────── */
+.sd-section-title {
+    font-size: 0.82rem; font-weight: 700; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    display: flex; align-items: center; gap: 0.4rem;
+    margin-bottom: 0.875rem;
+}
+.sd-section-title i { color: #d97706; font-size: 0.75rem; }
+
+/* ── Quick Actions ────────── */
+.sd-actions-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.sd-action-card {
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--white); border: 1.5px solid var(--rule);
+    border-radius: 14px; padding: 1.25rem 1.35rem;
+    text-decoration: none; color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    position: relative; overflow: hidden;
+}
+.sd-action-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); transform: translateY(-2px); color: var(--ink); }
+
+.sd-action-card--create:hover  { border-color: #6366f1; }
+.sd-action-card--announce:hover{ border-color: #d97706; }
+.sd-action-card--manage:hover  { border-color: var(--brand); }
+
+.sd-action-icon {
+    width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.sd-action-card--create   .sd-action-icon { background: #ede9fe; color: #6366f1; }
+.sd-action-card--announce .sd-action-icon { background: var(--warning-bg); color: var(--warning); }
+.sd-action-card--manage   .sd-action-icon { background: var(--info-bg); color: var(--info); }
+
+.sd-action-body { flex: 1; }
+.sd-action-title { font-size: 0.9rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.sd-action-sub   { font-size: 0.75rem; color: var(--ink-3); line-height: 1.45; }
+.sd-action-arrow { font-size: 0.75rem; color: var(--ink-3); flex-shrink: 0; transition: transform 0.15s; }
+.sd-action-card:hover .sd-action-arrow { transform: translateX(3px); color: var(--brand); }
+
+/* ── Main Card ────────────── */
+.sd-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+.sd-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+}
+.sd-card-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; }
+.sd-card-title i { font-size: 0.8rem; }
+.sd-view-all {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--brand);
+    text-decoration: none; border-bottom: 1.5px solid transparent;
+    transition: border-color 0.15s;
+}
+.sd-view-all:hover { border-bottom-color: var(--brand); color: var(--brand); }
+
+/* ── Table ────────────────── */
+.sd-table-wrap { overflow-x: auto; }
+.sd-table { width: 100%; border-collapse: collapse; }
+.sd-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.sd-table th { padding: 0.75rem 1.1rem; font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.sd-table td { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.sd-table tbody tr:last-child td { border-bottom: none; }
+.sd-table tbody tr:hover { background: var(--surface); }
+
+.sd-person { display: flex; align-items: center; gap: 0.75rem; }
+.sd-avatar  { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--rule); flex-shrink: 0; }
+.sd-person-name { font-size: 0.875rem; font-weight: 700; color: var(--ink); }
+.sd-email { font-size: 0.8rem; color: var(--ink-3); }
+.sd-date  { font-size: 0.78rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+
+.sd-district-tag { display: inline-block; background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 6px; }
+
+.sd-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; }
+.sd-status--active   { background: var(--success-bg); color: var(--success); }
+.sd-status--inactive { background: var(--danger-bg);  color: var(--danger); }
+
+/* Empty */
+.sd-empty { text-align: center; padding: 3.5rem 2rem; }
+.sd-empty-icon { width: 58px; height: 58px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.4rem; color: var(--ink-3); }
+.sd-empty-title { font-size: 0.95rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.sd-empty-sub   { font-size: 0.825rem; color: var(--ink-3); margin-bottom: 1.1rem; line-height: 1.5; }
+
+/* Button */
+.sd-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.sd-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.sd-btn--primary { background: linear-gradient(135deg, var(--super), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(10,25,41,0.2); }
+.sd-btn--primary:hover { color: #fff; }
+
+/* Responsive */
+@media (max-width: 1000px) { .sd-stats { grid-template-columns: repeat(2,1fr); } .sd-actions-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px)  { .sd-stats { grid-template-columns: 1fr 1fr; } .sd-header { flex-direction: column; align-items: flex-start; } .sd-header-right { gap: 1rem; } .sd-wrapper { padding: 1rem; } }
+</style>
+
+{% endblock %}

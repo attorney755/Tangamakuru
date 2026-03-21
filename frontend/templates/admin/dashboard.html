@@ -1,0 +1,696 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ad-wrapper">
+
+    <!-- Welcome Header -->
+    <div class="ad-header">
+        <div class="ad-header-left">
+            <div class="ad-header-avatar"><i class="fas fa-user-tie"></i></div>
+            <div>
+                <div class="ad-welcome">Good Day {{ user.first_name }}!</div>
+                <div class="ad-header-sub">
+                    <span class="ad-district-tag">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ user.district or 'No district' }} District
+                    </span>
+                    <span class="ad-header-sep">·</span>
+                    <span>Admin Dashboard</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-header-actions">
+            <button class="ad-hdr-btn ad-hdr-btn--pdf" onclick="generateReport()">
+                <i class="fas fa-file-pdf"></i> Monthly Report
+            </button>
+            <button class="ad-hdr-btn ad-hdr-btn--officer" onclick="window.location.href='/admin/create-officer'">
+                <i class="fas fa-user-plus"></i> Add Officer
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="ad-stats">
+
+        <div class="sc sc-blue">
+            <div class="sc-head">
+                <div class="sc-icon"><i class="fas fa-file-alt"></i></div>
+                <div>
+                    <div class="sc-label">Total Reports</div>
+                    <div class="sc-value">{{ stats.total_reports }}</div>
+                </div>
+            </div>
+            <div class="sc-foot foot-green">
+                <i class="fas fa-arrow-up"></i>+{{ stats.new_today }} today
+            </div>
+        </div>
+
+        <div class="sc sc-amber">
+            <div class="sc-head">
+                <div class="sc-icon"><i class="fas fa-clock"></i></div>
+                <div>
+                    <div class="sc-label">Pending</div>
+                    <div class="sc-value">{{ stats.pending }}</div>
+                </div>
+            </div>
+            <div class="sc-foot foot-amber">
+                <i class="fas fa-exclamation-circle"></i>Needs attention
+            </div>
+        </div>
+
+        <div class="sc sc-cyan">
+            <div class="sc-head">
+                <div class="sc-icon"><i class="fas fa-user-tie"></i></div>
+                <div>
+                    <div class="sc-label">Active Officers</div>
+                    <div class="sc-value">{{ stats.total_officers }}</div>
+                </div>
+            </div>
+            <div class="sc-foot foot-green">
+                <i class="fas fa-user-check"></i>{{ stats.active_officers }} active
+            </div>
+        </div>
+
+        <div class="sc sc-green">
+            <div class="sc-head">
+                <div class="sc-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="sc-label">Total Citizens</div>
+                    <div class="sc-value">{{ stats.total_citizens }}</div>
+                </div>
+            </div>
+            <div class="sc-foot foot-green">
+                <i class="fas fa-user-plus"></i>{{ stats.new_users }} this month
+            </div>
+        </div>
+
+        <div class="sc sc-gray">
+            <div class="sc-head">
+                <div class="sc-icon"><i class="fas fa-user-slash"></i></div>
+                <div>
+                    <div class="sc-label">Unassigned</div>
+                    <div class="sc-value">{{ stats.unassigned }}</div>
+                </div>
+            </div>
+            <div class="sc-foot foot-amber">
+                <i class="fas fa-exclamation-circle"></i>Need assignment
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts Row -->
+    <div class="ad-charts-row">
+        <div class="ad-card ad-card--wide">
+            <div class="ad-card-header"><i class="fas fa-chart-line"></i> Reports Overview (Last 30 Days)</div>
+            <div class="ad-card-body">
+                {% if chart_labels and chart_data and chart_data|sum > 0 %}
+                <canvas id="reportsChart" style="height:300px;"></canvas>
+                {% else %}
+                <div class="ad-empty">
+                    <div class="ad-empty-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="ad-empty-title">No Report Data</div>
+                    <p class="ad-empty-sub">Reports will appear here as citizens submit them.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="ad-card">
+            <div class="ad-card-header"><i class="fas fa-chart-pie"></i> By Category</div>
+            <div class="ad-card-body">
+                {% if category_labels and category_data and category_labels|length > 0 %}
+                <canvas id="categoryChart" style="height:300px;"></canvas>
+                {% else %}
+                <div class="ad-empty">
+                    <div class="ad-empty-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="ad-empty-title">No Category Data</div>
+                    <p class="ad-empty-sub">Categories appear when reports are submitted.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="ad-bottom-row">
+
+        <!-- Recent Reports -->
+        <div class="ad-card ad-card--reports">
+            <div class="ad-card-header ad-card-header--between">
+                <span><i class="fas fa-file-alt"></i> Recent Reports in {{ user.district or 'Your' }} District</span>
+                <a href="/admin/reports" class="ad-view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="ad-card-body ad-card-body--flush">
+                {% if recent_reports and recent_reports|length > 0 %}
+                <div class="ad-table-wrap">
+                    <table class="ad-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Officer</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in recent_reports %}
+                            <tr>
+                                <td><span class="ad-report-id">{{ report.report_id }}</span></td>
+                                <td class="ad-report-title">{{ report.title }}</td>
+                                <td class="ad-category">{{ report.category }}</td>
+                                <td class="ad-location">{{ report.sector }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ report.status|lower }}">{{ report.status }}</span>
+                                </td>
+                                <td>
+                                    <span class="priority-badge priority-{{ report.priority|lower }}">{{ report.priority }}</span>
+                                </td>
+                                <td class="ad-officer-cell">
+                                    {% if report.assigned_officer %}
+                                    {{ report.assigned_officer }}
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="ad-actions">
+                                        <button class="ad-act-btn ad-act-btn--view" onclick="viewReport({{ report.id }})" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if report.is_unassigned and report.status != 'resolved' %}
+                                        <button class="ad-act-btn ad-act-btn--assign" onclick="assignOfficer({{ report.id }})" title="Assign Officer">
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="ad-empty" style="padding:3rem 2rem;">
+                    <div class="ad-empty-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="ad-empty-title">No Recent Reports</div>
+                    <p class="ad-empty-sub">When citizens submit reports, they will appear here.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Officers List -->
+        <div class="ad-card ad-card--officers">
+            <div class="ad-card-header ad-card-header--between">
+                <span><i class="fas fa-user-shield"></i> Officers in {{ user.district or 'Your' }} District</span>
+                <button class="ad-new-officer-btn" onclick="window.location.href='/admin/create-officer'">
+                    <i class="fas fa-plus"></i> New
+                </button>
+            </div>
+            <div class="ad-card-body ad-card-body--flush">
+                {% if officers and officers|length > 0 %}
+                <div class="ad-officers-list">
+                    {% for officer in officers %}
+                    <div class="ad-officer-item">
+                        <div class="ad-officer-left">
+                            <img src="https://ui-avatars.com/api/?name={{ officer.first_name }}+{{ officer.last_name }}&background=1a237e&color=fff&size=40"
+                                 class="ad-officer-avatar">
+                            <div class="ad-officer-info">
+                                <div class="ad-officer-name">{{ officer.first_name }} {{ officer.last_name }}</div>
+                                <div class="ad-officer-sector">
+                                    <i class="fas fa-map-marker-alt"></i> {{ officer.sector }}
+                                </div>
+                                <div class="ad-officer-badges">
+                                    {% if officer.is_active %}
+                                    <span class="ad-ob ad-ob--active"><i class="fas fa-check-circle"></i> Active</span>
+                                    {% else %}
+                                    <span class="ad-ob ad-ob--inactive"><i class="fas fa-ban"></i> Inactive</span>
+                                    {% endif %}
+                                    <span class="ad-ob ad-ob--cases">{{ officer.assigned_count }} cases</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="ad-officer-menu" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="viewOfficer({{ officer.id }})">
+                                    <i class="fas fa-eye me-2"></i>View
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="editOfficer({{ officer.id }})">
+                                    <i class="fas fa-edit me-2"></i>Edit
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% if officer.is_active %}
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deactivateOfficer({{ officer.id }})">
+                                    <i class="fas fa-ban me-2"></i>Deactivate
+                                </a></li>
+                                {% else %}
+                                <li><a class="dropdown-item text-success" href="#" onclick="activateOfficer({{ officer.id }})">
+                                    <i class="fas fa-check-circle me-2"></i>Activate
+                                </a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="ad-empty" style="padding:3rem 2rem;">
+                    <div class="ad-empty-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="ad-empty-title">No Officers Yet</div>
+                    <p class="ad-empty-sub">Click "New" to create your first officer.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+}
+
+body { font-family: 'DM Sans', 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.ad-wrapper { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Header ───────────────── */
+.ad-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    border-radius: 18px; padding: 1.5rem 2rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+}
+.ad-header::after { content:''; position:absolute; right:-50px; top:-50px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,0.04); pointer-events:none; }
+.ad-header-left { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
+.ad-header-avatar { width: 48px; height: 48px; border-radius: 13px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; flex-shrink: 0; }
+.ad-welcome    { font-size: 1.2rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.ad-header-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 3px; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.ad-header-sep { opacity: 0.4; }
+.ad-district-tag { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(255,255,255,0.12); padding: 0.18rem 0.6rem; border-radius: 999px; color: rgba(255,255,255,0.75); font-weight: 600; }
+.ad-header-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; position: relative; z-index: 1; }
+.ad-hdr-btn { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.6rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; white-space: nowrap; }
+.ad-hdr-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.ad-hdr-btn--pdf     { background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2); color: #fff; }
+.ad-hdr-btn--officer { background: #2e7d32; color: #fff; box-shadow: 0 3px 10px rgba(46,125,50,0.3); }
+
+/* ── Stats Grid ───────────── */
+.ad-stats {
+    display: grid; grid-template-columns: repeat(5,1fr); gap: 0.875rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Stats cards — original sc-* styles preserved exactly */
+.sc { background:#fff; border:1px solid #f0f0f0; border-radius:14px; padding:1.1rem 1.2rem 1rem; box-shadow:0 2px 8px rgba(0,0,0,0.04); transition:box-shadow 0.2s,transform 0.2s; position:relative; overflow:hidden; }
+.sc::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
+.sc:hover { box-shadow:0 6px 20px rgba(0,0,0,0.09); transform:translateY(-2px); }
+.sc-blue::before  { background:#1a237e; }
+.sc-amber::before { background:#f59e0b; }
+.sc-cyan::before  { background:#0288d1; }
+.sc-green::before { background:#2e7d32; }
+.sc-gray::before  { background:#6b7280; }
+.sc-head { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.85rem; }
+.sc-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:#fff; flex-shrink:0; }
+.sc-blue  .sc-icon { background:#1a237e; }
+.sc-amber .sc-icon { background:#f59e0b; }
+.sc-cyan  .sc-icon { background:#0288d1; }
+.sc-green .sc-icon { background:#2e7d32; }
+.sc-gray  .sc-icon { background:#6b7280; }
+.sc-label { font-size:0.72rem; font-weight:500; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; line-height:1; margin-bottom:3px; }
+.sc-value { font-family:'DM Mono',monospace; font-size:1.75rem; font-weight:500; color:#111827; line-height:1; letter-spacing:-0.03em; }
+.sc-foot  { font-size:0.75rem; display:flex; align-items:center; gap:5px; border-top:1px solid #f5f5f5; padding-top:0.6rem; margin-top:0.6rem; color:#6b7280; }
+.sc-foot i { font-size:0.65rem; }
+.foot-green { color:#16a34a; }
+.foot-amber { color:#d97706; }
+
+/* ── Charts ───────────────── */
+.ad-charts-row { display: grid; grid-template-columns: 1fr 340px; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+/* ── Cards ────────────────── */
+.ad-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.ad-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.ad-card-header i { font-size: 0.78rem; }
+.ad-card-header--between { justify-content: space-between; }
+.ad-card-body { padding: 1.25rem; }
+.ad-card-body--flush { padding: 0; }
+
+.ad-view-all { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--brand); text-decoration: none; border-bottom: 1.5px solid transparent; transition: border-color 0.15s; }
+.ad-view-all:hover { border-bottom-color: var(--brand); color: var(--brand); }
+
+.ad-new-officer-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.875rem; border-radius: 7px; font-size: 0.8rem; font-weight: 600; font-family: inherit; background: #2e7d32; color: #fff; border: none; cursor: pointer; transition: opacity 0.15s; }
+.ad-new-officer-btn:hover { opacity: 0.88; }
+
+/* ── Bottom Row ───────────── */
+.ad-bottom-row { display: grid; grid-template-columns: 1fr 380px; gap: 1.25rem; }
+.ad-card--reports  {}
+.ad-card--officers {}
+
+/* ── Table ────────────────── */
+.ad-table-wrap { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+.ad-table { width: 100%; border-collapse: collapse; }
+.ad-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); position: sticky; top: 0; z-index: 1; }
+.ad-table th { padding: 0.7rem 1rem; font-size: 0.69rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.ad-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.ad-table tbody tr:last-child td { border-bottom: none; }
+.ad-table tbody tr:hover { background: #f8fafb; }
+.ad-report-id    { font-family: 'DM Mono', monospace; font-size: 0.72rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.18rem 0.5rem; border-radius: 5px; }
+.ad-report-title { font-size: 0.85rem; font-weight: 600; color: var(--ink); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ad-category     { font-size: 0.8rem; color: var(--ink-3); white-space: nowrap; }
+.ad-location     { font-size: 0.8rem; color: var(--ink-3); white-space: nowrap; }
+.ad-officer-cell { font-size: 0.8rem; color: var(--ink-2); white-space: nowrap; }
+
+/* Status/Priority — original colors preserved */
+.status-badge, .priority-badge { padding:0.25rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600; display:inline-block; }
+.status-pending     { background:#fff3cd; color:#856404; }
+.status-in_progress { background:#cce5ff; color:#004085; }
+.status-resolved    { background:#d4edda; color:#155724; }
+.priority-low    { background:#d1ecf1; color:#0c5460; }
+.priority-medium { background:#fff3cd; color:#856404; }
+.priority-high   { background:#f8d7da; color:#721c24; }
+.priority-urgent { background:#dc3545; color:white; border:1px solid #bd2130; font-weight:bold; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.8;} }
+
+/* Action buttons */
+.ad-actions { display: flex; gap: 0.4rem; }
+.ad-act-btn { width: 28px; height: 28px; border-radius: 7px; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.ad-act-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+.ad-act-btn--view   { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.ad-act-btn--assign { background: #d1e7dd; color: #0a3622; border: 1px solid #a3cfbb; }
+
+/* ── Officers List ────────── */
+.ad-officers-list { display: flex; flex-direction: column; }
+.ad-officer-item  { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--rule); transition: background 0.15s; }
+.ad-officer-item:last-child { border-bottom: none; }
+.ad-officer-item:hover { background: var(--surface); }
+.ad-officer-left  { display: flex; align-items: center; gap: 0.875rem; }
+.ad-officer-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--rule); flex-shrink: 0; }
+.ad-officer-name   { font-size: 0.875rem; font-weight: 700; color: var(--ink); }
+.ad-officer-sector { font-size: 0.72rem; color: var(--ink-3); margin-top: 1px; display: flex; align-items: center; gap: 0.3rem; }
+.ad-officer-badges { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.4rem; flex-wrap: wrap; }
+.ad-ob { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.65rem; font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 5px; }
+.ad-ob--active   { background: #d1e7dd; color: #0a3622; }
+.ad-ob--inactive { background: #f8d7da; color: #721c24; }
+.ad-ob--cases    { background: var(--info-bg, #dbeafe); color: #1d4ed8; }
+.ad-officer-menu { width: 30px; height: 30px; border-radius: 7px; border: 1.5px solid var(--rule); background: var(--surface); color: var(--ink-3); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.72rem; transition: background 0.15s; }
+.ad-officer-menu:hover { background: var(--white); }
+
+/* Empty */
+.ad-empty { text-align: center; }
+.ad-empty-icon { width: 52px; height: 52px; border-radius: 13px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.875rem; font-size: 1.3rem; color: var(--ink-3); }
+.ad-empty-title { font-size: 0.95rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.3rem; }
+.ad-empty-sub   { font-size: 0.8rem; color: var(--ink-3); line-height: 1.55; }
+
+/* Responsive */
+@media (max-width: 1200px) { .ad-stats { grid-template-columns: repeat(3,1fr); } .ad-charts-row { grid-template-columns: 1fr; } .ad-bottom-row { grid-template-columns: 1fr; } }
+@media (max-width: 700px)  { .ad-stats { grid-template-columns: repeat(2,1fr); } .ad-wrapper { padding: 1rem; } .ad-header { flex-direction: column; align-items: flex-start; padding: 1.25rem; } }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if chart_labels and chart_data and chart_data|sum > 0 %}
+    const ctx1 = document.getElementById('reportsChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Reports',
+                data: {{ chart_data|safe }},
+                borderColor: '#1a237e',
+                backgroundColor: 'rgba(26,35,126,0.08)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#1a237e',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#eef2f7' }, ticks: { font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
+        }
+    });
+    {% endif %}
+
+    {% if category_labels and category_data and category_labels|length > 0 %}
+    const ctx2 = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_data|safe }},
+                backgroundColor: ['#1a237e','#5c6bc0','#ffb300','#4caf50','#f44336','#00bcd4'],
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+        }
+    });
+    {% endif %}
+});
+
+// ── All original JS functions preserved exactly ──────────
+
+function viewReport(reportId) { window.location.href = `/admin/report/${reportId}`; }
+
+function assignOfficer(reportId) {
+    fetch('/admin/api/officers/list')
+        .then(response => response.json())
+        .then(data => {
+            let options = '<option value="">Select officer...</option>';
+            data.officers.forEach(officer => {
+                options += `<option value="${officer.id}">${officer.name} (${officer.sector})</option>`;
+            });
+            const modalHTML = `
+            <div class="modal fade" id="assignModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Assign Officer</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Select Officer</label>
+                                <select class="form-select" id="officerSelect">${options}</select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="confirmAssign(${reportId})">Assign</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            const existingModal = document.getElementById('assignModal');
+            if (existingModal) existingModal.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            new bootstrap.Modal(document.getElementById('assignModal')).show();
+        })
+        .catch(error => { console.error('Error loading officers:', error); alert('Failed to load officers'); });
+}
+
+function confirmAssign(reportId) {
+    const officerId = document.getElementById('officerSelect').value;
+    if (!officerId) { alert('Please select an officer'); return; }
+    fetch(`/admin/api/reports/${reportId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ officer_id: officerId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+            showSuccessModal('Success', 'Report assigned successfully');
+            setTimeout(() => { location.reload(); }, 1500);
+        } else { alert('Error: ' + data.error); }
+    })
+    .catch(error => { console.error('Error assigning officer:', error); alert('Failed to assign officer'); });
+}
+
+function viewOfficer(officerId) { window.location.href = `/admin/officers/${officerId}`; }
+function editOfficer(officerId) { window.location.href = `/admin/officers/${officerId}/edit`; }
+
+function generateReport() {
+    const currentDate  = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear  = currentDate.getFullYear();
+    const modalHTML = `
+    <div class="modal fade" id="simpleReportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-file-pdf me-2"></i>Monthly Report</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Month</label>
+                        <select class="form-select" id="reportMonth">
+                            ${['January','February','March','April','May','June','July','August','September','October','November','December'].map((m,i)=>
+                                `<option value="${i+1}" ${currentMonth==i+1?'selected':''}>${m}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Year</label>
+                        <select class="form-select" id="reportYear">
+                            ${Array.from({length:5},(_,i)=>currentYear-i).map(y=>
+                                `<option value="${y}" ${y==currentYear?'selected':''}>${y}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Click download to generate your monthly report as PDF.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="downloadReportBtn">
+                        <i class="fas fa-download me-2"></i>Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    const existingModal = document.getElementById('simpleReportModal');
+    if (existingModal) existingModal.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const reportModal = new bootstrap.Modal(document.getElementById('simpleReportModal'));
+    reportModal.show();
+    document.getElementById('downloadReportBtn').addEventListener('click', function() {
+        const month = document.getElementById('reportMonth').value;
+        const year  = document.getElementById('reportYear').value;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+        this.disabled = true;
+        window.location.href = `/admin/api/generate-monthly-report?month=${month}&year=${year}`;
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-download me-2"></i>Download PDF';
+            this.disabled = false;
+            reportModal.hide();
+        }, 3000);
+    });
+}
+
+function previewReport() {
+    const month = document.getElementById('reportMonth').value;
+    const year  = document.getElementById('reportYear').value;
+    const previewDiv = document.getElementById('reportPreview');
+    fetch('/admin/api/report-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ month, year })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            previewDiv.style.display = 'block';
+            previewDiv.innerHTML = `<strong>${data.data.title}</strong><br><small>${data.data.month}</small><br><small>Period: ${data.data.period}</small><hr class="my-2"><div class="row"><div class="col-6">Total: ${data.data.stats.total}</div><div class="col-6">Resolved: ${data.data.stats.resolved}</div></div><div class="row"><div class="col-6">Pending: ${data.data.stats.pending}</div><div class="col-6">In Progress: ${data.data.stats.in_progress}</div></div>`;
+        } else {
+            previewDiv.style.display = 'block';
+            previewDiv.className = 'alert alert-warning';
+            previewDiv.innerHTML = 'No data found for this period';
+        }
+    })
+    .catch(error => console.error('Preview error:', error));
+}
+
+function showSuccessModal(title, message, redirectUrl=null) {
+    const modalHTML = `<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Success</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center py-4"><i class="fas fa-check-circle fa-4x text-success mb-3"></i><h5 class="mb-3">${title}</h5><p>${message}</p></div><div class="modal-footer"><button type="button" class="btn btn-success" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Close</button></div></div></div></div>`;
+    showModal(modalHTML, redirectUrl);
+}
+
+function showInfoModal(title, message, password=null) {
+    let passwordHtml = '';
+    if (password) passwordHtml = `<div class="alert alert-warning mt-3"><i class="fas fa-key me-2"></i><strong>New Password:</strong><div class="mt-2 p-2 bg-light rounded fw-bold">${password}</div><small class="d-block mt-2">Please save this password. It will not be shown again.</small></div>`;
+    const modalHTML = `<div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Information</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center py-4"><i class="fas fa-info-circle fa-4x text-info mb-3"></i><h5 class="mb-3">${title}</h5><p>${message}</p>${passwordHtml}</div><div class="modal-footer"><button type="button" class="btn btn-info" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Close</button></div></div></div></div>`;
+    showModal(modalHTML);
+}
+
+function showErrorModal(title, message) {
+    const modalHTML = `<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Error</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center py-4"><i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i><h5 class="mb-3">${title}</h5><p>${message}</p></div><div class="modal-footer"><button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Close</button></div></div></div></div>`;
+    showModal(modalHTML);
+}
+
+function showConfirmModal(title, message, confirmAction) {
+    const modalHTML = `<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-warning text-dark"><h5 class="modal-title"><i class="fas fa-question-circle me-2"></i>Confirm Action</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center py-4"><i class="fas fa-question-circle fa-4x text-warning mb-3"></i><h5 class="mb-3">${title}</h5><p>${message}</p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Cancel</button><button type="button" class="btn btn-warning" id="confirmBtn" data-bs-dismiss="modal"><i class="fas fa-check me-2"></i>Confirm</button></div></div></div></div>`;
+    const existingModal = document.getElementById('confirmModal');
+    if (existingModal) existingModal.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    confirmModal.show();
+    document.getElementById('confirmBtn').addEventListener('click', function() { confirmAction(); });
+}
+
+function showModal(modalHTML, redirectUrl=null) {
+    const existingModal = document.querySelector('.modal.show');
+    if (existingModal) { const modal = bootstrap.Modal.getInstance(existingModal); if (modal) modal.hide(); }
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.querySelector('.modal:last-child'));
+    modal.show();
+    if (redirectUrl) {
+        document.querySelector('.modal:last-child').addEventListener('hidden.bs.modal', function() { window.location.href = redirectUrl; });
+    }
+}
+
+function deactivateOfficer(officerId) {
+    showConfirmModal('Deactivate Officer','Are you sure you want to deactivate this officer? They will not be able to login.',function() {
+        fetch(`/admin/api/officers/${officerId}/toggle-status`,{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'}})
+        .then(r=>{if(!r.ok)throw new Error('Network response was not ok');return r.json();})
+        .then(data=>{if(data.success){showSuccessModal('Officer Deactivated',data.message);setTimeout(()=>{location.reload();},1500);}else{showErrorModal('Error',data.error||'Failed to deactivate officer');}})
+        .catch(error=>{console.error('Error:',error);showErrorModal('Network Error','Failed to connect to server. Please check your connection and try again.');});
+    });
+}
+
+function activateOfficer(officerId) {
+    showConfirmModal('Activate Officer','Are you sure you want to activate this officer? They will be able to login.',function() {
+        fetch(`/admin/api/officers/${officerId}/toggle-status`,{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'}})
+        .then(r=>r.json())
+        .then(data=>{if(data.success){showSuccessModal('Officer Activated',data.message);setTimeout(()=>{location.reload();},1500);}else{showErrorModal('Error',data.error||'Failed to activate officer');}})
+        .catch(error=>{console.error('Error:',error);showErrorModal('Network Error','Failed to connect to server. Please try again.');});
+    });
+}
+
+function resetOfficerPassword(officerId) {
+    showConfirmModal('Reset Password','Are you sure you want to reset this officer\'s password? A new password will be generated.',function() {
+        fetch(`/admin/api/officers/${officerId}/reset-password`,{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'}})
+        .then(r=>r.json())
+        .then(data=>{if(data.success){showInfoModal('Password Reset Successful','A new password has been generated for the officer.',data.new_password);}else{showErrorModal('Error',data.error||'Failed to reset password');}})
+        .catch(error=>{console.error('Error:',error);showErrorModal('Network Error','Failed to connect to server. Please try again.');});
+    });
+}
+</script>
+{% endblock %}

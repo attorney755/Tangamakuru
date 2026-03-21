@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ap-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ap-topbar">
+        <div class="ap-topbar-left">
+            <a href="/admin/dashboard" class="ap-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="ap-topbar-title"><i class="fas fa-user-cog"></i> Admin Profile</div>
+                <div class="ap-topbar-sub">Manage your administrator information</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="ap-body">
+
+        <!-- LEFT — Profile Card -->
+        <div class="ap-sidebar">
+
+            <div class="ap-profile-card">
+                <div class="ap-profile-banner"></div>
+                <div class="ap-profile-body">
+                    <img src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=1a3a5c&color=fff&size=120"
+                         class="ap-avatar">
+                    <div class="ap-profile-name">{{ user.first_name }} {{ user.last_name }}</div>
+                    <div class="ap-profile-email"><i class="fas fa-envelope"></i> {{ user.email }}</div>
+                    <span class="ap-role-badge"><i class="fas fa-crown"></i> Administrator</span>
+                </div>
+            </div>
+
+            <!-- Navigation tabs -->
+            <div class="ap-nav">
+                <button class="ap-nav-item ap-nav-item--active" id="tab-view" onclick="showTab('view')">
+                    <i class="fas fa-user"></i> Profile Info
+                </button>
+                <button class="ap-nav-item" id="tab-edit" onclick="showTab('edit')">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+                <button class="ap-nav-item" id="tab-password" onclick="showTab('password')">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+
+        </div>
+
+        <!-- RIGHT — Content -->
+        <div class="ap-main">
+
+            <!-- ── View Profile ── -->
+            <div id="panel-view">
+                <div class="ap-card">
+                    <div class="ap-card-header"><i class="fas fa-user"></i> Personal Information</div>
+                    <div class="ap-card-body">
+                        <div class="ap-details-grid">
+                            <div class="ap-detail-item">
+                                <div class="ap-detail-label">First Name</div>
+                                <div class="ap-detail-value">{{ user.first_name }}</div>
+                            </div>
+                            <div class="ap-detail-item">
+                                <div class="ap-detail-label">Last Name</div>
+                                <div class="ap-detail-value">{{ user.last_name }}</div>
+                            </div>
+                            <div class="ap-detail-item">
+                                <div class="ap-detail-label">Email Address</div>
+                                <div class="ap-detail-value"><i class="fas fa-envelope ap-detail-icon"></i>{{ user.email }}</div>
+                            </div>
+                            <div class="ap-detail-item">
+                                <div class="ap-detail-label">Phone Number</div>
+                                <div class="ap-detail-value">
+                                    {% if user.phone %}<i class="fas fa-phone ap-detail-icon"></i>{{ user.phone }}
+                                    {% else %}<span class="ap-detail-empty">Not provided</span>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ap-card">
+                    <div class="ap-card-header"><i class="fas fa-map-marker-alt"></i> Location Information</div>
+                    <div class="ap-card-body">
+                        <div class="ap-location-grid">
+                            <div class="ap-location-item">
+                                <div class="ap-loc-key">Province</div>
+                                <div class="ap-loc-val">{{ user.province or '—' }}</div>
+                            </div>
+                            <div class="ap-location-item">
+                                <div class="ap-loc-key">District</div>
+                                <div class="ap-loc-val">{{ user.district or '—' }}</div>
+                            </div>
+                            <div class="ap-location-item">
+                                <div class="ap-loc-key">Sector</div>
+                                <div class="ap-loc-val">{{ user.sector or '—' }}</div>
+                            </div>
+                            <div class="ap-location-item">
+                                <div class="ap-loc-key">Cell</div>
+                                <div class="ap-loc-val">{{ user.cell or '—' }}</div>
+                            </div>
+                            <div class="ap-location-item">
+                                <div class="ap-loc-key">Village</div>
+                                <div class="ap-loc-val">{{ user.village or '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Edit Profile ── -->
+            <div id="panel-edit" style="display:none;">
+                <div class="ap-card">
+                    <div class="ap-card-header"><i class="fas fa-edit"></i> Edit Profile</div>
+                    <div class="ap-card-body">
+                        <form id="profileEditForm">
+
+                            <div class="ap-section-label">Personal Details</div>
+                            <div class="ap-row-2">
+                                <div class="ap-field">
+                                    <label class="ap-label">First Name</label>
+                                    <input type="text" class="ap-input" id="first_name" value="{{ user.first_name }}" required>
+                                </div>
+                                <div class="ap-field">
+                                    <label class="ap-label">Last Name</label>
+                                    <input type="text" class="ap-input" id="last_name" value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                            <div class="ap-field">
+                                <label class="ap-label">Phone Number</label>
+                                <div class="ap-input-wrap">
+                                    <i class="fas fa-phone ap-input-icon"></i>
+                                    <input type="tel" class="ap-input ap-input--icon" id="phone" value="{{ user.phone or '' }}" placeholder="078X XXX XXX">
+                                </div>
+                            </div>
+
+                            <div class="ap-section-label">Location</div>
+                            <div class="ap-row-2">
+                                <div class="ap-field">
+                                    <label class="ap-label">Province</label>
+                                    <select class="ap-input ap-select" id="province">
+                                        <option value="Kigali City" {% if user.province == 'Kigali City' %}selected{% endif %}>Kigali City</option>
+                                        <option value="Eastern"     {% if user.province == 'Eastern' %}selected{% endif %}>Eastern Province</option>
+                                        <option value="Southern"    {% if user.province == 'Southern' %}selected{% endif %}>Southern Province</option>
+                                        <option value="Western"     {% if user.province == 'Western' %}selected{% endif %}>Western Province</option>
+                                        <option value="Northern"    {% if user.province == 'Northern' %}selected{% endif %}>Northern Province</option>
+                                    </select>
+                                </div>
+                                <div class="ap-field">
+                                    <label class="ap-label">District</label>
+                                    <input type="text" class="ap-input" id="district" value="{{ user.district or '' }}" placeholder="e.g., Gasabo">
+                                </div>
+                            </div>
+                            <div class="ap-row-3">
+                                <div class="ap-field">
+                                    <label class="ap-label">Sector</label>
+                                    <input type="text" class="ap-input" id="sector" value="{{ user.sector or '' }}" placeholder="e.g., Remera">
+                                </div>
+                                <div class="ap-field">
+                                    <label class="ap-label">Cell</label>
+                                    <input type="text" class="ap-input" id="cell" value="{{ user.cell or '' }}" placeholder="e.g., Gishushu">
+                                </div>
+                                <div class="ap-field">
+                                    <label class="ap-label">Village</label>
+                                    <input type="text" class="ap-input" id="village" value="{{ user.village or '' }}" placeholder="e.g., Amahoro">
+                                </div>
+                            </div>
+
+                            <div id="editMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                            <div class="ap-form-actions">
+                                <button type="button" class="ap-btn ap-btn--ghost" onclick="showTab('view')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="ap-btn ap-btn--primary" id="saveBtn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Change Password ── -->
+            <div id="panel-password" style="display:none;">
+                <div class="ap-card">
+                    <div class="ap-card-header"><i class="fas fa-key"></i> Change Password</div>
+                    <div class="ap-card-body">
+                        <form id="changePasswordForm">
+
+                            <div class="ap-field">
+                                <label class="ap-label">Current Password</label>
+                                <div class="ap-input-wrap">
+                                    <i class="fas fa-lock ap-input-icon"></i>
+                                    <input type="password" class="ap-input ap-input--icon" id="current_password" placeholder="Enter current password" required>
+                                </div>
+                            </div>
+
+                            <div class="ap-divider"></div>
+
+                            <div class="ap-row-2">
+                                <div class="ap-field">
+                                    <label class="ap-label">New Password</label>
+                                    <div class="ap-input-wrap">
+                                        <i class="fas fa-key ap-input-icon"></i>
+                                        <input type="password" class="ap-input ap-input--icon" id="new_password" placeholder="Min. 6 characters" required minlength="6">
+                                    </div>
+                                    <div class="ap-hint">Minimum 6 characters</div>
+                                </div>
+                                <div class="ap-field">
+                                    <label class="ap-label">Confirm New Password</label>
+                                    <div class="ap-input-wrap">
+                                        <i class="fas fa-key ap-input-icon"></i>
+                                        <input type="password" class="ap-input ap-input--icon" id="confirm_password" placeholder="Re-enter new password" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="pwMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                            <div class="ap-form-actions">
+                                <button type="button" class="ap-btn ap-btn--ghost" onclick="showTab('view')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="ap-btn ap-btn--primary" id="changePwBtn">
+                                    <i class="fas fa-key"></i> Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="ap-toast" class="ap-toast" style="display:none;">
+    <div class="ap-toast-inner">
+        <i id="ap-toast-icon" class="fas fa-check-circle"></i>
+        <span id="ap-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.ap-wrapper { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ap-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.ap-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ap-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.ap-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ap-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ap-topbar-title i { color: var(--brand); }
+.ap-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Layout ───────────────── */
+.ap-body { display: grid; grid-template-columns: 260px 1fr; gap: 1.25rem; align-items: start; }
+
+/* ── Profile card ─────────── */
+.ap-profile-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
+.ap-profile-banner { height: 72px; background: linear-gradient(135deg, var(--brand-dark), var(--brand)); }
+.ap-profile-body {
+    padding: 0 1.25rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.ap-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    border: 4px solid var(--white); box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    margin-top: -36px; margin-bottom: 0.75rem;
+}
+.ap-profile-name  { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.25rem; }
+.ap-profile-email { font-size: 0.75rem; color: var(--ink-3); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
+.ap-role-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: var(--warning-bg); color: var(--warning);
+    border: 1px solid var(--warning-border);
+    font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 999px;
+}
+
+/* ── Sidebar nav ──────────── */
+.ap-nav { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+.ap-nav-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    width: 100%; padding: 0.875rem 1.1rem;
+    background: none; border: none; border-bottom: 1px solid var(--rule);
+    font-size: 0.85rem; font-weight: 600; color: var(--ink-3);
+    cursor: pointer; font-family: inherit; text-align: left;
+    transition: background 0.15s, color 0.15s;
+}
+.ap-nav-item:last-child { border-bottom: none; }
+.ap-nav-item i { width: 16px; text-align: center; }
+.ap-nav-item:hover { background: var(--surface); color: var(--brand); }
+.ap-nav-item--active { background: var(--info-bg) !important; color: var(--brand) !important; border-left: 3px solid var(--brand); }
+
+/* ── Cards ────────────────── */
+.ap-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.ap-card:last-child { margin-bottom: 0; }
+.ap-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.ap-card-header i { font-size: 0.75rem; }
+.ap-card-body { padding: 1.25rem; }
+
+/* ── Details ──────────────── */
+.ap-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.ap-detail-label { font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+.ap-detail-value { font-size: 0.9rem; color: var(--ink-2); font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
+.ap-detail-empty { font-size: 0.85rem; color: var(--ink-3); font-style: italic; font-weight: 400; }
+.ap-detail-icon  { color: var(--ink-3); font-size: 0.72rem; }
+
+/* ── Location ─────────────── */
+.ap-location-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+.ap-location-item { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 0.65rem 0.875rem; }
+.ap-loc-key { font-size: 0.65rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.ap-loc-val { font-size: 0.875rem; color: var(--ink); font-weight: 600; }
+
+/* ── Form ─────────────────── */
+.ap-section-label { font-size: 0.72rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.07em; padding-bottom: 0.5rem; border-bottom: 1.5px solid var(--rule); margin-bottom: 0.875rem; margin-top: 1.1rem; }
+.ap-section-label:first-child { margin-top: 0; }
+.ap-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 0.875rem; }
+.ap-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+.ap-field { display: flex; flex-direction: column; }
+.ap-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.ap-hint  { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.28rem; }
+.ap-divider { height: 1px; background: var(--rule); margin: 1.1rem 0; }
+
+.ap-input-wrap { position: relative; }
+.ap-input-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--ink-3); pointer-events: none; }
+.ap-input {
+    width: 100%; padding: 0.75rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.ap-input--icon  { padding-left: 2.3rem; }
+.ap-input::placeholder { color: #8fa8c0; }
+.ap-input:focus  { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.ap-input.ap-invalid { border-color: var(--danger) !important; }
+.ap-input.ap-valid   { border-color: #059669 !important; }
+.ap-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; background-size: 10px; padding-right: 2.25rem; cursor: pointer; }
+
+.ap-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); margin-top: 1.25rem; }
+
+/* Buttons */
+.ap-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.7rem 1.35rem; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.ap-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.ap-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(15,36,64,0.2); }
+.ap-btn--primary:hover { color: #fff; }
+.ap-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* Inline messages */
+.ap-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.85rem; }
+.ap-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.ap-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.ap-msg--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+/* Toast */
+.ap-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.ap-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 860px) { .ap-body { grid-template-columns: 1fr; } .ap-location-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .ap-wrapper { padding: 1rem; } .ap-details-grid { grid-template-columns: 1fr; } .ap-row-2 { grid-template-columns: 1fr; } .ap-row-3 { grid-template-columns: 1fr; } .ap-location-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+
+<script>
+function showTab(tab) {
+    ['view','edit','password'].forEach(t => {
+        document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
+        document.getElementById(`tab-${t}`).classList.toggle('ap-nav-item--active', t === tab);
+    });
+}
+
+// Profile edit
+document.getElementById('profileEditForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    btn.disabled = true;
+
+    const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name:  document.getElementById('last_name').value,
+        phone:      document.getElementById('phone').value || '',
+        province:   document.getElementById('province').value || '',
+        district:   document.getElementById('district').value || '',
+        sector:     document.getElementById('sector').value || '',
+        cell:       document.getElementById('cell').value || '',
+        village:    document.getElementById('village').value || ''
+    };
+
+    try {
+        const res  = await fetch('/api/profile/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formData) });
+        const data = await res.json();
+        if (res.ok) {
+            showInlineMsg('editMessage', 'Profile updated successfully!', 'success');
+            showToast('Profile updated successfully', true);
+            setTimeout(() => location.reload(), 1600);
+        } else {
+            showInlineMsg('editMessage', data.error || 'Failed to update profile', 'danger');
+        }
+    } catch { showInlineMsg('editMessage', 'Network error. Please try again.', 'danger'); }
+    finally { btn.innerHTML = orig; btn.disabled = false; }
+});
+
+// Password change
+document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const np = document.getElementById('new_password').value;
+    const cp = document.getElementById('confirm_password').value;
+    if (np !== cp) { showInlineMsg('pwMessage', 'Passwords do not match', 'warning'); return; }
+    if (np.length < 6) { showInlineMsg('pwMessage', 'Password must be at least 6 characters', 'warning'); return; }
+
+    const btn = document.getElementById('changePwBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing...';
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch('/api/profile/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password: document.getElementById('current_password').value, new_password: np }) });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Password changed successfully', true);
+            this.reset();
+            showTab('view');
+        } else {
+            showInlineMsg('pwMessage', data.error || 'Failed to change password', 'danger');
+        }
+    } catch { showInlineMsg('pwMessage', 'Network error. Please try again.', 'danger'); }
+    finally { btn.innerHTML = orig; btn.disabled = false; }
+});
+
+// Real-time password match
+document.getElementById('confirm_password')?.addEventListener('input', function() {
+    const match = this.value === document.getElementById('new_password').value;
+    this.classList.toggle('ap-invalid', !match);
+    this.classList.toggle('ap-valid', match && this.value.length > 0);
+});
+document.getElementById('new_password')?.addEventListener('input', function() {
+    const cp = document.getElementById('confirm_password');
+    if (!cp.value) return;
+    const match = cp.value === this.value;
+    cp.classList.toggle('ap-invalid', !match);
+    cp.classList.toggle('ap-valid', match);
+});
+
+function showInlineMsg(id, text, type) {
+    const icons = { success:'check-circle', danger:'times-circle', warning:'exclamation-triangle' };
+    const div = document.getElementById(id);
+    div.innerHTML = `<div class="ap-msg ap-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.style.display = 'block';
+    setTimeout(() => { div.style.display = 'none'; }, 5000);
+}
+
+function showToast(msg, success) {
+    const t = document.getElementById('ap-toast');
+    t.querySelector('.ap-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('ap-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('ap-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+
+{% endblock %}

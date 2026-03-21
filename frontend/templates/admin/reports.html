@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ar-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ar-topbar">
+        <div class="ar-topbar-left">
+            <a href="/admin/dashboard" class="ar-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="ar-topbar-title"><i class="fas fa-file-alt"></i> All Reports</div>
+                <div class="ar-topbar-sub">Manage and monitor all incident reports</div>
+            </div>
+        </div>
+        <div class="ar-topbar-count">
+            {% if reports %}
+            <span class="ar-count-badge">{{ reports|length }} report{{ 's' if reports|length != 1 }}</span>
+            {% else %}
+            <span class="ar-count-badge">0 reports</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="ar-filters">
+        <div class="ar-filter-group">
+            <label class="ar-filter-label">Sector</label>
+            <select class="ar-select" id="sectorFilter" onchange="applyFilter()">
+                <option value="all" {% if current_sector == 'all' %}selected{% endif %}>All Sectors</option>
+                {% for sector in sectors %}
+                <option value="{{ sector }}" {% if current_sector == sector %}selected{% endif %}>{{ sector }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ar-filter-group">
+            <label class="ar-filter-label">Status</label>
+            <select class="ar-select" id="statusFilter" onchange="applyFilter()">
+                <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+                <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+        </div>
+        <div class="ar-filter-group">
+            <label class="ar-filter-label">Priority</label>
+            <select class="ar-select" id="priorityFilter" onchange="filterReports()">
+                <option value="all">All Priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+            </select>
+        </div>
+        <div class="ar-filter-group ar-filter-group--search">
+            <label class="ar-filter-label">Search</label>
+            <div class="ar-search-wrap">
+                <i class="fas fa-search ar-search-icon"></i>
+                <input type="text" class="ar-search" id="searchInput"
+                       placeholder="Search by title, ID, reporter..." onkeyup="filterReports()">
+            </div>
+        </div>
+        <div class="ar-filter-group ar-filter-group--reset">
+            <label class="ar-filter-label">&nbsp;</label>
+            <button class="ar-reset-btn" onclick="resetFilters()">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Summary -->
+    {% if current_sector != 'all' or current_status != 'all' %}
+    <div class="ar-filter-summary">
+        <div class="ar-filter-summary-inner">
+            <i class="fas fa-filter"></i>
+            <span>Active filters:</span>
+            {% if current_sector != 'all' %}
+            <span class="ar-filter-tag">
+                <i class="fas fa-map-marker-alt"></i> {{ current_sector }}
+                <a href="?sector=all&status={{ current_status }}" class="ar-filter-remove"><i class="fas fa-times"></i></a>
+            </span>
+            {% endif %}
+            {% if current_status != 'all' %}
+            <span class="ar-filter-tag">
+                <i class="fas fa-tag"></i> {{ current_status|replace('_', ' ')|title }}
+                <a href="?sector={{ current_sector }}&status=all" class="ar-filter-remove"><i class="fas fa-times"></i></a>
+            </span>
+            {% endif %}
+            <span class="ar-filter-count">{{ filtered_count }} of {{ total_reports }} reports</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Reports Table -->
+    <div class="ar-card">
+        {% if reports %}
+        <div class="ar-table-wrap">
+            <table class="ar-table" id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Sector</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Reporter</th>
+                        <th>Assigned To</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr data-status="{{ report.status }}" data-priority="{{ report.priority }}" data-sector="{{ report.sector }}">
+                        <!-- Report ID -->
+                        <td>
+                            <span class="ar-report-id">{{ report.report_id }}</span>
+                        </td>
+
+                        <!-- Title -->
+                        <td>
+                            <a href="/admin/report/{{ report.id }}" class="ar-report-title">
+                                {{ report.title }}
+                            </a>
+                        </td>
+
+                        <!-- Category -->
+                        <td class="ar-category">{{ report.category }}</td>
+
+                        <!-- Sector Column -->
+                        <td>
+                            <span class="ar-sector"><i class="fas fa-map-marker-alt"></i> {{ report.sector }}</span>
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            {% if report.status == 'pending' %}
+                            <span class="ar-status ar-status--pending"><i class="fas fa-clock"></i> Pending</span>
+                            {% elif report.status == 'in_progress' %}
+                            <span class="ar-status ar-status--progress"><i class="fas fa-spinner"></i> In Progress</span>
+                            {% elif report.status == 'resolved' %}
+                            <span class="ar-status ar-status--resolved"><i class="fas fa-check-circle"></i> Resolved</span>
+                            {% else %}
+                            <span class="ar-status ar-status--other">{{ report.status }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Priority -->
+                        <td>
+                            {% if report.priority == 'urgent' %}
+                            <span class="ar-priority ar-priority--urgent"><i class="fas fa-fire"></i> Urgent</span>
+                            {% elif report.priority == 'high' %}
+                            <span class="ar-priority ar-priority--high"><i class="fas fa-arrow-up"></i> High</span>
+                            {% elif report.priority == 'medium' %}
+                            <span class="ar-priority ar-priority--medium"><i class="fas fa-minus"></i> Medium</span>
+                            {% else %}
+                            <span class="ar-priority ar-priority--low"><i class="fas fa-arrow-down"></i> Low</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Reporter -->
+                        <td class="ar-reporter">{{ report.reporter }}</td>
+
+                        <!-- Assigned To -->
+                        <td>
+                            {% if report.assigned_to == 'Unassigned' %}
+                            <span class="ar-unassigned"><i class="fas fa-user-clock"></i> Unassigned</span>
+                            {% else %}
+                            <span class="ar-assigned"><i class="fas fa-user-check"></i> {{ report.assigned_to }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Date -->
+                        <td class="ar-date"><i class="far fa-calendar-alt"></i> {{ report.created_at }}</td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="ar-actions">
+                                <a href="/admin/report/{{ report.id }}" class="ar-act-btn ar-act-btn--view" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if report.assigned_to == 'Unassigned' %}
+                                <button class="ar-act-btn ar-act-btn--assign" title="Assign Officer" onclick="assignOfficer({{ report.id }})">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                                {% endif %}
+                                <a href="/admin/report/{{ report.id }}/print" class="ar-act-btn ar-act-btn--print" title="Print" target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="ar-empty">
+            <div class="ar-empty-icon"><i class="fas fa-inbox"></i></div>
+            <div class="ar-empty-title">No Reports Found</div>
+            <p class="ar-empty-sub">
+                {% if current_sector != 'all' or current_status != 'all' %}
+                    No reports match your current filters in <strong>{{ admin_district }}</strong> district.
+                    <br>
+                    <button class="ar-reset-btn mt-3" onclick="window.location.href='?sector=all&status=all'">
+                        <i class="fas fa-redo"></i> Clear Filters
+                    </button>
+                {% else %}
+                    There are no incident reports in <strong>{{ admin_district }}</strong> district yet.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Assign Officer Modal -->
+<div class="ar-modal-overlay" id="assignModal" style="display:none;">
+    <div class="ar-modal">
+        <div class="ar-modal-header ar-modal-header--success">
+            <div class="ar-modal-title"><i class="fas fa-user-plus"></i> Assign Officer</div>
+            <button class="ar-modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ar-modal-body">
+            <div class="ar-modal-icon ar-modal-icon--success"><i class="fas fa-user-shield"></i></div>
+            <div class="ar-modal-heading">Select an Officer</div>
+            <p class="ar-modal-desc">Choose an officer to assign to this report. They will be notified immediately.</p>
+            <div class="ar-field">
+                <label class="ar-field-label">Officer</label>
+                <select class="ar-field-select" id="officerSelect">
+                    <option value="">Loading officers...</option>
+                </select>
+            </div>
+        </div>
+        <div class="ar-modal-footer">
+            <button class="ar-btn ar-btn--ghost" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+            <button class="ar-btn ar-btn--success" onclick="confirmAssign()"><i class="fas fa-user-check"></i> Assign Officer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="ar-toast" class="ar-toast" style="display:none;">
+    <div class="ar-toast-inner">
+        <i id="ar-toast-icon" class="fas fa-check-circle"></i>
+        <span id="ar-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --accent:     #c0392b;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.ar-wrapper { max-width: 1300px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ar-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.1rem; gap: 1rem; flex-wrap: wrap;
+    border-left: 4px solid var(--brand);
+}
+.ar-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ar-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.ar-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ar-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ar-topbar-title i { color: var(--brand); }
+.ar-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.ar-count-badge  { font-size: 0.78rem; font-weight: 600; color: var(--ink-3); background: var(--surface); border: 1px solid var(--rule); padding: 0.3rem 0.875rem; border-radius: 999px; }
+
+/* ── Filters ──────────────── */
+.ar-filters {
+    display: flex; align-items: flex-end; gap: 0.875rem; flex-wrap: wrap;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    margin-bottom: 1.1rem;
+}
+.ar-filter-group { display: flex; flex-direction: column; gap: 0.35rem; }
+.ar-filter-group--search { flex: 1; min-width: 200px; }
+.ar-filter-label { font-size: 0.72rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.ar-select {
+    padding: 0.65rem 2rem 0.65rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 10px;
+    transition: border-color 0.15s;
+}
+.ar-select:focus { border-color: var(--brand); }
+
+.ar-search-wrap { position: relative; }
+.ar-search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.72rem; color: var(--ink-3); pointer-events: none; }
+.ar-search {
+    width: 100%; padding: 0.65rem 0.875rem 0.65rem 2.2rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s;
+}
+.ar-search:focus { border-color: var(--brand); background: var(--white); }
+
+.ar-reset-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.65rem 1.1rem; border: 1.5px solid var(--rule);
+    border-radius: 9px; background: var(--white); color: var(--ink-3);
+    font-size: 0.875rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.ar-reset-btn:hover { background: var(--surface); border-color: var(--ink-3); color: var(--ink); }
+
+/* ── Filter Summary ───────── */
+.ar-filter-summary {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+.ar-filter-summary-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--ink-2);
+}
+.ar-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--white);
+    border: 1px solid var(--rule);
+    border-radius: 20px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.ar-filter-remove {
+    color: var(--ink-3);
+    text-decoration: none;
+    margin-left: 0.3rem;
+    transition: color 0.15s;
+}
+.ar-filter-remove:hover {
+    color: var(--danger);
+}
+.ar-filter-count {
+    margin-left: auto;
+    color: var(--ink-3);
+    font-size: 0.8rem;
+}
+.mt-3 { margin-top: 1rem; }
+
+/* ── Card ─────────────────── */
+.ar-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+
+/* ── Table ────────────────── */
+.ar-table-wrap { overflow-x: auto; }
+.ar-table { width: 100%; border-collapse: collapse; }
+.ar-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.ar-table th { padding: 0.75rem 1rem; font-size: 0.69rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.ar-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.ar-table tbody tr:last-child td { border-bottom: none; }
+.ar-table tbody tr:hover { background: #f8fafb; }
+
+.ar-report-id { font-family: monospace; font-size: 0.75rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.22rem 0.6rem; border-radius: 6px; }
+.ar-report-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); text-decoration: none; }
+.ar-report-title:hover { text-decoration: underline; color: var(--brand-dark); }
+.ar-category { font-size: 0.82rem; color: var(--ink-3); }
+.ar-reporter  { font-size: 0.825rem; color: var(--ink-2); }
+.ar-date      { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Sector badge */
+.ar-sector {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    background: var(--surface);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+.ar-sector i {
+    color: var(--brand);
+    font-size: 0.7rem;
+}
+
+/* Status pills */
+.ar-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+.ar-status--pending  { background: var(--warning-bg); color: var(--warning); }
+.ar-status--progress { background: var(--info-bg);    color: var(--info); }
+.ar-status--resolved { background: var(--success-bg); color: var(--success); }
+.ar-status--other    { background: var(--surface);    color: var(--ink-3); border: 1px solid var(--rule); }
+
+/* Priority pills */
+.ar-priority { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 6px; white-space: nowrap; }
+.ar-priority--urgent { background: var(--danger-bg);  color: var(--danger); border: 1px solid var(--danger-border); }
+.ar-priority--high   { background: #fef3c7;            color: #b45309;       border: 1px solid #fde68a; }
+.ar-priority--medium { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.ar-priority--low    { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+/* Assigned */
+.ar-unassigned { font-size: 0.75rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.3rem; }
+.ar-assigned   { font-size: 0.78rem; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Action buttons */
+.ar-actions { display: flex; align-items: center; gap: 0.4rem; }
+.ar-act-btn {
+    width: 28px; height: 28px; border-radius: 7px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; cursor: pointer; text-decoration: none;
+    transition: opacity 0.15s, transform 0.15s;
+}
+.ar-act-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+.ar-act-btn--view   { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.ar-act-btn--assign { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.ar-act-btn--print  { background: var(--surface);    color: var(--ink-3);   border: 1px solid var(--rule); }
+
+/* Empty */
+.ar-empty { text-align: center; padding: 4rem 2rem; }
+.ar-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.ar-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.ar-empty-sub   { font-size: 0.85rem; color: var(--ink-3); }
+
+/* ── Modal ────────────────── */
+.ar-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.ar-modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+.ar-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; }
+.ar-modal-header--success { background: linear-gradient(135deg, #065f46, #059669); }
+.ar-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+.ar-modal-close  { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
+.ar-modal-close:hover { background: rgba(255,255,255,0.25); }
+.ar-modal-body   { padding: 1.5rem 1.25rem; text-align: center; }
+.ar-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.ar-modal-icon   { width: 52px; height: 52px; border-radius: 13px; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.875rem; font-size: 1.25rem; }
+.ar-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.ar-modal-heading { font-size: 0.95rem; font-weight: 800; color: var(--ink); margin-bottom: 0.35rem; }
+.ar-modal-desc   { font-size: 0.82rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 1rem; }
+
+.ar-field { text-align: left; }
+.ar-field-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.ar-field-select {
+    width: 100%; padding: 0.72rem 2rem 0.72rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.875rem center;
+    transition: border-color 0.15s;
+}
+.ar-field-select:focus { border-color: var(--brand); background: var(--white); }
+
+/* Buttons */
+.ar-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.ar-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.ar-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.ar-btn--success { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 3px 10px rgba(5,150,105,0.2); }
+
+/* Toast */
+.ar-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.ar-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 1000px) { .ar-table td:nth-child(8), .ar-table th:nth-child(8) { display: none; } }
+@media (max-width: 768px) { .ar-filters { flex-direction: column; } .ar-filter-group--search { width: 100%; } .ar-wrapper { padding: 1rem; } .ar-topbar { border-left: none; flex-direction: column; align-items: flex-start; } }
+</style>
+
+<script>
+let currentReportId = null;
+
+function applyFilter() {
+    const sector = document.getElementById('sectorFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    window.location.href = `?sector=${sector}&status=${status}`;
+}
+
+function filterReports() {
+    const priority = document.getElementById('priorityFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#reportsTable tbody tr');
+
+    rows.forEach(row => {
+        const priorityMatch = priority === 'all' || row.dataset.priority === priority;
+        const searchMatch = search === '' || row.textContent.toLowerCase().includes(search);
+        row.style.display = (priorityMatch && searchMatch) ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    window.location.href = '?sector=all&status=all';
+}
+
+function closeModal() { document.getElementById('assignModal').style.display = 'none'; }
+document.getElementById('assignModal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
+
+function assignOfficer(reportId) {
+    currentReportId = reportId;
+    document.getElementById('officerSelect').innerHTML = '<option value="">Loading officers...</option>';
+    document.getElementById('assignModal').style.display = 'flex';
+
+    fetch('/admin/api/officers/list')
+        .then(r => r.json())
+        .then(data => {
+            const select = document.getElementById('officerSelect');
+            select.innerHTML = '<option value="">Select officer...</option>';
+            data.officers.forEach(o => {
+                select.innerHTML += `<option value="${o.id}">${o.name} (${o.sector})</option>`;
+            });
+        })
+        .catch(() => {
+            document.getElementById('officerSelect').innerHTML = '<option value="">Failed to load officers</option>';
+        });
+}
+
+function confirmAssign() {
+    const officerId = document.getElementById('officerSelect').value;
+    if (!officerId) { showToast('Please select an officer', false); return; }
+
+    fetch(`/admin/api/reports/${currentReportId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ officer_id: officerId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeModal();
+            showToast('Officer assigned successfully', true);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.error || 'Failed to assign officer', false);
+        }
+    })
+    .catch(() => showToast('Network error. Please try again.', false));
+}
+
+function showToast(msg, success) {
+    const t = document.getElementById('ar-toast');
+    t.querySelector('.ar-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('ar-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('ar-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+
+// Handle filter remove links
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ar-filter-remove').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.getAttribute('href');
+        });
+    });
+});
+</script>
+
+{% endblock %}

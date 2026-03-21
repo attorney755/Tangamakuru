@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-warning text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Announcement</h4>
+                    <p class="mb-0 small opacity-90">Update announcement details</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form id="announcementForm" onsubmit="submitEditAnnouncement(event, {{ announcement.id }})">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">Title *</label>
+                            <input type="text" class="form-control" id="title" value="{{ announcement.title }}" required 
+                                   placeholder="e.g., System Maintenance, Community Work">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-bold">Message *</label>
+                            <textarea class="form-control" id="content" rows="5" required
+                                      placeholder="Write your announcement message here...">{{ announcement.content }}</textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="priority" class="form-label fw-bold">Priority</label>
+                                <select class="form-select" id="priority">
+                                    <option value="normal" {% if announcement.priority == 'normal' %}selected{% endif %}>Normal</option>
+                                    <option value="important" {% if announcement.priority == 'important' %}selected{% endif %}>Important</option>
+                                    <option value="urgent" {% if announcement.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="target_audience" class="form-label fw-bold">Target Audience</label>
+                                <select class="form-select" id="target_audience">
+                                    <option value="officers" {% if announcement.target_audience == 'officers' %}selected{% endif %}>Officers Only</option>
+                                    <option value="citizens" {% if announcement.target_audience == 'citizens' %}selected{% endif %}>Citizens Only</option>
+                                    <option value="all" {% if announcement.target_audience == 'all' %}selected{% endif %}>All Users</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="target_sector" class="form-label fw-bold">Target Sector (Optional)</label>
+                                <select class="form-select" id="target_sector">
+                                    <option value="">All Sectors</option>
+                                    <option value="Kigali City" {% if announcement.target_sector == 'Kigali City' %}selected{% endif %}>Kigali City</option>
+                                    <option value="Gasabo" {% if announcement.target_sector == 'Gasabo' %}selected{% endif %}>Gasabo</option>
+                                    <option value="Kicukiro" {% if announcement.target_sector == 'Kicukiro' %}selected{% endif %}>Kicukiro</option>
+                                    <option value="Nyarugenge" {% if announcement.target_sector == 'Nyarugenge' %}selected{% endif %}>Nyarugenge</option>
+                                    <option value="Eastern" {% if announcement.target_sector == 'Eastern' %}selected{% endif %}>Eastern Province</option>
+                                    <option value="Western" {% if announcement.target_sector == 'Western' %}selected{% endif %}>Western Province</option>
+                                    <option value="Northern" {% if announcement.target_sector == 'Northern' %}selected{% endif %}>Northern Province</option>
+                                    <option value="Southern" {% if announcement.target_sector == 'Southern' %}selected{% endif %}>Southern Province</option>
+                                </select>
+                                <small class="text-muted">Only applies when targeting officers</small>
+                            </div>
+                            
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notify_users" checked>
+                                    <label class="form-check-label" for="notify_users">
+                                        Notify users about this update
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Changes will be saved and users may be notified if selected.
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning px-4" id="submitBtn">
+                                <i class="fas fa-save me-2"></i>Update Announcement
+                            </button>
+                            <a href="/admin/announcements" class="btn btn-outline-secondary px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <div id="message" class="mt-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitEditAnnouncement(event, announcementId) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+    submitBtn.disabled = true;
+    
+    const formData = {
+        title: document.getElementById('title').value,
+        content: document.getElementById('content').value,
+        priority: document.getElementById('priority').value,
+        target_audience: document.getElementById('target_audience').value,
+        target_sector: document.getElementById('target_sector').value || null,
+        notify_users: document.getElementById('notify_users').checked
+    };
+    
+    fetch(`/admin/announcements/${announcementId}/edit`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showMessage('Announcement updated successfully! Users have been notified. Redirecting...', 'success');
+            
+            // Then redirect after a short delay
+            setTimeout(() => {
+                window.location.href = '/admin/announcements';
+            }, 1500);
+        } else {
+            // Show error and restore button
+            showMessage('Error: ' + (data.error || 'Failed to update announcement'), 'danger');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Network error. Please try again.', 'danger');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function showMessage(text, type) {
+    const messageDiv = document.getElementById('message');
+    const alertClass = {
+        'success': 'alert-success',
+        'danger': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+    }[type] || 'alert-info';
+    
+    const icon = {
+        'success': 'check-circle',
+        'danger': 'exclamation-circle',
+        'warning': 'exclamation-triangle',
+        'info': 'info-circle'
+    }[type] || 'info-circle';
+    
+    messageDiv.innerHTML = `
+        <div class="alert ${alertClass} alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
+            <i class="fas fa-${icon} me-2"></i>
+            ${text}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    messageDiv.style.display = 'block';
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        const alert = messageDiv.querySelector('.alert');
+        if (alert) {
+            alert.classList.remove('show');
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 300);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,531 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="rg-page">
+
+    <div class="rg-card">
+
+        <!-- Left dark panel -->
+        <div class="rg-left">
+            <a href="/" class="rg-back-home">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            <div class="rg-left-content">
+                <div class="rg-brand">
+                    <div class="rg-brand-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <div class="rg-brand-name">TANGAMAKURU</div>
+                        <div class="rg-brand-tagline">Rwanda Crime Reporting System</div>
+                    </div>
+                </div>
+                <h1 class="rg-headline">Join the<br>Community.<br>Stay Safe.</h1>
+                <p class="rg-desc">Register to report incidents, track cases, and help keep Rwanda safe for everyone.</p>
+                <div class="rg-features">
+                    <div class="rg-feature"><i class="fas fa-check-circle"></i> Report crimes anonymously</div>
+                    <div class="rg-feature"><i class="fas fa-check-circle"></i> Track your reports in real-time</div>
+                    <div class="rg-feature"><i class="fas fa-check-circle"></i> Get notified on updates</div>
+                    <div class="rg-feature"><i class="fas fa-check-circle"></i> Connect with local officers</div>
+                </div>
+            </div>
+            <div class="rg-emergency-strip">🚨 Emergency? Call 112</div>
+        </div>
+
+        <!-- Right form panel -->
+        <div class="rg-right">
+            <div class="rg-form-header">
+                <h2 class="rg-form-title">Create Account</h2>
+                <p class="rg-form-sub">Fill in your details to get started</p>
+            </div>
+
+            <form id="registerForm" method="POST" action="/auth/register">
+
+                <!-- Personal Information -->
+                <div class="rg-section-label">
+                    <i class="fas fa-user"></i> Personal Information
+                </div>
+
+                <div class="rg-row-2">
+                    <div class="rg-field">
+                        <label class="rg-label">First Name <span class="rg-req">*</span></label>
+                        <input type="text" class="rg-input" id="first_name" name="first_name"
+                               placeholder="First name" required>
+                    </div>
+                    <div class="rg-field">
+                        <label class="rg-label">Last Name <span class="rg-req">*</span></label>
+                        <input type="text" class="rg-input" id="last_name" name="last_name"
+                               placeholder="Last name" required>
+                    </div>
+                </div>
+
+                <div class="rg-field">
+                    <label class="rg-label">Email Address <span class="rg-req">*</span></label>
+                    <div class="rg-input-wrap">
+                        <i class="fas fa-envelope rg-input-icon"></i>
+                        <input type="email" class="rg-input rg-input--icon" id="email" name="email"
+                               placeholder="you@example.com" required>
+                    </div>
+                </div>
+
+                <div class="rg-field">
+                    <label class="rg-label">Phone Number</label>
+                    <div class="rg-input-wrap">
+                        <i class="fas fa-phone rg-input-icon"></i>
+                        <input type="tel" class="rg-input rg-input--icon" id="phone" name="phone"
+                               placeholder="078X XXX XXX">
+                    </div>
+                </div>
+
+                <!-- Security -->
+                <div class="rg-section-label">
+                    <i class="fas fa-lock"></i> Security
+                </div>
+
+                <div class="rg-row-2">
+                    <div class="rg-field">
+                        <label class="rg-label">Password <span class="rg-req">*</span></label>
+                        <div class="rg-input-wrap">
+                            <i class="fas fa-key rg-input-icon"></i>
+                            <input type="password" class="rg-input rg-input--icon" id="password" name="password"
+                                   placeholder="Min. 6 characters" required minlength="6">
+                        </div>
+                    </div>
+                    <div class="rg-field">
+                        <label class="rg-label">Confirm Password <span class="rg-req">*</span></label>
+                        <div class="rg-input-wrap">
+                            <i class="fas fa-key rg-input-icon"></i>
+                            <input type="password" class="rg-input rg-input--icon" id="confirm_password"
+                                   placeholder="Re-enter password" required minlength="6">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="rg-section-label">
+                    <i class="fas fa-map-marker-alt"></i> Location <span class="rg-optional">(Optional)</span>
+                </div>
+
+                <div class="rg-row-2">
+                    <div class="rg-field">
+                        <label class="rg-label">Province</label>
+                        <select class="rg-input rg-select" id="province" name="province">
+                            <option value="">Select Province</option>
+                            <option value="Kigali City">Kigali City</option>
+                            <option value="Eastern">Eastern Province</option>
+                            <option value="Southern">Southern Province</option>
+                            <option value="Western">Western Province</option>
+                            <option value="Northern">Northern Province</option>
+                        </select>
+                    </div>
+                    <div class="rg-field">
+                        <label class="rg-label">District</label>
+                        <input type="text" class="rg-input" id="district" name="district" placeholder="e.g., Gasabo">
+                    </div>
+                </div>
+
+                <div class="rg-row-3">
+                    <div class="rg-field">
+                        <label class="rg-label">Sector</label>
+                        <input type="text" class="rg-input" id="sector" name="sector" placeholder="e.g., Remera">
+                    </div>
+                    <div class="rg-field">
+                        <label class="rg-label">Cell</label>
+                        <input type="text" class="rg-input" id="cell" name="cell" placeholder="e.g., Gishushu">
+                    </div>
+                    <div class="rg-field">
+                        <label class="rg-label">Village</label>
+                        <input type="text" class="rg-input" id="village" name="village" placeholder="e.g., Amahoro">
+                    </div>
+                </div>
+
+                <!-- Terms -->
+                <div class="rg-terms">
+                    <input type="checkbox" class="rg-checkbox" id="terms" required>
+                    <label for="terms" class="rg-terms-label">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <input type="hidden" name="role" value="citizen">
+
+                <button type="submit" class="rg-submit" id="registerBtn">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+
+                <div id="message" class="rg-message" style="display:none;"></div>
+
+                <div class="rg-footer-links">
+                    <p>Already have an account? <a href="/login">Login here</a></p>
+                    <p>Are you an officer? <a href="/officer/register"><i class="fas fa-user-shield"></i> Register here</a></p>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --brand-mid:  #1e4976;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --danger:     #c0392b;
+    --danger-bg:  #fdf0ef;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+}
+
+html, body {
+    min-height: 100%;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--surface);
+}
+
+/* ── Page ─────────────────── */
+.rg-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+}
+
+/* ── Card ─────────────────── */
+.rg-card {
+    display: grid;
+    grid-template-columns: 380px 560px;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(15,36,64,0.18), 0 4px 16px rgba(15,36,64,0.1);
+}
+
+/* ── Left dark panel ──────── */
+.rg-left {
+    background: linear-gradient(160deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
+    padding: 2.5rem 2.25rem 4.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    overflow: hidden;
+}
+.rg-left::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); pointer-events: none;
+}
+.rg-left::after {
+    content: '';
+    position: absolute; bottom: 60px; left: -70px;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); pointer-events: none;
+}
+
+.rg-back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: fit-content;
+    padding: 0.65rem 1.25rem;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.85);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    margin-bottom: 2.25rem;
+    position: relative; z-index: 1;
+}
+.rg-back-home:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+}
+
+.rg-left-content { position: relative; z-index: 1; }
+
+.rg-brand {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+.rg-brand-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.9rem; flex-shrink: 0;
+}
+.rg-brand-name    { font-size: 0.82rem; font-weight: 800; letter-spacing: 0.1em; color: #fff; }
+.rg-brand-tagline { font-size: 0.66rem; color: rgba(255,255,255,0.42); margin-top: 2px; }
+
+.rg-headline {
+    font-size: 2rem; font-weight: 800; color: #fff;
+    line-height: 1.15; margin-bottom: 0.875rem;
+    letter-spacing: -0.02em;
+}
+.rg-headline::after {
+    content: '';
+    display: block; width: 40px; height: 3px;
+    background: var(--accent); border-radius: 2px;
+    margin-top: 0.85rem;
+}
+.rg-desc {
+    font-size: 0.825rem; color: rgba(255,255,255,0.45);
+    line-height: 1.65; margin-bottom: 2rem;
+}
+.rg-features {
+    display: flex; flex-direction: column; gap: 0.65rem;
+}
+.rg-feature {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.82rem; color: rgba(255,255,255,0.7);
+}
+.rg-feature i { color: #4ade80; font-size: 0.75rem; flex-shrink: 0; }
+
+.rg-emergency-strip {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: var(--accent);
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem; color: rgba(255,255,255,0.95);
+    font-weight: 600; letter-spacing: 0.04em; text-align: center;
+}
+
+/* ── Right form panel ─────── */
+.rg-right {
+    background: var(--white);
+    padding: 2.25rem 2.25rem;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+.rg-form-header  { margin-bottom: 1.5rem; }
+.rg-form-title   { font-size: 1.5rem; font-weight: 800; color: var(--ink); margin-bottom: 0.25rem; letter-spacing: -0.02em; }
+.rg-form-sub     { font-size: 0.875rem; color: var(--ink-3); }
+
+/* Section labels */
+.rg-section-label {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 700;
+    color: var(--brand); text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 1.25rem 0 0.875rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1.5px solid var(--rule);
+}
+.rg-section-label:first-of-type { margin-top: 0; }
+.rg-section-label i { font-size: 0.75rem; }
+.rg-optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--ink-3); font-size: 0.75rem; }
+
+/* Grid rows */
+.rg-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.rg-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+
+/* Fields */
+.rg-field { margin-bottom: 0.875rem; }
+.rg-label {
+    display: block; font-size: 0.825rem;
+    font-weight: 600; color: var(--ink-2); margin-bottom: 0.35rem;
+}
+.rg-req { color: var(--accent); }
+
+.rg-input-wrap   { position: relative; }
+.rg-input-icon {
+    position: absolute; left: 0.8rem; top: 50%;
+    transform: translateY(-50%); font-size: 0.75rem;
+    color: var(--ink-3); pointer-events: none;
+}
+.rg-input {
+    width: 100%;
+    padding: 0.72rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink);
+    background: var(--surface); outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.rg-input--icon  { padding-left: 2.3rem; }
+.rg-input::placeholder { color: #8fa8c0; }
+.rg-input:focus {
+    border-color: var(--brand);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
+}
+.rg-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.25rem; }
+
+/* Validation */
+.rg-input.is-invalid { border-color: var(--danger) !important; }
+.rg-input.is-valid   { border-color: #059669 !important; }
+
+/* Terms */
+.rg-terms {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    margin: 1rem 0 1.25rem;
+}
+.rg-checkbox { width: 15px; height: 15px; accent-color: var(--brand); cursor: pointer; margin-top: 2px; flex-shrink: 0; }
+.rg-terms-label { font-size: 0.825rem; color: var(--ink-3); line-height: 1.5; }
+.rg-terms-label a { color: var(--brand); font-weight: 600; text-decoration: none; }
+.rg-terms-label a:hover { text-decoration: underline; }
+
+/* Submit */
+.rg-submit {
+    width: 100%; padding: 0.9rem 1rem;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; font-family: inherit;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(15,36,64,0.25);
+    letter-spacing: 0.01em;
+}
+.rg-submit:hover  { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15,36,64,0.3); }
+.rg-submit:active { transform: translateY(0); }
+.rg-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+/* Message */
+.rg-message { margin-top: 0.875rem; }
+.rg-alert {
+    display: flex; align-items: center; gap: 0.55rem;
+    border-radius: 9px; padding: 0.75rem 0.875rem;
+    font-size: 0.85rem; animation: slideDown 0.3s ease-out;
+}
+.rg-alert--success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+.rg-alert--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid #f5c6c2; }
+.rg-alert--warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Footer links */
+.rg-footer-links {
+    text-align: center;
+    padding-top: 1rem; border-top: 1px solid var(--rule);
+}
+.rg-footer-links p { font-size: 0.85rem; color: var(--ink-3); }
+.rg-footer-links a { color: var(--brand); font-weight: 700; text-decoration: none; }
+.rg-footer-links a:hover { text-decoration: underline; }
+
+/* ── Responsive ─────────── */
+@media (max-width: 1000px) {
+    .rg-page { padding: 1.5rem 1rem; align-items: flex-start; padding-top: 2rem; }
+    .rg-card { grid-template-columns: 1fr; width: 100%; max-width: 560px; }
+    .rg-left { padding: 2rem 1.75rem 3.5rem; }
+    .rg-headline { font-size: 1.6rem; }
+    .rg-right { max-height: none; }
+}
+
+@media (max-width: 500px) {
+    .rg-row-2, .rg-row-3 { grid-template-columns: 1fr; }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        if (password !== confirmPassword) {
+            showMessage('Passwords do not match', 'danger'); return;
+        }
+        if (!document.getElementById('terms').checked) {
+            showMessage('You must agree to the Terms of Service', 'warning'); return;
+        }
+
+        const formData = {
+            email: document.getElementById('email').value,
+            password,
+            first_name: document.getElementById('first_name').value,
+            last_name:  document.getElementById('last_name').value,
+            phone:    document.getElementById('phone').value    || '',
+            province: document.getElementById('province').value || '',
+            district: document.getElementById('district').value || '',
+            sector:   document.getElementById('sector').value   || '',
+            cell:     document.getElementById('cell').value     || '',
+            village:  document.getElementById('village').value  || '',
+            role: 'citizen'
+        };
+
+        const btn = document.getElementById('registerBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                showMessage('Registration successful! Redirecting to login...', 'success');
+                form.reset();
+                setTimeout(() => { window.location.href = '/login?registered=true'; }, 2000);
+            } else {
+                showMessage('Error: ' + (data.error || 'Registration failed'), 'danger');
+                btn.innerHTML = orig; btn.disabled = false;
+            }
+        } catch (err) {
+            showMessage('Network error. Please try again.', 'danger');
+            btn.innerHTML = orig; btn.disabled = false;
+        }
+    });
+
+    function showMessage(text, type) {
+        const icons = { success: 'check-circle', warning: 'exclamation-triangle', danger: 'times-circle' };
+        const div = document.getElementById('message');
+        div.innerHTML = `<div class="rg-alert rg-alert--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+        div.style.display = 'block';
+        div.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => { div.style.display = 'none'; }, 5000);
+    }
+
+    // Real-time password match
+    const pw  = document.getElementById('password');
+    const cpw = document.getElementById('confirm_password');
+
+    cpw.addEventListener('input', function() {
+        if (pw.value !== this.value) {
+            this.classList.add('is-invalid'); this.classList.remove('is-valid');
+        } else {
+            this.classList.remove('is-invalid'); this.classList.add('is-valid');
+        }
+    });
+    pw.addEventListener('input', function() {
+        if (!cpw.value) return;
+        if (this.value !== cpw.value) {
+            cpw.classList.add('is-invalid'); cpw.classList.remove('is-valid');
+        } else {
+            cpw.classList.remove('is-invalid'); cpw.classList.add('is-valid');
+        }
+    });
+});
+</script>
+{% endblock %}

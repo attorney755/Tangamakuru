@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="aa-wrapper">
+
+    <!-- Top Bar -->
+    <div class="aa-topbar">
+        <div class="aa-topbar-left">
+            <a href="/admin/dashboard" class="aa-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="aa-topbar-title"><i class="fas fa-bullhorn"></i> Announcements</div>
+                <div class="aa-topbar-sub">Manage announcements for officers and citizens</div>
+            </div>
+        </div>
+        <a href="/admin/announcements/create" class="aa-create-btn">
+            <i class="fas fa-plus"></i> New Announcement
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="aa-stats">
+        <div class="aa-stat-card">
+            <div class="aa-stat-icon aa-stat-icon--blue"><i class="fas fa-bullhorn"></i></div>
+            <div>
+                <div class="aa-stat-num">{{ announcements|length }}</div>
+                <div class="aa-stat-label">Total Announcements</div>
+            </div>
+        </div>
+        <div class="aa-stat-card">
+            <div class="aa-stat-icon aa-stat-icon--amber"><i class="fas fa-exclamation-triangle"></i></div>
+            <div>
+                <div class="aa-stat-num">{{ announcements|selectattr('priority', 'in', ['important', 'urgent'])|list|length }}</div>
+                <div class="aa-stat-label">Important / Urgent</div>
+            </div>
+        </div>
+        <div class="aa-stat-card">
+            <div class="aa-stat-icon aa-stat-icon--green"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="aa-stat-num">{{ announcements|length }}</div>
+                <div class="aa-stat-label">Active Announcements</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="aa-card">
+        <div class="aa-card-header">
+            <div class="aa-card-title"><i class="fas fa-list"></i> All Announcements</div>
+            <span class="aa-total-badge">{{ announcements|length }} total</span>
+        </div>
+
+        {% if announcements %}
+        <div class="aa-list">
+            {% for announcement in announcements %}
+            <div class="aa-item aa-item--{{ announcement.priority }}"
+                 data-id="{{ announcement.id }}"
+                 id="announcement-{{ announcement.id }}">
+
+                <!-- Icon -->
+                <div class="aa-icon aa-icon--{{ announcement.priority }}">
+                    {% if announcement.priority == 'urgent' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% elif announcement.priority == 'important' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% else %}
+                    <i class="fas fa-bullhorn"></i>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div class="aa-content">
+                    <div class="aa-content-top">
+                        <div class="aa-title-row">
+                            <h5 class="aa-title">{{ announcement.title }}</h5>
+                            <div class="aa-badges">
+                                {% if announcement.priority == 'urgent' %}
+                                <span class="aa-pill aa-pill--urgent"><i class="fas fa-fire"></i> Urgent</span>
+                                {% elif announcement.priority == 'important' %}
+                                <span class="aa-pill aa-pill--important"><i class="fas fa-exclamation"></i> Important</span>
+                                {% endif %}
+                                <span class="aa-pill aa-pill--audience">{{ announcement.target_audience|upper }}</span>
+                            </div>
+                        </div>
+                        <div class="aa-item-actions">
+                            <a href="/admin/announcements/{{ announcement.id }}/edit" class="aa-act-btn aa-act-btn--edit" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="aa-act-btn aa-act-btn--delete" onclick="confirmDelete({{ announcement.id }})" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="aa-body">{{ announcement.content }}</p>
+
+                    <div class="aa-meta">
+                        <span class="aa-meta-item">
+                            <i class="fas fa-user"></i> {{ announcement.creator.get_full_name() }}
+                        </span>
+                        <span class="aa-meta-item">
+                            <i class="far fa-calendar-alt"></i> {{ announcement.created_at.strftime('%d %b %Y, %H:%M') }}
+                        </span>
+                        {% if announcement.target_sector %}
+                        <span class="aa-meta-item">
+                            <i class="fas fa-map-marker-alt"></i> {{ announcement.target_sector }} Sector
+                        </span>
+                        {% else %}
+                        <span class="aa-meta-item">
+                            <i class="fas fa-globe"></i> All Sectors
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="aa-empty">
+            <div class="aa-empty-icon"><i class="fas fa-bullhorn"></i></div>
+            <div class="aa-empty-title">No Announcements Yet</div>
+            <p class="aa-empty-sub">Create your first announcement to notify officers and citizens.</p>
+            <a href="/admin/announcements/create" class="aa-btn aa-btn--primary">
+                <i class="fas fa-plus"></i> Create Announcement
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-4">
+                    <i class="fas fa-trash-alt fa-4x text-danger"></i>
+                </div>
+                <h5 class="mb-3">Are you absolutely sure?</h5>
+                <p class="text-muted mb-4">
+                    This will permanently delete the announcement from the admin panel. User copies will remain in their accounts.
+                </p>
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <i class="fas fa-exclamation-circle me-3 fa-lg"></i>
+                    <div class="text-start">
+                        <strong>Warning:</strong> Users will still have their copies of this announcement.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="aa-toast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" id="toastHeader">
+            <i class="fas fa-info-circle me-2" id="toastIcon"></i>
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <small>just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.aa-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.aa-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.aa-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.aa-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.aa-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.aa-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.aa-topbar-title i { color: var(--brand); }
+.aa-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.aa-create-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; font-size: 0.875rem; font-weight: 600;
+    padding: 0.6rem 1.25rem; border-radius: 9px; text-decoration: none;
+    box-shadow: 0 3px 10px rgba(15,36,64,0.2);
+    transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+}
+.aa-create-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Stats ────────────────── */
+.aa-stats {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.aa-stat-card {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+}
+.aa-stat-icon {
+    width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.aa-stat-icon--blue  { background: var(--info-bg);    color: var(--info); }
+.aa-stat-icon--amber { background: var(--warning-bg); color: var(--warning); }
+.aa-stat-icon--green { background: var(--success-bg); color: var(--success); }
+.aa-stat-num   { font-size: 1.5rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.aa-stat-label { font-size: 0.72rem; color: var(--ink-3); font-weight: 500; margin-top: 3px; }
+
+/* ── Main Card ────────────── */
+.aa-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+.aa-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+}
+.aa-card-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; }
+.aa-card-title i { font-size: 0.8rem; }
+.aa-total-badge { font-size: 0.75rem; font-weight: 600; color: var(--ink-3); background: var(--white); border: 1px solid var(--rule); padding: 0.25rem 0.75rem; border-radius: 999px; }
+
+/* ── Announcement items ───── */
+.aa-list { display: flex; flex-direction: column; }
+
+.aa-item {
+    display: flex; gap: 1.1rem; align-items: flex-start;
+    padding: 1.35rem 1.5rem;
+    border-bottom: 1px solid var(--rule);
+    border-left: 4px solid transparent;
+    transition: background 0.15s, transform 0.15s;
+}
+.aa-item:last-child { border-bottom: none; }
+.aa-item:hover { background: var(--surface); transform: translateX(2px); }
+.aa-item--urgent    { border-left-color: #dc2626; }
+.aa-item--important { border-left-color: #d97706; }
+.aa-item--normal    { border-left-color: var(--brand); }
+
+.aa-icon {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95rem; margin-top: 2px;
+}
+.aa-icon--urgent    { background: var(--danger-bg);  color: var(--danger); }
+.aa-icon--important { background: var(--warning-bg); color: var(--warning); }
+.aa-icon--normal    { background: var(--info-bg);    color: var(--info); }
+
+.aa-content { flex: 1; min-width: 0; }
+.aa-content-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; margin-bottom: 0.6rem; flex-wrap: wrap;
+}
+.aa-title-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; flex: 1; }
+.aa-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+
+.aa-badges { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.aa-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; }
+.aa-pill--urgent   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.aa-pill--important{ background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.aa-pill--audience { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+
+.aa-item-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.aa-act-btn {
+    width: 30px; height: 30px; border-radius: 7px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s; text-decoration: none;
+}
+.aa-act-btn:hover { opacity: 0.82; transform: translateY(-1px); }
+.aa-act-btn--edit   { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.aa-act-btn--delete { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+.aa-body { font-size: 0.875rem; color: var(--ink-2); line-height: 1.65; margin-bottom: 0.875rem; word-break: break-word; }
+
+.aa-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.aa-meta-item { font-size: 0.75rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.35rem; }
+.aa-meta-item i { font-size: 0.68rem; }
+
+/* Empty */
+.aa-empty { text-align: center; padding: 4rem 2rem; }
+.aa-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.aa-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.aa-empty-sub   { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 1.25rem; line-height: 1.55; }
+
+/* Buttons */
+.aa-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.7rem 1.35rem; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.aa-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.aa-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(15,36,64,0.2); }
+.aa-btn--primary:hover { color: #fff; }
+.aa-btn--ghost  { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.aa-btn--danger { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; box-shadow: 0 3px 10px rgba(220,38,38,0.2); }
+
+/* Modal */
+.modal-content {
+    border: none;
+    border-radius: 16px;
+}
+.modal-header.bg-danger {
+    background: linear-gradient(135deg, #991b1b, #dc2626);
+    border-radius: 16px 16px 0 0;
+}
+.modal-header .btn-close-white {
+    filter: brightness(0) invert(1);
+}
+.modal-footer {
+    border-top: 1px solid var(--rule);
+    padding: 1rem 1.25rem;
+}
+
+/* Toast */
+.toast {
+    background: transparent;
+    border: none;
+}
+.toast-header.bg-success {
+    background: #059669 !important;
+    border-radius: 12px 12px 0 0;
+}
+.toast-header.bg-danger {
+    background: #c0392b !important;
+    border-radius: 12px 12px 0 0;
+}
+.toast-header.bg-warning {
+    background: #f39c12 !important;
+    border-radius: 12px 12px 0 0;
+}
+.toast-header.bg-info {
+    background: #1e40af !important;
+    border-radius: 12px 12px 0 0;
+}
+.toast-body {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    padding: 0.875rem 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .aa-stats { grid-template-columns: 1fr; }
+    .aa-wrapper { padding: 1rem; }
+    .aa-item { padding: 1rem; gap: 0.75rem; }
+    .aa-topbar { flex-direction: column; align-items: flex-start; }
+    .aa-content-top { flex-direction: column; }
+}
+
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+let announcementToDelete = null;
+
+function confirmDelete(id) {
+    announcementToDelete = id;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+    
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        performDelete(announcementToDelete);
+    };
+}
+
+function performDelete(announcementId) {
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+    
+    showToast('Deleting announcement...', 'info');
+    
+    fetch(`/admin/api/announcements/${announcementId}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw err; }).catch(() => {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast(data.message || 'Announcement deleted successfully!', 'success');
+            
+            const item = document.getElementById(`announcement-${announcementId}`);
+            if (item) {
+                item.style.transition = 'all 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(100px)';
+                
+                setTimeout(() => {
+                    item.remove();
+                    
+                    const remaining = document.querySelectorAll('.aa-item').length;
+                    if (remaining === 0) {
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
+                    }
+                }, 300);
+            }
+        } else {
+            showToast(data.error || 'Failed to delete announcement', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        showToast(error.message || 'Failed to connect to server', 'error');
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toastElement = document.getElementById('aa-toast');
+    if (!toastElement) return;
+    
+    const toastHeader = toastElement.querySelector('.toast-header');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastMsg = document.getElementById('toastMessage');
+    
+    // Reset classes
+    toastHeader.className = 'toast-header';
+    toastIcon.className = 'fas fa-info-circle me-2';
+    
+    if (type === 'info') {
+        toastHeader.classList.add('bg-info', 'text-white');
+        toastIcon.className = 'fas fa-spinner fa-spin me-2';
+        toastTitle.textContent = 'Processing';
+    } else if (type === 'success') {
+        toastHeader.classList.add('bg-success', 'text-white');
+        toastIcon.className = 'fas fa-check-circle me-2';
+        toastTitle.textContent = 'Success';
+    } else if (type === 'error') {
+        toastHeader.classList.add('bg-danger', 'text-white');
+        toastIcon.className = 'fas fa-exclamation-circle me-2';
+        toastTitle.textContent = 'Error';
+    } else if (type === 'warning') {
+        toastHeader.classList.add('bg-warning', 'text-dark');
+        toastIcon.className = 'fas fa-exclamation-triangle me-2';
+        toastTitle.textContent = 'Warning';
+    }
+    
+    toastMsg.textContent = message;
+    
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    // Auto hide after 3 seconds (except info which hides after 2 seconds)
+    setTimeout(() => {
+        toast.hide();
+    }, type === 'info' ? 2000 : 3000);
+}
+</script>
+
+{% endblock %}

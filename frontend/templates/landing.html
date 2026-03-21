@@ -1,0 +1,1133 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ── Hero ───────────────────────────────────────────── -->
+<section class="lp-hero">
+    <div class="lp-hero-bg"></div>
+    <div class="lp-container lp-hero-inner">
+        <div class="lp-hero-text">
+            
+            <h1 class="lp-hero-title">
+                Safer Communities<br>Start With <span class="lp-hero-accent">You</span>
+            </h1>
+            <p class="lp-hero-lead">
+                Rwanda's Premier Digital Platform for Crime & Claim Reporting, and Community Safety
+            </p>
+            <p class="lp-hero-sub">
+                Empowering citizens to actively participate in building safer communities through
+                transparent reporting, real-time tracking, and collaborative resolution.
+            </p>
+            <div class="lp-hero-actions">
+                {% if session.get('user') %}
+                <a href="
+                    {% if session.user.role == 'super_admin' %}{{ url_for('super_admin.dashboard') }}
+                    {% elif session.user.role == 'admin' %}{{ url_for('admin.dashboard') }}
+                    {% elif session.user.role == 'officer' %}{{ url_for('officer.dashboard') }}
+                    {% else %}{{ url_for('frontend.dashboard') }}
+                    {% endif %}" class="lp-btn lp-btn--primary">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+                <a href="{{ url_for('frontend.logout') }}" class="lp-btn lp-btn--ghost">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                {% else %}
+                <a href="/login" class="lp-btn lp-btn--primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="#join-us" class="lp-btn lp-btn--ghost">
+                    <i class="fas fa-user-plus"></i> Join Us
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="lp-hero-visual">
+            <div class="lp-hero-shield-wrap">
+                <div class="lp-shield-ring lp-shield-ring--1"></div>
+                <div class="lp-shield-ring lp-shield-ring--2"></div>
+                <div class="lp-logo-circle">
+                    <img src="../static/uploads/lll (1).jpg"
+                         alt="TANGAMAKURU - Safer Communities Start With You"
+                         class="lp-hero-logo">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Stats ──────────────────────────────────────────── -->
+<section class="lp-stats-bar" id="stats">
+    <div class="lp-container">
+        <div class="lp-stats-grid">
+            <div class="lp-stat-item">
+                <div class="lp-stat-num" id="reportsCount">
+                    <span class="stats-loading"><i class="fas fa-spinner fa-spin"></i></span>
+                </div>
+                <div class="lp-stat-label"><i class="fas fa-file-alt"></i> Reports Filed</div>
+            </div>
+            <div class="lp-stat-sep"></div>
+            <div class="lp-stat-item">
+                <div class="lp-stat-num" id="resolvedCount">
+                    <span class="stats-loading"><i class="fas fa-spinner fa-spin"></i></span>
+                </div>
+                <div class="lp-stat-label"><i class="fas fa-check-circle"></i> Resolved Cases</div>
+            </div>
+            <div class="lp-stat-sep"></div>
+            <div class="lp-stat-item">
+                <div class="lp-stat-num" id="usersCount">
+                    <span class="stats-loading"><i class="fas fa-spinner fa-spin"></i></span>
+                </div>
+                <div class="lp-stat-label"><i class="fas fa-users"></i> Active Users</div>
+            </div>
+            <div class="lp-stat-sep"></div>
+            <div class="lp-stat-item">
+                <div class="lp-stat-num" id="responseTime">
+                    <span class="stats-loading"><i class="fas fa-spinner fa-spin"></i></span>
+                </div>
+                <div class="lp-stat-label"><i class="fas fa-clock"></i> Avg Response (Hrs)</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── How It Works ───────────────────────────────────── -->
+<section class="lp-section lp-section--white" id="how-it-works">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <div class="lp-section-badge lp-section-badge--blue">
+                <i class="fas fa-play-circle"></i> How It Works
+            </div>
+            <p class="lp-section-sub">Making community safety accessible to everyone</p>
+        </div>
+        <div class="lp-steps-grid">
+            <div class="lp-step-card">
+                <div class="lp-step-num lp-step-num--blue">1</div>
+                <div class="lp-step-icon lp-step-icon--blue"><i class="fas fa-flag"></i></div>
+                <h4 class="lp-step-title">Report Incident</h4>
+                <p class="lp-step-desc">Easily report crimes or service issues with our secure online form. Add photos, location details, and descriptions for faster response.</p>
+            </div>
+            <div class="lp-step-connector"></div>
+            <div class="lp-step-card">
+                <div class="lp-step-num lp-step-num--green">2</div>
+                <div class="lp-step-icon lp-step-icon--green"><i class="fas fa-tasks"></i></div>
+                <h4 class="lp-step-title">Track Progress</h4>
+                <p class="lp-step-desc">Monitor your report's journey in real-time. Receive updates from assigned officers and stay informed every step of the way.</p>
+            </div>
+            <div class="lp-step-connector"></div>
+            <div class="lp-step-card">
+                <div class="lp-step-num lp-step-num--teal">3</div>
+                <div class="lp-step-icon lp-step-icon--teal"><i class="fas fa-check-circle"></i></div>
+                <h4 class="lp-step-title">Resolution & Feedback</h4>
+                <p class="lp-step-desc">Get notified when your case is resolved. Provide feedback to help improve services and build a safer community together.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Success Stories ────────────────────────────────── -->
+<section class="lp-section lp-section--surface" id="success-stories">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <div class="lp-section-badge lp-section-badge--green">
+                <i class="fas fa-trophy"></i> Success Stories
+            </div>
+            <p class="lp-section-sub">Real stories from our community members</p>
+        </div>
+        <div class="lp-stories-grid">
+
+            <div class="lp-story-card">
+                <div class="lp-story-img-wrap">
+                    <img src="../static/uploads/fraud.jpg" alt="Business Fraud" class="lp-story-img">
+                    <div class="lp-story-badge lp-story-badge--green">Case Resolved</div>
+                </div>
+                <div class="lp-story-body">
+                    <div class="lp-story-author">
+                        <div class="lp-story-avatar lp-story-avatar--blue">JR</div>
+                        <div>
+                            <div class="lp-story-name">Jean R.</div>
+                            <div class="lp-story-role">Business Owner, Kigali</div>
+                        </div>
+                    </div>
+                    <h5 class="lp-story-title lp-story-title--blue">Business Fraud Prevented</h5>
+                    <p class="lp-story-quote">"Reported suspicious activity through TANGAMAKURU. Officers responded within 2 hours and prevented a 5 million RWF fraud."</p>
+                </div>
+            </div>
+
+            <div class="lp-story-card">
+                <div class="lp-story-img-wrap">
+                    <img src="../static/uploads/neighborhood-10.jpg" alt="Neighborhood Safety" class="lp-story-img">
+                    <div class="lp-story-badge lp-story-badge--green">Community Impact</div>
+                </div>
+                <div class="lp-story-body">
+                    <div class="lp-story-author">
+                        <div class="lp-story-avatar lp-story-avatar--green">MI</div>
+                        <div>
+                            <div class="lp-story-name">Marie I.</div>
+                            <div class="lp-story-role">Community Leader, Gasabo</div>
+                        </div>
+                    </div>
+                    <h5 class="lp-story-title lp-story-title--green">Neighborhood Safety Restored</h5>
+                    <p class="lp-story-quote">"Through coordinated reports on TANGAMAKURU, police patrols increased and crime dropped by 80% in 3 months."</p>
+                </div>
+            </div>
+
+            <div class="lp-story-card">
+                <div class="lp-story-img-wrap">
+                    <img src="../static/uploads/stolen.png" alt="Property Recovered" class="lp-story-img">
+                    <div class="lp-story-badge lp-story-badge--green">Quick Resolution</div>
+                </div>
+                <div class="lp-story-body">
+                    <div class="lp-story-author">
+                        <div class="lp-story-avatar lp-story-avatar--amber">PD</div>
+                        <div>
+                            <div class="lp-story-name">Paul D.</div>
+                            <div class="lp-story-role">Teacher, Nyarugenge</div>
+                        </div>
+                    </div>
+                    <h5 class="lp-story-title lp-story-title--amber">Stolen Property Recovered</h5>
+                    <p class="lp-story-quote">"Uploaded CCTV footage through TANGAMAKURU. Police identified suspects within 24 hours and recovered all stolen items."</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── About ──────────────────────────────────────────── -->
+<section class="lp-section lp-section--white" id="about">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <div class="lp-section-badge lp-section-badge--teal">
+                <i class="fas fa-info-circle"></i> About Us
+            </div>
+            <p class="lp-section-sub">Building Safer Communities Through Digital Innovation</p>
+        </div>
+        <div class="lp-about-grid">
+            <div class="lp-about-text">
+                <h4 class="lp-about-heading">Our Mission</h4>
+                <p class="lp-about-p">TANGAMAKURU is Rwanda's premier digital platform dedicated to enhancing community safety through transparent crime & claim reporting and efficient incident management.</p>
+                <h4 class="lp-about-heading">Our Vision</h4>
+                <p class="lp-about-p">To create Rwanda's most trusted platform for community safety, where every citizen feels empowered to report incidents and every report receives prompt, professional attention.</p>
+            </div>
+            <div class="lp-features-card">
+                <h4 class="lp-features-title">Key Features</h4>
+                <div class="lp-features-grid">
+                    <div class="lp-feature-item">
+                        <div class="lp-feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div>
+                            <div class="lp-feature-name">Secure Reporting</div>
+                            <div class="lp-feature-desc">End-to-end encrypted submissions</div>
+                        </div>
+                    </div>
+                    <div class="lp-feature-item">
+                        <div class="lp-feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <div class="lp-feature-name">Location Intelligence</div>
+                            <div class="lp-feature-desc">Precise Rwanda address mapping</div>
+                        </div>
+                    </div>
+                    <div class="lp-feature-item">
+                        <div class="lp-feature-icon"><i class="fas fa-bell"></i></div>
+                        <div>
+                            <div class="lp-feature-name">Real-time Updates</div>
+                            <div class="lp-feature-desc">Instant status notifications</div>
+                        </div>
+                    </div>
+                    <div class="lp-feature-item">
+                        <div class="lp-feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <div>
+                            <div class="lp-feature-name">Analytics Dashboard</div>
+                            <div class="lp-feature-desc">Comprehensive reporting tools</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Contact ────────────────────────────────────────── -->
+<section class="lp-section lp-section--surface" id="contact">
+    <div class="lp-container">
+        <div class="lp-section-head">
+            <div class="lp-section-badge lp-section-badge--blue">
+                <i class="fas fa-envelope"></i> Contact Us
+            </div>
+            <h2 class="lp-contact-title">Get In Touch</h2>
+            <p class="lp-section-sub">We're here to help you make your community safer</p>
+        </div>
+
+        <div class="lp-contact-grid">
+
+            <!-- Form -->
+            <div class="lp-contact-form-card">
+                <h4 class="lp-contact-form-title">Send us a Message</h4>
+                <form id="contactForm">
+                    <div class="lp-cfield">
+                        <label class="lp-clabel">Full Name</label>
+                        <input type="text" class="lp-cinput" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="lp-cfield">
+                        <label class="lp-clabel">Email Address</label>
+                        <input type="email" class="lp-cinput" id="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="lp-cfield">
+                        <label class="lp-clabel">Subject</label>
+                        <input type="text" class="lp-cinput" id="subject" placeholder="What is this regarding?" required>
+                    </div>
+                    <div class="lp-cfield">
+                        <label class="lp-clabel">Message</label>
+                        <textarea class="lp-ctextarea" id="message" rows="4" placeholder="Tell us how we can help you..." required></textarea>
+                    </div>
+                    <button type="submit" class="lp-btn lp-btn--primary lp-btn--full">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+
+            <!-- Map + Info -->
+            <div class="lp-contact-right">
+                <div class="lp-map-card">
+                    <div class="lp-map-frame">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3987.4736342241037!2d30.05934847462994!3d-1.9537299368749442!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19dca4258ed8e797%3A0xf32a8b0c8e8a3d8d!2sKigali%20City%20Tower!5e0!3m2!1sen!2srw!4v1705761200000!5m2!1sen!2srw"
+                            style="border:0;width:100%;height:100%;"
+                            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                    <div class="lp-map-footer">
+                        <i class="fas fa-map-marker-alt lp-map-pin"></i>
+                        <span>Kigali City Tower, KN 3 Rd, Kigali, Rwanda</span>
+                    </div>
+                </div>
+
+                <div class="lp-contact-info-grid">
+                    <div class="lp-cinfo-card">
+                        <div class="lp-cinfo-icon"><i class="fas fa-phone-alt"></i></div>
+                        <div class="lp-cinfo-title">Emergency Hotline</div>
+                        <div class="lp-cinfo-value">Coming Soon</div>
+                        <div class="lp-cinfo-sub">24/7 Available</div>
+                    </div>
+                    <div class="lp-cinfo-card">
+                        <div class="lp-cinfo-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="lp-cinfo-title">Email Support</div>
+                        <div class="lp-cinfo-value">Coming Soon</div>
+                        <div class="lp-cinfo-sub">Response within 24h</div>
+                    </div>
+                    <div class="lp-cinfo-card">
+                        <div class="lp-cinfo-icon"><i class="fas fa-clock"></i></div>
+                        <div class="lp-cinfo-title">Office Hours</div>
+                        <div class="lp-cinfo-value">Mon–Fri: 8AM–6PM</div>
+                        <div class="lp-cinfo-sub">Sat: 9AM–1PM</div>
+                    </div>
+                    <div class="lp-cinfo-card">
+                        <div class="lp-cinfo-icon"><i class="fas fa-headset"></i></div>
+                        <div class="lp-cinfo-title">Live Chat</div>
+                        <div class="lp-cinfo-value">Available Online</div>
+                        <div class="lp-cinfo-sub">Click chat icon below</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── Join Us ────────────────────────────────────────── -->
+{% if not session.get('user') %}
+<section class="lp-join" id="join-us">
+    <div class="lp-join-bg"></div>
+    <div class="lp-container lp-join-inner">
+        <div class="lp-join-icon"><i class="fas fa-users"></i></div>
+        <h2 class="lp-join-title">Join the Movement</h2>
+        <p class="lp-join-sub">Be part of Rwanda's journey towards safer communities. Create your free account today.</p>
+        <a href="/register" class="lp-btn lp-btn--white">
+            <i class="fas fa-user-plus"></i> Sign Up Free
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<!-- Live Chat Widget -->
+<div class="lp-chat-btn">
+    <button class="lp-chat-trigger" id="chatTrigger">
+        <i class="fas fa-comment-dots"></i>
+        <span class="chat-trigger-label">Live Chat Support</span>
+    </button>
+</div>
+
+<!-- Chat Window -->
+<div class="chat-window" id="chatWindow" style="display: none;">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <div class="chat-avatar">
+                <svg width="28" height="28" viewBox="0 0 100 100">
+                    <defs>
+                        <linearGradient id="chatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#1a237e"/>
+                            <stop offset="100%" stop-color="#3949ab"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#chatGrad)" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
+                    <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text>
+                </svg>
+            </div>
+            <div>
+                <div class="chat-title">TANGAMAKURU Support</div>
+                <div class="chat-status">Online</div>
+            </div>
+        </div>
+        <button class="chat-close" id="chatClose" aria-label="Close chat">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-message bot">
+            <div class="message-avatar">
+                <svg width="22" height="22" viewBox="0 0 100 100">
+                    <path fill="#1a237e" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
+                    <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text>
+                </svg>
+            </div>
+            <div class="message-content">
+                <div class="message-text">Hello! 👋 I'm the TANGAMAKURU assistant. How can I help you today?</div>
+                <div class="message-time">Just now</div>
+            </div>
+        </div>
+
+        <div class="quick-questions" id="quickQuestions">
+            <div class="quick-title">Quick Questions:</div>
+            <div class="quick-buttons">
+                <button class="quick-btn" data-question="how to report">📝 How do I report?</button>
+                <button class="quick-btn" data-question="create citizen account">👤 Citizen account</button>
+                <button class="quick-btn" data-question="create officer account">👮 Officer account</button>
+                <button class="quick-btn" data-question="mission">🎯 Our mission</button>
+                <button class="quick-btn" data-question="problem">💡 What problem we solve</button>
+                <button class="quick-btn" data-question="track report">📍 Track my report</button>
+                <button class="quick-btn" data-question="anonymous">🤫 Report anonymously</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput"
+                  placeholder="Type your message..." rows="1"></textarea>
+        <button class="chat-send" id="chatSend" aria-label="Send">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+/* ── Chat trigger button ─────── */
+.lp-chat-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 1100;
+}
+
+.lp-chat-trigger {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: #059669; color: #fff; border: none;
+    font-size: 0.9rem; font-weight: 600; font-family: inherit;
+    padding: 0.875rem 1.5rem; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(5,150,105,0.35);
+    animation: chatPulse 2.5s ease-in-out infinite;
+    transition: opacity 0.15s, transform 0.15s;
+    white-space: nowrap;
+}
+.lp-chat-trigger:hover { opacity: 0.9; transform: translateY(-2px); }
+@keyframes chatPulse { 0%,100%{box-shadow:0 6px 20px rgba(5,150,105,0.35);} 50%{box-shadow:0 8px 28px rgba(5,150,105,0.55);} }
+
+/* ── Chat window ─────────────── */
+.chat-window {
+    position: fixed;
+    bottom: 5.5rem;
+    right: 1.5rem;
+    width: 380px;
+    max-width: calc(100vw - 2rem);
+    height: 560px;
+    max-height: calc(100vh - 8rem);
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    z-index: 1099;
+    overflow: hidden;
+    animation: chatSlideUp 0.28s ease-out;
+}
+@keyframes chatSlideUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Header ──────────────────── */
+.chat-header {
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    padding: 0.875rem 1.1rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0;
+}
+.chat-header-info { display: flex; align-items: center; gap: 0.75rem; }
+.chat-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.chat-title  { font-size: 0.9rem; font-weight: 700; color: #fff; }
+.chat-status {
+    font-size: 0.72rem; color: rgba(255,255,255,0.8);
+    display: flex; align-items: center; gap: 0.3rem; margin-top: 1px;
+}
+.chat-status::before {
+    content: ''; width: 7px; height: 7px;
+    background: #4caf50; border-radius: 50%; flex-shrink: 0;
+}
+.chat-close {
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; transition: background 0.15s; flex-shrink: 0;
+}
+.chat-close:hover { background: rgba(255,255,255,0.28); }
+
+/* ── Messages ────────────────── */
+.chat-messages {
+    flex: 1; overflow-y: auto;
+    padding: 1rem; background: #f8f9fa;
+    display: flex; flex-direction: column; gap: 0.875rem;
+    scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 5px; }
+.chat-messages::-webkit-scrollbar-track { background: #ececec; border-radius: 3px; }
+.chat-messages::-webkit-scrollbar-thumb { background: #3949ab; border-radius: 3px; }
+
+/* ── Message bubbles ─────────── */
+.chat-message {
+    display: flex; gap: 0.6rem;
+    animation: msgFadeIn 0.25s ease-out;
+}
+@keyframes msgFadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+
+.chat-message.bot  { justify-content: flex-start; }
+.chat-message.user { justify-content: flex-end; }
+
+.message-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1); align-self: flex-end;
+}
+.chat-message.user .message-avatar {
+    background: linear-gradient(135deg, #1a237e, #3949ab); color: #fff;
+}
+
+.message-content { max-width: 78%; }
+.chat-message.bot  .message-content {
+    background: #fff; border-radius: 16px 16px 16px 4px;
+    padding: 0.7rem 0.9rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    color: #263238;
+}
+.chat-message.user .message-content {
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    border-radius: 16px 16px 4px 16px;
+    padding: 0.7rem 0.9rem; color: #fff;
+}
+.message-text { font-size: 0.82rem; line-height: 1.6; word-break: break-word; }
+.message-time { font-size: 0.65rem; opacity: 0.55; margin-top: 0.3rem; }
+
+/* ── Quick questions ─────────── */
+.quick-questions {
+    margin-top: 0.25rem; padding-top: 0.875rem;
+    border-top: 1px solid #e0e0e0;
+}
+.quick-title {
+    font-size: 0.68rem; color: #999; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.6rem;
+}
+.quick-buttons { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.quick-btn {
+    background: #e8eaf6; border: none; color: #1a237e;
+    font-size: 0.75rem; font-weight: 500; font-family: inherit;
+    padding: 0.4rem 0.75rem; border-radius: 999px; cursor: pointer;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+    line-height: 1.4; text-align: left;
+}
+.quick-btn:hover { background: #1a237e; color: #fff; transform: translateY(-1px); }
+
+/* ── Input area ──────────────── */
+.chat-input-area {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #e8e8e8;
+    background: #fff;
+    display: flex; gap: 0.6rem; align-items: flex-end;
+    flex-shrink: 0;
+}
+.chat-input {
+    flex: 1; border: 1.5px solid #e0e0e0; border-radius: 12px;
+    padding: 0.65rem 0.875rem;
+    font-size: 0.85rem; font-family: inherit;
+    resize: none; max-height: 90px; line-height: 1.5;
+    transition: border-color 0.15s;
+    overflow-y: auto;
+}
+.chat-input:focus { outline: none; border-color: #1a237e; }
+.chat-send {
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    border: none; width: 38px; height: 38px; border-radius: 50%;
+    color: #fff; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; transition: opacity 0.15s, transform 0.15s;
+}
+.chat-send:hover { opacity: 0.88; transform: scale(1.08); }
+
+/* ── Typing indicator ────────── */
+.typing-indicator .message-text {
+    display: flex; gap: 4px; align-items: center;
+}
+.typing-indicator .message-text span {
+    width: 7px; height: 7px; background: #90a4ae;
+    border-radius: 50%; display: inline-block;
+    animation: typingDot 1.4s infinite;
+}
+.typing-indicator .message-text span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator .message-text span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot {
+    0%,60%,100% { opacity:0.2; transform:scale(0.85); }
+    30%         { opacity:1;   transform:scale(1); }
+}
+
+/* ── RESPONSIVE ──────────────── */
+
+/* Tablet / small desktop: nudge window if too close to edge */
+@media (max-width: 500px) {
+    .chat-window {
+        /* Full-width minus margins, taller on phone */
+        right: 0.75rem;
+        left: 0.75rem;
+        width: auto;
+        max-width: none;
+        bottom: 5rem;
+        height: calc(100vh - 6.5rem);
+        max-height: none;
+        border-radius: 16px;
+    }
+
+    .lp-chat-btn  { bottom: 1rem; right: 1rem; }
+    .lp-chat-trigger { padding: 0.8rem 1.25rem; font-size: 0.85rem; }
+
+    /* Hide label text on very small screens, keep icon */
+    .chat-trigger-label { display: none; }
+    .lp-chat-trigger { padding: 0.875rem 1rem; border-radius: 50%; }
+
+    .message-content { max-width: 85%; }
+    .quick-btn { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
+}
+
+@media (max-width: 380px) {
+    .chat-header { padding: 0.75rem 0.875rem; }
+    .chat-title  { font-size: 0.82rem; }
+    .message-text { font-size: 0.78rem; }
+    .chat-input  { font-size: 0.8rem; }
+}
+</style>
+
+<script>
+// ── All original chat JS preserved exactly ──────────
+
+const botResponses = {
+    "how to report": "To report an incident:\n\n1. Login to your citizen account\n2. Click on 'Submit Report'\n3. Fill in all the incident details (title, description, category, location)\n4. Upload any evidence (photos/videos) if available\n5. Click 'Submit'\n\nYour report will be reviewed by officers in your sector. You'll receive updates on the status.",
+    "create citizen account": "To create a citizen account:\n\n1. Click on 'Register' in the top right corner\n2. Select 'As Citizen'\n3. Fill in your personal information (first name, last name, email, phone)\n4. Create a strong password\n5. Enter your location details (province, district, sector, cell, village)\n6. Agree to the terms and click 'Create Account'\n\nYou'll receive a welcome email with your account details.",
+    "create officer account": "To create an officer account:\n\n1. Click on 'Register' in the top right corner\n2. Select 'As Officer'\n3. Choose your email type (Government or Personal)\n4. Fill in your personal and officer details (officer ID, department)\n5. Enter your location details\n6. Submit the application\n\nNote: Personal email accounts require admin verification (24hrs). Government emails are automatically verified.",
+    "mission": "Our mission is to create a safer Rwanda by providing a secure, transparent, and efficient platform that connects citizens with law enforcement. We aim to:\n\n✅ Simplify crime reporting\n✅ Improve response times\n✅ Build trust between citizens and police\n✅ Ensure every incident is tracked and resolved\n✅ Promote community safety",
+    "problem": "We're solving these critical problems:\n\n📌 Slow response to crime reports\n📌 Lack of transparency in case handling\n📌 Difficulty tracking report progress\n📌 Inefficient communication between citizens and police\n📌 No centralized platform for incident reporting\n\nTANGAMAKURU bridges these gaps by providing a digital platform where citizens can report incidents instantly and track them until resolution.",
+    "track report": "To track your report:\n\n1. Login to your citizen account\n2. Go to 'My Reports'\n3. Click on any report to view its details\n4. You'll see the current status:\n   - Pending: Awaiting officer review\n   - In Progress: Officer is working on it\n   - Resolved: Case has been closed\n5. You'll receive notifications for any updates\n\nOfficers will also add comments and updates you can view.",
+    "anonymous": "Yes! You can report anonymously by:\n\n1. Checking the 'Report Anonymously' checkbox when submitting\n2. Your identity will be hidden from officers\n3. Only basic location info will be visible\n4. You'll still receive updates via notifications\n\nAnonymous reporting helps protect witnesses and encourages more people to report incidents without fear.",
+    "default": "I'm here to help! You can ask me about:\n\n• How to report an incident\n• Creating citizen/officer accounts\n• Our mission and goals\n• Tracking your report\n• Anonymous reporting\n\nJust click a quick question above or type your own!"
+};
+
+let chatTimeout = null;
+const chatWindow  = document.getElementById('chatWindow');
+const chatTrigger = document.getElementById('chatTrigger');
+const chatClose   = document.getElementById('chatClose');
+const chatSend    = document.getElementById('chatSend');
+const chatInput   = document.getElementById('chatInput');
+const chatMessages = document.getElementById('chatMessages');
+
+function addMessage(text, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
+    const now = new Date();
+    const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            ${!isUser
+                ? `<svg width="22" height="22" viewBox="0 0 100 100"><path fill="#1a237e" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/><text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text></svg>`
+                : `<i class="fas fa-user" style="font-size:12px;color:white;"></i>`}
+        </div>
+        <div class="message-content">
+            <div class="message-text">${text.replace(/\n/g,'<br>')}</div>
+            <div class="message-time">${timeStr}</div>
+        </div>`;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function getBotResponse(question) {
+    const q = question.toLowerCase().trim();
+    for (let [key, response] of Object.entries(botResponses)) {
+        if (q.includes(key) || key.includes(q)) return response;
+    }
+    return botResponses.default;
+}
+
+function showTypingIndicator() {
+    const div = document.createElement('div');
+    div.className = 'chat-message bot typing-indicator';
+    div.id = 'typingIndicator';
+    div.innerHTML = `
+        <div class="message-avatar">
+            <svg width="22" height="22" viewBox="0 0 100 100"><path fill="#1a237e" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/><text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text></svg>
+        </div>
+        <div class="message-content">
+            <div class="message-text"><span></span><span></span><span></span></div>
+        </div>`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+}
+
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+    addMessage(message, true);
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    showTypingIndicator();
+    setTimeout(() => {
+        removeTypingIndicator();
+        addMessage(getBotResponse(message), false);
+        resetChatTimer();
+    }, 500);
+}
+
+function resetChatTimer() {
+    if (chatTimeout) clearTimeout(chatTimeout);
+    chatTimeout = setTimeout(() => {
+        if (chatWindow.style.display !== 'none') closeChat();
+    }, 5 * 60 * 1000);
+}
+
+function openChat() {
+    chatWindow.style.display = 'flex';
+    chatWindow.style.animation = 'chatSlideUp 0.28s ease-out';
+    resetChatTimer();
+}
+
+function closeChat() {
+    chatWindow.style.animation = 'chatSlideDown 0.25s ease-out forwards';
+    setTimeout(() => {
+        chatWindow.style.display = 'none';
+        chatWindow.style.animation = '';
+    }, 250);
+    if (chatTimeout) clearTimeout(chatTimeout);
+}
+
+if (chatTrigger) chatTrigger.addEventListener('click', openChat);
+if (chatClose)   chatClose.addEventListener('click', closeChat);
+if (chatSend)    chatSend.addEventListener('click', sendMessage);
+
+if (chatInput) {
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+    // Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 90) + 'px';
+        resetChatTimer();
+    });
+}
+
+document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        chatInput.value = btn.getAttribute('data-question');
+        sendMessage();
+    });
+});
+
+chatMessages.addEventListener('scroll', resetChatTimer);
+
+// Add slide-down keyframe dynamically
+const style = document.createElement('style');
+style.textContent = `@keyframes chatSlideDown { from{opacity:1;transform:translateY(0);} to{opacity:0;transform:translateY(16px);} }`;
+document.head.appendChild(style);
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ── Counter animation ──────────────
+    function animateCounter(element, finalValue, duration=2000) {
+        let start = 0;
+        const inc = finalValue / (duration / 16);
+        const timer = setInterval(() => {
+            start += inc;
+            if (start >= finalValue) {
+                element.textContent = finalValue.toLocaleString();
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(start).toLocaleString();
+            }
+        }, 16);
+    }
+
+    // ── Fetch real stats from API ─────
+    function loadStats() {
+        fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store the real values for animation
+                    window.statsData = {
+                        reports: data.stats.reports,
+                        resolved: data.stats.resolved,
+                        users: data.stats.users,
+                        responseTime: data.stats.response_time
+                    };
+                    
+                    // Start observer to animate when stats come into view
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting && window.statsData) {
+                                animateCounter(document.getElementById('reportsCount'), window.statsData.reports);
+                                animateCounter(document.getElementById('resolvedCount'), window.statsData.resolved);
+                                animateCounter(document.getElementById('usersCount'), window.statsData.users);
+                                animateCounter(document.getElementById('responseTime'), window.statsData.responseTime);
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    });
+                    
+                    const statsSection = document.getElementById('stats');
+                    if (statsSection) observer.observe(statsSection);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+                // Fallback to default values if API fails
+                window.statsData = {
+                    reports: 26,
+                    resolved: 10,
+                    users: 5,
+                    responseTime: 2.4
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && window.statsData) {
+                            animateCounter(document.getElementById('reportsCount'), window.statsData.reports);
+                            animateCounter(document.getElementById('resolvedCount'), window.statsData.resolved);
+                            animateCounter(document.getElementById('usersCount'), window.statsData.users);
+                            animateCounter(document.getElementById('responseTime'), window.statsData.responseTime);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                });
+                
+                const statsSection = document.getElementById('stats');
+                if (statsSection) observer.observe(statsSection);
+            });
+    }
+
+    // Load stats on page load
+    loadStats();
+
+    // ── Contact form ───────────────────
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            btn.disabled = true;
+            setTimeout(() => {
+                alert('Thank you for your message! We will get back to you soon.');
+                contactForm.reset();
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }, 1500);
+        });
+    }
+});
+</script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1f5739;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --teal:       #0e7490;
+    --teal-bg:    #ecfeff;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; color: var(--ink); }
+
+/* ── Container ────────────── */
+.lp-container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── Buttons ──────────────── */
+.lp-btn { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 600; font-family: inherit; padding: 0.85rem 2rem; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; white-space: nowrap; }
+.lp-btn:hover { opacity: 0.88; transform: translateY(-2px); }
+.lp-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 6px 20px rgba(15,36,64,0.25); }
+.lp-btn--primary:hover { color: #fff; }
+.lp-btn--ghost   { background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3); color: #fff; }
+.lp-btn--ghost:hover { color: #fff; background: rgba(255,255,255,0.2); }
+.lp-btn--white   { background: var(--white); color: var(--brand); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.lp-btn--white:hover { color: var(--brand); }
+.lp-btn--full    { width: 100%; justify-content: center; }
+
+/* ── Section commons ──────── */
+.lp-section { padding: 6rem 0; }
+.lp-section--white   { background: var(--white); }
+.lp-section--surface { background: var(--surface); }
+
+.lp-section-head { text-align: center; margin-bottom: 4rem; }
+.lp-section-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 1.1rem; border-radius: 999px; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.lp-section-badge--blue  { background: var(--info-bg);    color: var(--info); border: 1px solid #bfdbfe; }
+.lp-section-badge--green { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+.lp-section-badge--teal  { background: var(--teal-bg);    color: var(--teal);    border: 1px solid #a5f3fc; }
+.lp-section-sub { font-size: 1.1rem; color: var(--ink-3); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+
+/* ── HERO ─────────────────── */
+.lp-hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; }
+.lp-hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #0a1929 0%, var(--brand) 60%, #1a5276 100%); }
+.lp-hero-bg::after { content:''; position:absolute; inset:0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+
+.lp-hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; padding-top: 5rem; padding-bottom: 5rem; }
+
+.lp-hero-badge { display: inline-flex; align-items: center; gap: 0.45rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85); font-size: 0.8rem; font-weight: 600; padding: 0.35rem 0.9rem; border-radius: 999px; margin-bottom: 1.25rem; }
+.lp-hero-title { font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 1.1rem; }
+.lp-hero-accent { color: #60a5fa; }
+.lp-hero-lead { font-size: 1.1rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 0.75rem; line-height: 1.5; }
+.lp-hero-sub  { font-size: 0.95rem; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 2rem; }
+.lp-hero-actions { display: flex; gap: 0.875rem; flex-wrap: wrap; }
+
+.lp-hero-visual { display: flex; align-items: center; justify-content: center; }
+.lp-hero-shield-wrap { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; }
+.lp-shield-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); }
+.lp-shield-ring--1 { width: 100%; height: 100%; animation: rotateRing 20s linear infinite; }
+.lp-shield-ring--2 { width: 75%;  height: 75%;  animation: rotateRing 15s linear infinite reverse; }
+@keyframes rotateRing { to { transform: rotate(360deg); } }
+
+
+/* ── Hero Logo Circle ──────────── */
+.lp-logo-circle {
+    width: 220px;
+    height: 240px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    animation: floatImg 4s ease-in-out infinite;
+}
+
+.lp-hero-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    padding: 10px; /* Adds some breathing room around the logo */
+    background: white; /* Ensures logo background is white */
+}
+
+/* Remove old hero-img styles since we're replacing it */
+.lp-hero-img {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .lp-logo-circle {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (max-width: 600px) {
+    .lp-logo-circle {
+        width: 150px;
+        height: 150px;
+    }
+}
+@keyframes floatImg { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-14px);} }
+
+/* ── Stats Bar ────────────── */
+.lp-stats-bar { background: var(--white); border-bottom: 1px solid var(--rule); padding: 2.5rem 0; }
+.lp-stats-grid { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; }
+.lp-stat-item  { text-align: center; padding: 1rem 3rem; }
+.lp-stat-num   { font-size: 2.25rem; font-weight: 800; color: var(--brand); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.4rem; }
+.lp-stat-label { font-size: 0.8rem; color: var(--ink-3); font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
+.lp-stat-label i { font-size: 0.72rem; }
+.lp-stat-sep   { width: 1px; height: 50px; background: var(--rule); flex-shrink: 0; }
+
+/* ── How It Works ─────────── */
+.lp-steps-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: start; gap: 0; }
+.lp-step-card  { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 2.5rem 2rem; text-align: center; transition: transform 0.2s, box-shadow 0.2s; }
+.lp-step-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+.lp-step-connector { display: flex; align-items: center; justify-content: center; padding: 0 1rem; margin-top: 5rem; }
+.lp-step-connector::after { content: '→'; font-size: 1.5rem; color: var(--rule); }
+.lp-step-num   { width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; margin: 0 auto 1.25rem; }
+.lp-step-num--blue  { background: var(--info-bg);    color: var(--info); border: 2px solid #bfdbfe; }
+.lp-step-num--green { background: var(--success-bg); color: var(--success); border: 2px solid #a7f3d0; }
+.lp-step-num--teal  { background: var(--teal-bg);    color: var(--teal);    border: 2px solid #a5f3fc; }
+.lp-step-icon  { width: 72px; height: 72px; border-radius: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem; }
+.lp-step-icon--blue  { background: var(--info-bg);    color: var(--info); }
+.lp-step-icon--green { background: var(--success-bg); color: var(--success); }
+.lp-step-icon--teal  { background: var(--teal-bg);    color: var(--teal); }
+.lp-step-title { font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-bottom: 0.75rem; }
+.lp-step-desc  { font-size: 0.875rem; color: var(--ink-3); line-height: 1.65; }
+
+/* ── Stories ──────────────── */
+.lp-stories-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+.lp-story-card   { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+.lp-story-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+.lp-story-img-wrap { position: relative; overflow: hidden; }
+.lp-story-img      { width: 100%; height: 200px; object-fit: cover; display: block; transition: transform 0.5s; }
+.lp-story-card:hover .lp-story-img { transform: scale(1.05); }
+.lp-story-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; }
+.lp-story-badge--green { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+.lp-story-body   { padding: 1.5rem; }
+.lp-story-author { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.lp-story-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; }
+.lp-story-avatar--blue  { background: var(--info-bg);    color: var(--info); }
+.lp-story-avatar--green { background: var(--success-bg); color: var(--success); }
+.lp-story-avatar--amber { background: var(--warning-bg); color: var(--warning); }
+.lp-story-name   { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+.lp-story-role   { font-size: 0.75rem; color: var(--ink-3); }
+.lp-story-title  { font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; }
+.lp-story-title--blue  { color: var(--info); }
+.lp-story-title--green { color: var(--success); }
+.lp-story-title--amber { color: var(--warning); }
+.lp-story-quote  { font-size: 0.875rem; color: var(--ink-3); line-height: 1.65; font-style: italic; }
+
+/* ── About ────────────────── */
+.lp-about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+.lp-about-heading { font-size: 1.1rem; font-weight: 700; color: var(--brand); margin-bottom: 0.6rem; margin-top: 1.25rem; }
+.lp-about-heading:first-child { margin-top: 0; }
+.lp-about-p { font-size: 0.95rem; color: var(--ink-3); line-height: 1.7; }
+.lp-features-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 2rem; }
+.lp-features-title { font-size: 1.05rem; font-weight: 700; color: var(--brand); margin-bottom: 1.5rem; }
+.lp-features-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.lp-feature-item   { display: flex; align-items: flex-start; gap: 0.75rem; }
+.lp-feature-icon   { width: 38px; height: 38px; border-radius: 9px; background: var(--info-bg); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+.lp-feature-name   { font-size: 0.875rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.lp-feature-desc   { font-size: 0.75rem; color: var(--ink-3); }
+
+/* ── Contact ──────────────── */
+.lp-contact-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: var(--ink); margin-bottom: 0.5rem; }
+.lp-contact-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+.lp-contact-form-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; padding: 2.5rem; }
+.lp-contact-form-title { font-size: 1.05rem; font-weight: 700; color: var(--brand); margin-bottom: 1.5rem; }
+.lp-cfield  { margin-bottom: 1rem; }
+.lp-clabel  { display: block; font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.lp-cinput, .lp-ctextarea {
+    width: 100%; padding: 0.8rem 1rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.9rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+}
+.lp-cinput::placeholder, .lp-ctextarea::placeholder { color: #8fa8c0; }
+.lp-cinput:focus, .lp-ctextarea:focus { border-color: var(--brand); background: var(--white); }
+.lp-ctextarea { resize: vertical; }
+
+.lp-map-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; margin-bottom: 1.25rem; }
+.lp-map-frame { height: 220px; }
+.lp-map-frame iframe { width: 100%; height: 100%; display: block; }
+.lp-map-footer { display: flex; align-items: center; gap: 0.6rem; padding: 0.875rem 1.25rem; font-size: 0.85rem; color: var(--ink-3); }
+.lp-map-pin { color: var(--accent); }
+
+.lp-contact-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.lp-cinfo-card { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; padding: 1.25rem; text-align: center; transition: transform 0.15s; }
+.lp-cinfo-card:hover { transform: translateY(-3px); }
+.lp-cinfo-icon  { width: 44px; height: 44px; border-radius: 11px; background: var(--info-bg); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 1rem; margin: 0 auto 0.6rem; }
+.lp-cinfo-title { font-size: 0.78rem; font-weight: 600; color: var(--ink-3); margin-bottom: 0.3rem; }
+.lp-cinfo-value { font-size: 0.9rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.lp-cinfo-sub   { font-size: 0.72rem; color: var(--ink-3); }
+
+/* ── Join Us ──────────────── */
+.lp-join { position: relative; padding: 7rem 0; text-align: center; overflow: hidden; }
+.lp-join-bg { position: absolute; inset: 0; background: linear-gradient(135deg, var(--brand-dark), var(--brand)); }
+.lp-join-bg::after { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 70% 50%, rgba(96,165,250,0.15), transparent 70%); }
+.lp-join-inner { position: relative; z-index: 1; }
+.lp-join-icon  { width: 72px; height: 72px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: #fff; margin: 0 auto 1.5rem; }
+.lp-join-title { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 800; color: #fff; margin-bottom: 1rem; letter-spacing: -0.03em; }
+.lp-join-sub   { font-size: 1.05rem; color: rgba(255,255,255,0.6); max-width: 520px; margin: 0 auto 2.5rem; line-height: 1.65; }
+
+/* ── Responsive ───────────── */
+@media (max-width: 1024px) {
+    .lp-steps-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+    .lp-step-connector { display: none; }
+}
+@media (max-width: 900px) {
+    .lp-hero-inner    { grid-template-columns: 1fr; text-align: center; padding-top: 7rem; }
+    .lp-hero-visual   { order: -1; }
+    .lp-hero-actions  { justify-content: center; }
+    .lp-hero-shield-wrap { width: 220px; height: 220px; }
+    .lp-hero-img      { width: 150px; }
+    .lp-stories-grid  { grid-template-columns: 1fr; }
+    .lp-about-grid    { grid-template-columns: 1fr; gap: 2rem; }
+    .lp-contact-grid  { grid-template-columns: 1fr; }
+    .lp-stats-grid    { gap: 0; }
+    .lp-stat-item     { padding: 0.875rem 1.5rem; }
+    .lp-stat-sep      { height: 1px; width: 40%; margin: 0 auto; }
+}
+@media (max-width: 600px) {
+    .lp-section       { padding: 4rem 0; }
+    .lp-section-head  { margin-bottom: 2.5rem; }
+    .lp-hero-title    { font-size: 1.85rem; }
+    .lp-stats-grid    { flex-direction: column; }
+    .lp-stat-sep      { width: 60%; height: 1px; }
+    .lp-features-grid { grid-template-columns: 1fr; }
+    .lp-contact-info-grid { grid-template-columns: 1fr; }
+    .lp-stories-grid  { grid-template-columns: 1fr; }
+    .lp-hero-actions  { flex-direction: column; align-items: stretch; }
+    .lp-btn           { justify-content: center; }
+}
+
+.stats-loading {
+    font-size: 1.5rem;
+    color: #1a237e;
+    opacity: 0.7;
+}
+</style>
+
+{% endblock %}

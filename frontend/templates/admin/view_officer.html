@@ -1,0 +1,467 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ov-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ov-topbar">
+        <div class="ov-topbar-left">
+            <a href="/admin/officers" class="ov-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Officers
+            </a>
+            <div>
+                <div class="ov-topbar-title"><i class="fas fa-user-shield"></i> Officer Details</div>
+                <div class="ov-topbar-sub">View and manage officer information</div>
+            </div>
+        </div>
+        <a href="/admin/officers/{{ officer.id }}/edit" class="ov-edit-btn">
+            <i class="fas fa-edit"></i> Edit Officer
+        </a>
+    </div>
+
+    <!-- Body -->
+    <div class="ov-body">
+
+        <!-- LEFT — Profile -->
+        <div class="ov-sidebar">
+
+            <!-- Profile Card -->
+            <div class="ov-card ov-card--profile">
+                <div class="ov-profile-banner"></div>
+                <div class="ov-profile-body">
+                    <img src="https://ui-avatars.com/api/?name={{ officer.first_name }}+{{ officer.last_name }}&background=1a3a5c&color=fff&size=120"
+                         class="ov-profile-avatar">
+                    <div class="ov-profile-name">{{ officer.first_name }} {{ officer.last_name }}</div>
+                    <div class="ov-profile-email"><i class="fas fa-envelope"></i> {{ officer.email }}</div>
+                    <span class="ov-status-pill {% if officer.is_active %}ov-status-pill--active{% else %}ov-status-pill--inactive{% endif %}">
+                        {% if officer.is_active %}
+                        <i class="fas fa-check-circle"></i> Active
+                        {% else %}
+                        <i class="fas fa-ban"></i> Inactive
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="ov-stats">
+                <div class="ov-stat-card">
+                    <div class="ov-stat-num ov-stat-num--blue">{{ assigned_reports }}</div>
+                    <div class="ov-stat-label">Assigned Reports</div>
+                    <div class="ov-stat-icon ov-stat-icon--blue"><i class="fas fa-file-alt"></i></div>
+                </div>
+                <div class="ov-stat-card">
+                    <div class="ov-stat-num ov-stat-num--green">{{ resolved_reports }}</div>
+                    <div class="ov-stat-label">Resolved Cases</div>
+                    <div class="ov-stat-icon ov-stat-icon--green"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="ov-card">
+                <div class="ov-card-header"><i class="fas fa-cog"></i> Actions</div>
+                <div class="ov-card-body ov-card-body--actions">
+                    <button class="ov-action-btn ov-action-btn--warning" onclick="resetPassword({{ officer.id }})">
+                        <i class="fas fa-key"></i>
+                        <div>
+                            <div class="ov-action-label">Reset Password</div>
+                            <div class="ov-action-sub">Generate a new temporary password</div>
+                        </div>
+                    </button>
+                    <button class="ov-action-btn {% if officer.is_active %}ov-action-btn--danger{% else %}ov-action-btn--success{% endif %}"
+                            onclick="toggleStatus({{ officer.id }})">
+                        <i class="fas {% if officer.is_active %}fa-ban{% else %}fa-check-circle{% endif %}"></i>
+                        <div>
+                            <div class="ov-action-label">{% if officer.is_active %}Deactivate Officer{% else %}Activate Officer{% endif %}</div>
+                            <div class="ov-action-sub">{% if officer.is_active %}Revoke login access{% else %}Restore login access{% endif %}</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT — Details -->
+        <div class="ov-main">
+
+            <!-- Personal Information -->
+            <div class="ov-card">
+                <div class="ov-card-header"><i class="fas fa-user"></i> Personal Information</div>
+                <div class="ov-card-body">
+                    <div class="ov-details-grid">
+                        <div class="ov-detail-item">
+                            <div class="ov-detail-label">Officer ID</div>
+                            <div class="ov-detail-value">
+                                {% if officer.officer_id %}
+                                <span class="ov-id-tag">{{ officer.officer_id }}</span>
+                                {% else %}
+                                <span class="ov-detail-empty">Not assigned</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="ov-detail-item">
+                            <div class="ov-detail-label">Department</div>
+                            <div class="ov-detail-value">{{ officer.department or '—' }}</div>
+                        </div>
+                        <div class="ov-detail-item">
+                            <div class="ov-detail-label">Phone Number</div>
+                            <div class="ov-detail-value">
+                                {% if officer.phone %}
+                                <i class="fas fa-phone ov-detail-icon"></i>{{ officer.phone }}
+                                {% else %}
+                                <span class="ov-detail-empty">Not provided</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="ov-detail-item">
+                            <div class="ov-detail-label">Date Joined</div>
+                            <div class="ov-detail-value">
+                                <i class="far fa-calendar-alt ov-detail-icon"></i>{{ officer.created_at.strftime('%d %b %Y') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Location -->
+            <div class="ov-card">
+                <div class="ov-card-header"><i class="fas fa-map-marker-alt"></i> Assignment Location</div>
+                <div class="ov-card-body">
+                    <div class="ov-location-grid">
+                        <div class="ov-location-item">
+                            <div class="ov-loc-key">Province</div>
+                            <div class="ov-loc-val">{{ officer.province or '—' }}</div>
+                        </div>
+                        <div class="ov-location-item">
+                            <div class="ov-loc-key">District</div>
+                            <div class="ov-loc-val">{{ officer.district or '—' }}</div>
+                        </div>
+                        <div class="ov-location-item ov-location-item--primary">
+                            <div class="ov-loc-key">Sector <span class="ov-loc-badge">Primary</span></div>
+                            <div class="ov-loc-val">{{ officer.sector or '—' }}</div>
+                        </div>
+                        <div class="ov-location-item">
+                            <div class="ov-loc-key">Cell</div>
+                            <div class="ov-loc-val">{{ officer.cell or '—' }}</div>
+                        </div>
+                        <div class="ov-location-item">
+                            <div class="ov-loc-key">Village</div>
+                            <div class="ov-loc-val">{{ officer.village or '—' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="ov-modal-overlay" id="confirmModal" style="display:none;">
+    <div class="ov-modal">
+        <div class="ov-modal-header ov-modal-header--warning">
+            <div class="ov-modal-title"><i class="fas fa-question-circle"></i> Confirm Action</div>
+            <button class="ov-modal-close" onclick="closeModal('confirmModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ov-modal-body">
+            <div class="ov-modal-icon ov-modal-icon--warning"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="ov-modal-heading" id="confirmTitle"></div>
+            <p class="ov-modal-desc" id="confirmMessage"></p>
+        </div>
+        <div class="ov-modal-footer">
+            <button class="ov-btn ov-btn--ghost" onclick="closeModal('confirmModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="ov-btn ov-btn--primary" id="confirmBtn"><i class="fas fa-check"></i> Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Password Modal -->
+<div class="ov-modal-overlay" id="passwordModal" style="display:none;">
+    <div class="ov-modal">
+        <div class="ov-modal-header ov-modal-header--brand">
+            <div class="ov-modal-title"><i class="fas fa-key"></i> Password Reset Successful</div>
+            <button class="ov-modal-close" onclick="closeModal('passwordModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ov-modal-body">
+            <div class="ov-modal-icon ov-modal-icon--success"><i class="fas fa-check-circle"></i></div>
+            <div class="ov-modal-heading">New Password Generated</div>
+            <p class="ov-modal-desc">A new temporary password has been generated for the officer.</p>
+            <div class="ov-password-box">
+                <div class="ov-password-label"><i class="fas fa-key"></i> Temporary Password</div>
+                <div class="ov-password-value" id="newPasswordValue"></div>
+                <div class="ov-password-note">Save this password — it will not be shown again.</div>
+            </div>
+        </div>
+        <div class="ov-modal-footer">
+            <button class="ov-btn ov-btn--primary" onclick="closeModal('passwordModal')"><i class="fas fa-check"></i> Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="ov-toast" class="ov-toast" style="display:none;">
+    <div class="ov-toast-inner">
+        <i id="ov-toast-icon" class="fas fa-check-circle"></i>
+        <span id="ov-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.ov-wrapper { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ov-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.ov-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ov-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.ov-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ov-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ov-topbar-title i { color: var(--brand); }
+.ov-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.ov-edit-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; font-size: 0.875rem; font-weight: 600;
+    padding: 0.6rem 1.25rem; border-radius: 9px; text-decoration: none;
+    box-shadow: 0 3px 10px rgba(15,36,64,0.2);
+    transition: opacity 0.15s, transform 0.15s;
+}
+.ov-edit-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Body layout ──────────── */
+.ov-body { display: grid; grid-template-columns: 300px 1fr; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.ov-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.ov-card:last-child { margin-bottom: 0; }
+.ov-card--profile { overflow: visible; }
+.ov-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.ov-card-header i { font-size: 0.75rem; }
+.ov-card-body { padding: 1.25rem; }
+.ov-card-body--actions { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem; }
+
+/* ── Profile card ─────────── */
+.ov-profile-banner {
+    height: 80px;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    border-radius: 14px 14px 0 0;
+}
+.ov-profile-body {
+    padding: 0 1.25rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    border: 1px solid var(--rule); border-top: none;
+    border-radius: 0 0 14px 14px;
+    background: var(--white);
+}
+.ov-profile-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    border: 4px solid var(--white);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    margin-top: -40px; margin-bottom: 0.75rem;
+}
+.ov-profile-name  { font-size: 1.1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.3rem; }
+.ov-profile-email { font-size: 0.78rem; color: var(--ink-3); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem; }
+
+.ov-status-pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.875rem; border-radius: 999px; }
+.ov-status-pill--active   { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.ov-status-pill--inactive { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* ── Stats ────────────────── */
+.ov-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 1.25rem; }
+.ov-stat-card {
+    background: var(--white); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1rem; position: relative; overflow: hidden;
+}
+.ov-stat-num       { font-size: 1.75rem; font-weight: 800; line-height: 1; margin-bottom: 0.25rem; }
+.ov-stat-num--blue { color: var(--info); }
+.ov-stat-num--green{ color: var(--success); }
+.ov-stat-label     { font-size: 0.72rem; color: var(--ink-3); font-weight: 500; }
+.ov-stat-icon      { position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 1.5rem; opacity: 0.12; }
+.ov-stat-icon--blue  { color: var(--info); }
+.ov-stat-icon--green { color: var(--success); }
+
+/* ── Action buttons ───────── */
+.ov-action-btn {
+    display: flex; align-items: center; gap: 0.875rem;
+    width: 100%; padding: 0.875rem 1rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    background: var(--white); cursor: pointer; font-family: inherit;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    text-align: left;
+}
+.ov-action-btn > i { font-size: 1rem; flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.ov-action-btn:hover { transform: translateY(-1px); }
+.ov-action-label { font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+.ov-action-sub   { font-size: 0.72rem; color: var(--ink-3); margin-top: 1px; }
+
+.ov-action-btn--warning > i { background: var(--warning-bg); color: var(--warning); }
+.ov-action-btn--warning:hover { border-color: var(--warning-border); background: var(--warning-bg); }
+.ov-action-btn--danger > i  { background: var(--danger-bg);  color: var(--danger); }
+.ov-action-btn--danger:hover  { border-color: var(--danger-border); background: var(--danger-bg); }
+.ov-action-btn--success > i { background: var(--success-bg); color: var(--success); }
+.ov-action-btn--success:hover { border-color: var(--success-border); background: var(--success-bg); }
+
+/* ── Details grid ─────────── */
+.ov-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.ov-detail-item {}
+.ov-detail-label { font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; }
+.ov-detail-value { font-size: 0.9rem; color: var(--ink-2); font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
+.ov-detail-empty { font-size: 0.85rem; color: var(--ink-3); font-style: italic; font-weight: 400; }
+.ov-detail-icon  { color: var(--ink-3); font-size: 0.75rem; }
+.ov-id-tag { font-family: monospace; font-size: 0.85rem; font-weight: 700; background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); padding: 0.25rem 0.65rem; border-radius: 6px; }
+
+/* ── Location grid ────────── */
+.ov-location-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem; }
+.ov-location-item { background: var(--surface); border: 1px solid var(--rule); border-radius: 9px; padding: 0.75rem 0.875rem; }
+.ov-location-item--primary { border-color: #bfdbfe; background: var(--info-bg); }
+.ov-loc-key  { font-size: 0.65rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+.ov-loc-val  { font-size: 0.9rem; color: var(--ink); font-weight: 600; }
+.ov-loc-badge { font-size: 0.6rem; font-weight: 700; background: var(--info); color: #fff; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Modals ───────────────── */
+.ov-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.ov-modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+.ov-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; }
+.ov-modal-header--brand   { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); }
+.ov-modal-header--warning { background: linear-gradient(135deg, #92400e, #d97706); }
+.ov-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+.ov-modal-close  { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
+.ov-modal-close:hover { background: rgba(255,255,255,0.25); }
+.ov-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.ov-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.ov-modal-icon   { width: 58px; height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.4rem; }
+.ov-modal-icon--warning { background: var(--warning-bg); color: var(--warning); }
+.ov-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.ov-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.ov-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; }
+
+.ov-password-box { background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 10px; padding: 1rem; margin-top: 1rem; text-align: left; }
+.ov-password-label { font-size: 0.72rem; font-weight: 700; color: var(--warning); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.35rem; }
+.ov-password-value { font-family: monospace; font-size: 1.1rem; font-weight: 800; color: var(--ink); background: var(--white); border: 1px solid var(--warning-border); border-radius: 7px; padding: 0.6rem 1rem; margin-bottom: 0.5rem; letter-spacing: 0.08em; }
+.ov-password-note  { font-size: 0.72rem; color: var(--warning); }
+
+/* Buttons */
+.ov-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; text-decoration: none; }
+.ov-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.ov-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(15,36,64,0.2); }
+.ov-btn--primary:hover { color: #fff; }
+.ov-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* Toast */
+.ov-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.ov-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .ov-body { grid-template-columns: 1fr; } .ov-location-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px) { .ov-wrapper { padding: 1rem; } .ov-details-grid { grid-template-columns: 1fr; } .ov-stats { grid-template-columns: 1fr 1fr; } }
+</style>
+
+<script>
+let pendingAction = null;
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+['confirmModal','passwordModal'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(id);
+    });
+});
+
+function showConfirm(title, message, action) {
+    document.getElementById('confirmTitle').textContent   = title;
+    document.getElementById('confirmMessage').textContent = message;
+    pendingAction = action;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+document.getElementById('confirmBtn').addEventListener('click', function() {
+    closeModal('confirmModal');
+    if (pendingAction) { setTimeout(pendingAction, 200); pendingAction = null; }
+});
+
+function toggleStatus(officerId) {
+    showConfirm(
+        'Toggle Officer Status',
+        'Are you sure you want to change this officer\'s status?',
+        function() {
+            fetch(`/admin/api/officers/${officerId}/toggle-status`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) { showToast(data.message, true); setTimeout(() => location.reload(), 1800); }
+                    else showToast(data.error || 'Failed to update status', false);
+                })
+                .catch(() => showToast('Network error. Please try again.', false));
+        }
+    );
+}
+
+function resetPassword(officerId) {
+    showConfirm(
+        'Reset Password',
+        'Are you sure you want to reset this officer\'s password? A new temporary password will be generated.',
+        function() {
+            fetch(`/admin/api/officers/${officerId}/reset-password`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('newPasswordValue').textContent = data.new_password;
+                        document.getElementById('passwordModal').style.display = 'flex';
+                    } else showToast(data.error || 'Failed to reset password', false);
+                })
+                .catch(() => showToast('Network error. Please try again.', false));
+        }
+    );
+}
+
+function showToast(msg, success) {
+    const t = document.getElementById('ov-toast');
+    t.querySelector('.ov-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('ov-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('ov-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+
+{% endblock %}

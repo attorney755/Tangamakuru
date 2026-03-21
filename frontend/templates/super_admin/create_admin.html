@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ca-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ca-topbar">
+        <div class="ca-topbar-left">
+            <a href="{{ url_for('super_admin.list_admins') }}" class="ca-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Admins
+            </a>
+            <div>
+                <div class="ca-topbar-title"><i class="fas fa-user-plus"></i> Create Administrator</div>
+                <div class="ca-topbar-sub">Add a new admin to manage a sector</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="ca-body">
+
+        <!-- LEFT — Form -->
+        <div class="ca-main">
+            <form id="createAdminForm" onsubmit="createAdmin(event)">
+
+                <!-- Personal Details -->
+                <div class="ca-card">
+                    <div class="ca-card-header"><i class="fas fa-user"></i> Personal Details</div>
+                    <div class="ca-card-body">
+
+                        <div class="ca-row-2">
+                            <div class="ca-field">
+                                <label class="ca-label">First Name <span class="ca-req">*</span></label>
+                                <input type="text" class="ca-input" id="first_name" placeholder="First name" required>
+                            </div>
+                            <div class="ca-field">
+                                <label class="ca-label">Last Name <span class="ca-req">*</span></label>
+                                <input type="text" class="ca-input" id="last_name" placeholder="Last name" required>
+                            </div>
+                        </div>
+
+                        <div class="ca-field">
+                            <label class="ca-label">Email Address <span class="ca-req">*</span></label>
+                            <div class="ca-input-wrap">
+                                <i class="fas fa-envelope ca-input-icon"></i>
+                                <input type="email" class="ca-input ca-input--icon" id="email"
+                                       placeholder="admin@sector.gov.rw" required
+                                       oninput="checkEmail(this.value)">
+                            </div>
+                            <!-- Email warning -->
+                            <div id="emailWarning" class="ca-email-warning" style="display:none;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>
+                                    <strong>Security Warning!</strong> You are using a personal email (@gmail.com).
+                                    Official government emails (@gov.rw) are strongly recommended for admin accounts.
+                                    <span style="display:block;margin-top:3px;opacity:0.8;">Continue at your own risk.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ca-field">
+                            <label class="ca-label">Phone Number</label>
+                            <div class="ca-input-wrap">
+                                <i class="fas fa-phone ca-input-icon"></i>
+                                <input type="tel" class="ca-input ca-input--icon" id="phone" placeholder="e.g., 0788888888">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="ca-card">
+                    <div class="ca-card-header"><i class="fas fa-map-marker-alt"></i> Assigned Location</div>
+                    <div class="ca-card-body">
+
+                        <div class="ca-row-2">
+                            <div class="ca-field">
+                                <label class="ca-label">Province</label>
+                                <select class="ca-input ca-select" id="province">
+                                    <option value="Kigali City">Kigali City</option>
+                                    <option value="Eastern">Eastern Province</option>
+                                    <option value="Western">Western Province</option>
+                                    <option value="Northern">Northern Province</option>
+                                    <option value="Southern">Southern Province</option>
+                                </select>
+                            </div>
+                            <div class="ca-field">
+                                <label class="ca-label">District</label>
+                                <input type="text" class="ca-input" id="district" placeholder="e.g., Gasabo">
+                            </div>
+                        </div>
+
+                        <div class="ca-row-3">
+                            <div class="ca-field">
+                                <label class="ca-label">Sector <span class="ca-req">*</span></label>
+                                <input type="text" class="ca-input" id="sector" placeholder="e.g., Remera" required>
+                            </div>
+                            <div class="ca-field">
+                                <label class="ca-label">Cell</label>
+                                <input type="text" class="ca-input" id="cell" placeholder="e.g., Gishushu">
+                            </div>
+                            <div class="ca-field">
+                                <label class="ca-label">Village</label>
+                                <input type="text" class="ca-input" id="village" placeholder="e.g., Amahoro">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="ca-info-note">
+                    <i class="fas fa-key"></i>
+                    <div>
+                        <strong>Auto-generated Password:</strong> A secure random password will be generated and shown once after creation. Please save it before closing.
+                    </div>
+                </div>
+
+                <div id="message" style="display:none; margin-bottom:1rem;"></div>
+
+                <!-- Actions -->
+                <div class="ca-actions">
+                    <a href="{{ url_for('super_admin.list_admins') }}" class="ca-btn ca-btn--ghost">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="ca-btn ca-btn--primary" id="submitBtn">
+                        <i class="fas fa-save"></i> Create Admin
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- RIGHT — Sidebar -->
+        <div class="ca-sidebar">
+
+            <div class="ca-card">
+                <div class="ca-card-header"><i class="fas fa-lightbulb"></i> Quick Tips</div>
+                <div class="ca-card-body">
+                    <div class="ca-tips">
+                        <div class="ca-tip">
+                            <div class="ca-tip-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="ca-tip-title">Use Official Email</div>
+                                <div class="ca-tip-desc">Use @gov.rw emails for admin accounts. Personal emails are flagged with a security warning.</div>
+                            </div>
+                        </div>
+                        <div class="ca-tip">
+                            <div class="ca-tip-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <div class="ca-tip-title">Sector is Required</div>
+                                <div class="ca-tip-desc">The sector field is mandatory — admins are assigned to manage a specific sector.</div>
+                            </div>
+                        </div>
+                        <div class="ca-tip">
+                            <div class="ca-tip-icon"><i class="fas fa-key"></i></div>
+                            <div>
+                                <div class="ca-tip-title">Save the Password</div>
+                                <div class="ca-tip-desc">The generated password is shown only once. Copy and share it with the admin securely.</div>
+                            </div>
+                        </div>
+                        <div class="ca-tip">
+                            <div class="ca-tip-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <div class="ca-tip-title">Admin Permissions</div>
+                                <div class="ca-tip-desc">Admins can manage officers, approve registrations, and oversee reports in their sector.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 15px; }
+
+/* ── Wrapper ──────────────── */
+.ca-wrapper { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ca-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.ca-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ca-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.9rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.ca-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ca-topbar-title { font-size: 1.05rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ca-topbar-title i { color: var(--brand); }
+.ca-topbar-sub   { font-size: 0.82rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Layout ───────────────── */
+.ca-body { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.ca-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.ca-card:last-child { margin-bottom: 0; }
+.ca-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.ca-card-header i { font-size: 0.78rem; }
+.ca-card-body { padding: 1.35rem; }
+
+/* ── Form ─────────────────── */
+.ca-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 0.875rem; }
+.ca-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+.ca-field { display: flex; flex-direction: column; margin-bottom: 1rem; }
+.ca-field:last-child { margin-bottom: 0; }
+
+.ca-label { font-size: 0.9rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.42rem; }
+.ca-req   { color: #dc2626; }
+
+.ca-input-wrap { position: relative; }
+.ca-input-icon { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--ink-3); pointer-events: none; }
+
+.ca-input {
+    width: 100%; padding: 0.8rem 0.975rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.95rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.ca-input--icon { padding-left: 2.5rem; }
+.ca-input::placeholder { color: #8fa8c0; }
+.ca-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+
+.ca-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.975rem center;
+    background-size: 10px; padding-right: 2.5rem; cursor: pointer;
+}
+
+/* Email warning */
+.ca-email-warning {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    background: var(--warning-bg); border: 1px solid var(--warning-border);
+    border-radius: 9px; padding: 0.8rem 1rem;
+    font-size: 0.875rem; color: var(--warning); line-height: 1.55;
+    margin-top: 0.5rem;
+}
+.ca-email-warning i { flex-shrink: 0; margin-top: 2px; font-size: 0.9rem; }
+.ca-email-warning strong { font-weight: 700; }
+
+/* Info note */
+.ca-info-note {
+    display: flex; align-items: flex-start; gap: 0.65rem;
+    background: var(--info-bg); border: 1px solid var(--info-border);
+    border-radius: 10px; padding: 0.9rem 1.1rem;
+    font-size: 0.9rem; color: var(--info); line-height: 1.55;
+    margin-bottom: 1.25rem;
+}
+.ca-info-note i { flex-shrink: 0; margin-top: 2px; }
+
+/* Inline message */
+.ca-msg { display: flex; align-items: flex-start; gap: 0.6rem; border-radius: 10px; padding: 0.875rem 1.1rem; font-size: 0.9rem; line-height: 1.6; }
+.ca-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.ca-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* Actions */
+.ca-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; }
+
+/* Buttons */
+.ca-btn { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.95rem; font-weight: 600; font-family: inherit; padding: 0.8rem 1.5rem; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.ca-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.ca-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(15,36,64,0.22); }
+.ca-btn--primary:hover { color: #fff; }
+.ca-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* ── Sidebar Tips ─────────── */
+.ca-tips { display: flex; flex-direction: column; gap: 1.1rem; }
+.ca-tip  { display: flex; align-items: flex-start; gap: 0.75rem; }
+.ca-tip-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--info-bg); color: var(--info); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; flex-shrink: 0; margin-top: 1px; }
+.ca-tip-title { font-size: 0.875rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.ca-tip-desc  { font-size: 0.8rem; color: var(--ink-3); line-height: 1.55; }
+
+/* Responsive */
+@media (max-width: 900px) { .ca-body { grid-template-columns: 1fr; } .ca-row-2 { grid-template-columns: 1fr; } .ca-row-3 { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .ca-wrapper { padding: 1rem; } .ca-actions { flex-direction: column; } .ca-btn { width: 100%; justify-content: center; } }
+</style>
+
+<script>
+function createAdmin(event) {
+    event.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const orig = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    submitBtn.disabled = true;
+
+    const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name:  document.getElementById('last_name').value,
+        email:      document.getElementById('email').value,
+        phone:      document.getElementById('phone').value,
+        province:   document.getElementById('province').value,
+        district:   document.getElementById('district').value,
+        sector:     document.getElementById('sector').value,
+        cell:       document.getElementById('cell').value,
+        village:    document.getElementById('village').value
+    };
+
+    fetch('/super-admin/admins/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(`
+                <i class="fas fa-check-circle" style="font-size:1rem;flex-shrink:0;margin-top:2px;"></i>
+                <div>
+                    <strong>Admin created successfully!</strong><br>
+                    Email: <strong>${data.admin.email}</strong><br>
+                    Password: <code style="background:rgba(6,95,70,0.12);padding:2px 8px;border-radius:5px;font-size:0.95rem;font-weight:700;">${data.admin.password}</code><br>
+                    <span style="font-size:0.82rem;opacity:0.8;margin-top:4px;display:block;">Save this password — it will not be shown again.</span>
+                </div>
+            `, 'success');
+            document.getElementById('createAdminForm').reset();
+            document.getElementById('emailWarning').style.display = 'none';
+        } else {
+            showMessage(`<i class="fas fa-exclamation-circle" style="flex-shrink:0;margin-top:2px;"></i><span>Error: ${data.error || 'Failed to create admin'}</span>`, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage(`<i class="fas fa-exclamation-circle" style="flex-shrink:0;margin-top:2px;"></i><span>Network error. Please try again.</span>`, 'danger');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = orig;
+        submitBtn.disabled = false;
+    });
+}
+
+function showMessage(html, type) {
+    const div = document.getElementById('message');
+    div.innerHTML = `<div class="ca-msg ca-msg--${type}">${html}</div>`;
+    div.style.display = 'block';
+    if (type !== 'success') setTimeout(() => { div.style.display = 'none'; }, 8000);
+}
+
+function checkEmail(email) {
+    const warn = document.getElementById('emailWarning');
+    warn.style.display = email.toLowerCase().includes('@gmail.com') ? 'flex' : 'none';
+}
+</script>
+
+{% endblock %}

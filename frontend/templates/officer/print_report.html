@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Incident Report - {{ report.report_id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #0d6efd;
+        }
+        .header h1 {
+            color: #0d6efd;
+            margin-bottom: 5px;
+        }
+        .header h2 {
+            color: #666;
+            font-size: 1.2em;
+            font-weight: normal;
+        }
+        .report-id {
+            font-size: 1.1em;
+            color: #666;
+            margin-top: 10px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            background: #f8f9fa;
+            padding: 10px;
+            border-left: 4px solid #0d6efd;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+        .info-value {
+            font-size: 1.1em;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .status-pending { background: #ffc107; color: #000; }
+        .status-in_progress { background: #0dcaf0; color: #000; }
+        .status-resolved { background: #198754; color: #fff; }
+        
+        .priority-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .priority-urgent, .priority-high { background: #dc3545; color: #fff; }
+        .priority-medium { background: #ffc107; color: #000; }
+        .priority-low { background: #198754; color: #fff; }
+        
+        .description-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .signature {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-line {
+            width: 200px;
+            border-top: 1px solid #000;
+            margin-top: 30px;
+        }
+        .media-section {
+            margin-top: 30px;
+        }
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .media-item {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: center;
+        }
+        .media-item img {
+            max-width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TANGAMAKURU - Rwanda Crime Reporting System</h1>
+        <h2>Official Incident Report</h2>
+        <div class="report-id">Report ID: {{ report.report_id }}</div>
+        <div>Generated on: {{ current_date }}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Incident Overview</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Title</div>
+                <div class="info-value">{{ report.title }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Category</div>
+                <div class="info-value">{{ report.category }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Report Type</div>
+                <div class="info-value">{{ report.report_type|upper }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Incident Date</div>
+                <div class="info-value">{{ report.incident_date.strftime('%Y-%m-%d') if report.incident_date else 'N/A' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                    <span class="status-badge status-{{ report.status }}">{{ report.status|upper }}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Priority</div>
+                <div class="info-value">
+                    <span class="priority-badge priority-{{ report.priority }}">{{ report.priority|upper }}</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Reported On</div>
+                <div class="info-value">{{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else 'N/A' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Resolved On</div>
+                <div class="info-value">{{ report.resolved_at.strftime('%Y-%m-%d') if report.resolved_at else 'Not resolved' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Location Details</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Province</div>
+                <div class="info-value">{{ report.province }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">District</div>
+                <div class="info-value">{{ report.district }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Sector</div>
+                <div class="info-value">{{ report.sector }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Cell</div>
+                <div class="info-value">{{ report.cell }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Village</div>
+                <div class="info-value">{{ report.village }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Specific Location</div>
+                <div class="info-value">{{ report.specific_location }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Incident Description</div>
+        <div class="description-box">
+            {{ report.description }}
+        </div>
+    </div>
+
+    {% if report.witness_info %}
+    <div class="section">
+        <div class="section-title">Witness Information</div>
+        <div class="description-box">
+            {{ report.witness_info }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if report.evidence_details %}
+    <div class="section">
+        <div class="section-title">Evidence Description</div>
+        <div class="description-box">
+            {{ report.evidence_details }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <div class="section-title">Reporter Information</div>
+        {% if report.is_anonymous %}
+        <p><i>This report was submitted anonymously</i></p>
+        {% elif reporter %}
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Name</div>
+                <div class="info-value">{{ reporter.get_full_name() }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ reporter.email }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Phone</div>
+                <div class="info-value">{{ reporter.phone or 'Not provided' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Location</div>
+                <div class="info-value">{{ reporter.village }}, {{ reporter.cell }}</div>
+            </div>
+        </div>
+        {% else %}
+        <p>Reporter information not available</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Officer Assignment</div>
+        {% if assigned_officer %}
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Officer Name</div>
+                <div class="info-value">{{ assigned_officer.get_full_name() }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ assigned_officer.email }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Department</div>
+                <div class="info-value">{{ assigned_officer.department or 'Not specified' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Officer ID</div>
+                <div class="info-value">{{ assigned_officer.officer_id or 'N/A' }}</div>
+            </div>
+        </div>
+        {% else %}
+        <p>Not assigned to any officer</p>
+        {% endif %}
+    </div>
+
+    {% if media_files %}
+    <div class="media-section">
+        <div class="section-title">Attached Evidence</div>
+        <div class="media-grid">
+            {% for media in media_files %}
+            <div class="media-item">
+                {% if media.file_type.startswith('image/') %}
+                <img src="file://{{ media.file_path }}" alt="Evidence">
+                {% else %}
+                <i class="fas fa-file"></i>
+                {% endif %}
+                <p class="small">{{ media.filename }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="signature">
+        <div>
+            <div class="signature-line"></div>
+            <div>Officer Signature</div>
+        </div>
+        <div>
+            <div class="signature-line"></div>
+            <div>Date</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>This is an official document generated by TANGAMAKURU Crime Reporting System</p>
+        <p>Ministry of Local Government, Republic of Rwanda</p>
+    </div>
+</body>
+</html>

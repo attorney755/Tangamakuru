@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="am-wrapper">
+
+    <!-- Top Bar -->
+    <div class="am-topbar">
+        <div class="am-topbar-left">
+            <a href="/admin/reports" class="am-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            <div>
+                <div class="am-topbar-title"><i class="fas fa-comments"></i> Messages</div>
+                <div class="am-topbar-sub">Conversations with officers about cases</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="am-body">
+
+        <!-- LEFT — Conversation List -->
+        <div class="am-sidebar">
+            <div class="am-sidebar-header">
+                <div class="am-sidebar-title"><i class="fas fa-comments"></i> Recent Conversations</div>
+            </div>
+            <div id="conversationList" class="am-conv-list">
+                <div class="am-loading">
+                    <div class="am-spinner"></div>
+                    <span>Loading conversations...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT — Message Area -->
+        <div class="am-main">
+            <div class="am-main-header">
+                <div class="am-sidebar-title"><i class="fas fa-comment-dots"></i> Message Thread</div>
+            </div>
+            <div class="am-main-body" id="messageArea">
+                <div class="am-empty">
+                    <div class="am-empty-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="am-empty-title">Select a conversation</div>
+                    <p class="am-empty-sub">Choose a conversation from the left to view messages</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.am-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.am-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.am-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.am-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.am-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.am-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.am-topbar-title i { color: var(--brand); }
+.am-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Body Layout ──────────── */
+.am-body {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    height: calc(100vh - 160px);
+    min-height: 500px;
+}
+
+/* ── Sidebar ──────────────── */
+.am-sidebar {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.am-sidebar-header {
+    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface); flex-shrink: 0;
+}
+.am-sidebar-title { font-size: 0.82rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.am-sidebar-title i { font-size: 0.75rem; }
+.am-conv-list { flex: 1; overflow-y: auto; }
+.am-conv-list::-webkit-scrollbar { width: 4px; }
+.am-conv-list::-webkit-scrollbar-track { background: var(--surface); }
+.am-conv-list::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+
+/* Conversation items */
+.am-conv-item {
+    display: block; padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+}
+.am-conv-item:last-child { border-bottom: none; }
+.am-conv-item:hover { background: var(--surface); }
+.am-conv-item--unread { background: #f1f5f9; border-left-color: var(--brand); }
+.am-conv-item--unread:hover { background: #e8edf4; }
+
+.am-conv-report-num { font-size: 0.72rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.4rem; }
+.am-conv-title      { font-size: 0.875rem; font-weight: 700; color: var(--ink); margin-bottom: 0.25rem; }
+.am-conv-officer    { font-size: 0.75rem; color: var(--ink-3); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
+.am-conv-preview    { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: flex; align-items: center; gap: 0.3rem; }
+.am-conv-footer     { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; }
+.am-conv-time       { font-size: 0.68rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.25rem; }
+.am-unread-dot      { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex-shrink: 0; animation: pulse 1.8s infinite; }
+.am-conv-badge      { font-size: 0.65rem; font-weight: 700; background: var(--danger); color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+/* ── Main Panel ───────────── */
+.am-main {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.am-main-header {
+    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface); flex-shrink: 0;
+}
+.am-main-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; }
+
+/* ── Empty & Loading ──────── */
+.am-empty { text-align: center; padding: 3rem 2rem; margin: auto; }
+.am-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.am-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.am-empty-sub   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; }
+
+.am-loading { display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 3rem; font-size: 0.875rem; color: var(--ink-3); }
+.am-spinner { width: 20px; height: 20px; border: 2px solid var(--rule); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Message Thread ───────── */
+.am-thread {
+    flex: 1; overflow-y: auto; margin-bottom: 1rem;
+    display: flex; flex-direction: column; gap: 0.875rem;
+    max-height: 400px; padding-right: 0.25rem;
+}
+.am-thread::-webkit-scrollbar { width: 4px; }
+.am-thread::-webkit-scrollbar-track { background: var(--surface); border-radius: 2px; }
+.am-thread::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+
+.am-bubble-wrap { display: flex; }
+.am-bubble-wrap--me   { justify-content: flex-end; }
+.am-bubble-wrap--them { justify-content: flex-start; }
+
+.am-bubble {
+    max-width: 70%; padding: 0.75rem 1rem;
+    border-radius: 12px; font-size: 0.85rem; line-height: 1.6;
+}
+.am-bubble--me   { background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+.am-bubble--them { background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-bottom-left-radius: 4px; }
+
+.am-bubble-sender { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.25rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem; }
+.am-bubble-text   { margin: 0; word-break: break-word; }
+.am-bubble-time   { font-size: 0.65rem; opacity: 0.6; margin-top: 0.3rem; }
+
+/* Reply box */
+.am-reply-box { border-top: 1px solid var(--rule); padding-top: 1rem; margin-top: auto; }
+.am-reply-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+.am-reply-textarea {
+    flex: 1; padding: 0.7rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; resize: none;
+    transition: border-color 0.15s, background 0.15s;
+}
+.am-reply-textarea:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.07); }
+.am-reply-send {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.7rem 1.1rem; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; font-size: 0.85rem; font-weight: 600;
+    font-family: inherit; cursor: pointer; white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(15,36,64,0.2);
+    transition: opacity 0.15s; flex-shrink: 0;
+}
+.am-reply-send:hover { opacity: 0.85; }
+.am-reply-send:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Inline retry button */
+.btn-outline-primary {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 1rem; border-radius: 8px;
+    background: var(--info-bg); border: 1.5px solid var(--info-border);
+    color: var(--info); font-size: 0.825rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; text-decoration: none;
+    transition: opacity 0.15s;
+}
+.btn-outline-primary:hover { opacity: 0.85; color: var(--info); }
+
+/* Responsive */
+@media (max-width: 860px) {
+    .am-body { grid-template-columns: 1fr; height: auto; }
+    .am-sidebar { height: 300px; }
+    .am-main { min-height: 420px; }
+}
+@media (max-width: 600px) {
+    .am-wrapper { padding: 1rem; }
+    .am-topbar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadConversations();
+});
+
+function loadConversations() {
+    fetch('/admin/api/messages/conversations')
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            console.log('Conversations data:', data);
+            const conversationList = document.getElementById('conversationList');
+
+            if (data.conversations && data.conversations.length > 0) {
+                let html = '';
+                data.conversations.forEach(conv => {
+                    const isUnread = conv.unread_count > 0;
+                    html += `
+                        <div class="am-conv-item ${isUnread ? 'am-conv-item--unread' : ''}"
+                             onclick="loadMessages(${conv.report_id}, ${conv.officer_id})">
+                            <div class="am-conv-report-num">
+                                ${isUnread ? '<span class="am-unread-dot"></span>' : ''}
+                                ${conv.report_number}
+                                ${isUnread ? `<span class="am-conv-badge">${conv.unread_count} new</span>` : ''}
+                            </div>
+                            <div class="am-conv-title">${conv.report_title}</div>
+                            <div class="am-conv-officer">
+                                <i class="fas fa-user-tie"></i>
+                                ${conv.officer_name}${conv.officer_sector ? ` &middot; ${conv.officer_sector}` : ''}
+                            </div>
+                            <div class="am-conv-preview">
+                                <i class="fas fa-comment"></i>
+                                ${conv.last_message || 'No messages'}
+                            </div>
+                            <div class="am-conv-footer">
+                                <span></span>
+                                <span class="am-conv-time">
+                                    <i class="far fa-clock"></i> ${conv.last_message_time || 'Never'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                conversationList.innerHTML = html;
+            } else {
+                conversationList.innerHTML = `
+                    <div class="am-empty" style="padding:2.5rem 1.5rem;">
+                        <div class="am-empty-icon"><i class="fas fa-inbox"></i></div>
+                        <div class="am-empty-title">No conversations yet</div>
+                        <p class="am-empty-sub">When you ask officers about cases, they'll appear here.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading conversations:', error);
+            document.getElementById('conversationList').innerHTML = `
+                <div class="am-empty" style="padding:2.5rem 1.5rem;">
+                    <div class="am-empty-icon" style="background:var(--danger-bg);color:var(--danger);"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="am-empty-title" style="color:var(--danger);">Error loading</div>
+                    <p class="am-empty-sub">Please try again later.</p>
+                    <button class="btn-outline-primary mt-2" onclick="loadConversations()">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+            `;
+        });
+}
+
+let currentReportId = null;
+let currentOfficerId = null;
+const currentUserId = {{ current_user_id }};
+
+function loadMessages(reportId, officerId) {
+    console.log('loadMessages called with:', { reportId, officerId });
+    currentReportId = reportId;
+    currentOfficerId = officerId;
+    console.log('Set currentReportId:', currentReportId);
+    console.log('Set currentOfficerId:', currentOfficerId);
+
+    const messageArea = document.getElementById('messageArea');
+    messageArea.innerHTML = `<div class="am-loading"><div class="am-spinner"></div><span>Loading messages...</span></div>`;
+
+    fetch(`/admin/api/messages/${reportId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && data.messages.length > 0) {
+                console.log('Using officer ID:', currentOfficerId);
+                let unreadMarked = false;
+
+                let html = `<div class="am-thread" id="messageThread">`;
+
+                data.messages.forEach(msg => {
+                    const time = new Date(msg.created_at).toLocaleString();
+                    html += `
+                        <div class="am-bubble-wrap ${msg.is_me ? 'am-bubble-wrap--me' : 'am-bubble-wrap--them'}">
+                            <div class="am-bubble ${msg.is_me ? 'am-bubble--me' : 'am-bubble--them'}">
+                                <div class="am-bubble-sender"><i class="fas fa-user"></i> ${msg.sender}</div>
+                                <p class="am-bubble-text">${msg.message}</p>
+                                <div class="am-bubble-time"><i class="far fa-clock"></i> ${time}</div>
+                            </div>
+                        </div>
+                    `;
+                    if (!msg.is_me && !msg.is_read) {
+                        fetch(`/admin/api/messages/${msg.id}/read`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        }).catch(err => console.log('Error marking message as read:', err));
+                        unreadMarked = true;
+                    }
+                });
+
+                html += `</div>
+                    <div class="am-reply-box">
+                        <div class="am-reply-row">
+                            <textarea class="am-reply-textarea" id="replyMessage" rows="2" placeholder="Type your reply..."></textarea>
+                            <button class="am-reply-send" id="sendReplyBtn" onclick="sendReply()">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>`;
+
+                messageArea.innerHTML = html;
+
+                if (unreadMarked) {
+                    loadConversations();
+                    updateMessageCount();
+                }
+
+                setTimeout(() => {
+                    const thread = document.getElementById('messageThread');
+                    if (thread) thread.scrollTop = thread.scrollHeight;
+                }, 100);
+
+            } else {
+                messageArea.innerHTML = `
+                    <div class="am-empty" style="margin:auto;">
+                        <div class="am-empty-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div class="am-empty-title">No messages yet</div>
+                        <p class="am-empty-sub">Start the conversation below.</p>
+                    </div>
+                    <div class="am-reply-box">
+                        <div class="am-reply-row">
+                            <textarea class="am-reply-textarea" id="replyMessage" rows="2" placeholder="Type your message..."></textarea>
+                            <button class="am-reply-send" id="sendReplyBtn" onclick="sendReply()">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading messages:', error);
+            messageArea.innerHTML = `
+                <div class="am-empty" style="margin:auto;">
+                    <div class="am-empty-icon" style="background:var(--danger-bg);color:var(--danger);"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="am-empty-title" style="color:var(--danger);">Error loading messages</div>
+                    <p class="am-empty-sub">Please try again later.</p>
+                </div>`;
+        });
+}
+
+function sendReply() {
+    const reply = document.getElementById('replyMessage')?.value.trim();
+
+    console.log('=== SEND REPLY DEBUG ===');
+    console.log('reply:', reply);
+    console.log('currentReportId:', currentReportId);
+    console.log('currentOfficerId:', currentOfficerId);
+
+    if (!reply) { alert('Please enter a message'); return; }
+    if (!currentReportId || !currentOfficerId) {
+        console.error('Missing conversation data');
+        alert('Conversation data missing. Please select a conversation first.');
+        return;
+    }
+
+    const replyInput = document.getElementById('replyMessage');
+    const sendBtn    = document.getElementById('sendReplyBtn');
+    if (replyInput) replyInput.disabled = true;
+    if (sendBtn)    sendBtn.disabled    = true;
+
+    const payload = { report_id: currentReportId, receiver_id: currentOfficerId, message: reply };
+
+    fetch('/admin/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(response => {
+        if (!response.ok) return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            if (replyInput) replyInput.value = '';
+            loadMessages(currentReportId, currentOfficerId);
+            loadConversations();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+            if (replyInput) replyInput.disabled = false;
+            if (sendBtn)    sendBtn.disabled    = false;
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Failed to send message: ' + error.message);
+        if (replyInput) replyInput.disabled = false;
+        if (sendBtn)    sendBtn.disabled    = false;
+    });
+}
+
+function sendFirstMessage() { sendReply(); }
+
+function updateMessageCount() {
+    fetch('/admin/api/messages/unread-count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('messageCount');
+            if (badge) { badge.textContent = data.count; badge.style.display = data.count > 0 ? 'flex' : 'none'; }
+        })
+        .catch(error => console.log('Error updating message count:', error));
+}
+</script>
+
+{% endblock %}

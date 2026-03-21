@@ -1,0 +1,450 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="im-wrapper">
+
+    <!-- Top Bar -->
+    <div class="im-topbar">
+        <div class="im-topbar-left">
+            <a href="{{ url_for('officer.dashboard') }}" class="im-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="im-topbar-title"><i class="fas fa-list"></i> Incident Management</div>
+                <div class="im-topbar-sub">
+                    Sector: <strong>{{ officer.sector or 'Not assigned' }}</strong> &nbsp;·&nbsp;
+                    Total: <strong>{{ stats.all }}</strong> incidents
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="im-stats">
+        <div class="im-stat">
+            <div class="im-stat-icon im-stat-icon--blue"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <div class="im-stat-num">{{ stats.all }}</div>
+                <div class="im-stat-label">Total</div>
+            </div>
+        </div>
+        <div class="im-stat">
+            <div class="im-stat-icon im-stat-icon--amber"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="im-stat-num">{{ stats.pending }}</div>
+                <div class="im-stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="im-stat">
+            <div class="im-stat-icon im-stat-icon--cyan"><i class="fas fa-spinner"></i></div>
+            <div>
+                <div class="im-stat-num">{{ stats.in_progress }}</div>
+                <div class="im-stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="im-stat">
+            <div class="im-stat-icon im-stat-icon--green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="im-stat-num">{{ stats.resolved }}</div>
+                <div class="im-stat-label">Resolved</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" class="im-filters">
+        <div class="im-filter-group">
+            <label class="im-filter-label">Status</label>
+            <select name="status" class="im-select">
+                <option value="all"         {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+                <option value="pending"     {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="resolved"    {% if current_status == 'resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+        </div>
+        <div class="im-filter-group">
+            <label class="im-filter-label">Priority</label>
+            <select name="priority" class="im-select">
+                <option value="all"    {% if current_priority == 'all' %}selected{% endif %}>All Priority</option>
+                <option value="low"    {% if current_priority == 'low' %}selected{% endif %}>Low</option>
+                <option value="medium" {% if current_priority == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="high"   {% if current_priority == 'high' %}selected{% endif %}>High</option>
+                <option value="urgent" {% if current_priority == 'urgent' %}selected{% endif %}>Urgent</option>
+            </select>
+        </div>
+        <div class="im-filter-group im-filter-group--action">
+            <label class="im-filter-label">&nbsp;</label>
+            <button type="submit" class="im-apply-btn">
+                <i class="fas fa-filter"></i> Apply Filters
+            </button>
+        </div>
+    </form>
+
+    <!-- Table Card -->
+    <div class="im-card">
+        {% if reports %}
+        <div class="im-table-wrap">
+            <table class="im-table">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Reporter</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>
+                            <span class="im-report-id">{{ report.report_id }}</span>
+                            {% if report.assigned_to_me %}
+                            <span class="im-mine-badge">Mine</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('officer.view_incident', report_id=report.id) }}"
+                               class="im-report-title">{{ report.title }}</a>
+                        </td>
+                        <td class="im-category">{{ report.category }}</td>
+                        <td class="im-location">{{ report.location }}</td>
+                        <td>
+                            {% if report.status == 'pending' %}
+                            <span class="im-status im-status--pending"><i class="fas fa-clock"></i> Pending</span>
+                            {% elif report.status == 'in_progress' %}
+                            <span class="im-status im-status--progress"><i class="fas fa-spinner"></i> In Progress</span>
+                            {% elif report.status == 'resolved' %}
+                            <span class="im-status im-status--resolved"><i class="fas fa-check-circle"></i> Resolved</span>
+                            {% else %}
+                            <span class="im-status im-status--other">{{ report.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if report.priority == 'urgent' or report.priority == 'high' %}
+                            <span class="im-priority im-priority--danger">{{ report.priority|upper }}</span>
+                            {% elif report.priority == 'medium' %}
+                            <span class="im-priority im-priority--medium">MEDIUM</span>
+                            {% else %}
+                            <span class="im-priority im-priority--low">LOW</span>
+                            {% endif %}
+                        </td>
+                        <td class="im-reporter">{{ report.reporter }}</td>
+                        <td class="im-date"><i class="far fa-calendar-alt"></i> {{ report.created_at }}</td>
+                        <td>
+                            <div class="im-actions">
+                                <a href="{{ url_for('officer.view_incident', report_id=report.id) }}"
+                                   class="im-act-btn im-act-btn--view" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if report.is_unassigned and report.status != 'resolved' and report.status != 'cancelled' %}
+                                <button type="button" class="im-act-btn im-act-btn--assign"
+                                        onclick="quickAssign({{ report.id }})" title="Assign to me">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="im-empty">
+            <div class="im-empty-icon"><i class="fas fa-inbox"></i></div>
+            <div class="im-empty-title">No Incidents Found</div>
+            <p class="im-empty-sub">Try adjusting your filters to see more results.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content im-modal">
+            <div class="modal-header im-modal-header im-modal-header--success">
+                <h5 class="modal-title im-modal-title"><i class="fas fa-user-check"></i> Assign Incident</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body im-modal-body">
+                <div class="im-modal-icon im-modal-icon--success"><i class="fas fa-user-check"></i></div>
+                <div class="im-modal-heading">Assign this incident to yourself?</div>
+                <p class="im-modal-desc">You are about to take ownership of this incident. You will be responsible for following up and resolving it.</p>
+                <div class="im-modal-note im-modal-note--info">
+                    <i class="fas fa-info-circle"></i>
+                    The incident status will be updated to "In Progress" automatically.
+                </div>
+            </div>
+            <div class="modal-footer im-modal-footer">
+                <button type="button" class="im-btn im-btn--ghost" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="im-btn im-btn--success" id="confirmAssignBtn">
+                    <i class="fas fa-check-circle"></i> Yes, Assign to Me
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="im-toast" class="im-toast" style="display:none;">
+    <div class="im-toast-inner">
+        <i id="im-toast-icon" class="fas fa-check-circle"></i>
+        <span id="im-toast-msg"></span>
+    </div>
+</div>
+
+<!-- Legacy Bootstrap toasts kept for JS compatibility -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1; pointer-events:none; opacity:0;">
+    <div id="assignSuccessToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white"><i class="fas fa-check-circle me-2"></i><strong class="me-auto">Success</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div>
+        <div class="toast-body">Incident assigned successfully!</div>
+    </div>
+    <div id="assignErrorToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white"><i class="fas fa-exclamation-circle me-2"></i><strong class="me-auto">Error</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.im-wrapper { max-width: 1300px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.im-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.im-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.im-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.im-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.im-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.im-topbar-title i { color: var(--brand); }
+.im-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.im-topbar-sub strong { color: var(--ink-2); }
+
+/* ── Stats ────────────────── */
+.im-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.im-stat {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1.1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.im-stat:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.07); }
+.im-stat-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.im-stat-icon--blue  { background: #dbeafe; color: #1d4ed8; }
+.im-stat-icon--amber { background: #fffbeb; color: #b45309; }
+.im-stat-icon--cyan  { background: #ecfeff; color: #0e7490; }
+.im-stat-icon--green { background: #d1fae5; color: #065f46; }
+.im-stat-num   { font-size: 1.6rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.im-stat-label { font-size: 0.72rem; color: var(--ink-3); font-weight: 500; margin-top: 3px; }
+
+/* ── Filters ──────────────── */
+.im-filters {
+    display: flex; align-items: flex-end; gap: 0.875rem; flex-wrap: wrap;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.im-filter-group { display: flex; flex-direction: column; gap: 0.35rem; }
+.im-filter-label { font-size: 0.72rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.im-select {
+    padding: 0.65rem 2.25rem 0.65rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; cursor: pointer; min-width: 160px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 10px;
+    transition: border-color 0.15s;
+}
+.im-select:focus { border-color: var(--brand); }
+.im-apply-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.65rem 1.25rem; border-radius: 9px; border: none;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 10px rgba(15,36,64,0.2);
+    transition: opacity 0.15s;
+}
+.im-apply-btn:hover { opacity: 0.88; }
+
+/* ── Card & Table ─────────── */
+.im-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+.im-table-wrap { overflow-x: auto; }
+.im-table { width: 100%; border-collapse: collapse; }
+.im-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.im-table th { padding: 0.75rem 1rem; font-size: 0.69rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.im-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.im-table tbody tr:last-child td { border-bottom: none; }
+.im-table tbody tr:hover { background: #f8fafb; }
+
+.im-report-id { font-family: monospace; font-size: 0.75rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.2rem 0.55rem; border-radius: 5px; }
+.im-mine-badge { font-size: 0.65rem; font-weight: 700; background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 0.15rem 0.5rem; border-radius: 999px; margin-left: 0.35rem; }
+.im-report-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); text-decoration: none; }
+.im-report-title:hover { text-decoration: underline; }
+.im-category { font-size: 0.82rem; color: var(--ink-3); }
+.im-location  { font-size: 0.82rem; color: var(--ink-2); max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.im-reporter  { font-size: 0.82rem; color: var(--ink-2); }
+.im-date      { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Status badges — using same colors as original */
+.im-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+.im-status--pending  { background: #fff3cd; color: #856404; border: 1px solid #ffd900; }
+.im-status--progress { background: #cce5ff; color: #004085; border: 1px solid #99caff; }
+.im-status--resolved { background: #d4edda; color: #155724; border: 1px solid #b8d8be; }
+.im-status--other    { background: var(--surface); color: var(--ink-3); border: 1px solid var(--rule); }
+
+/* Priority badges — using same colors as original */
+.im-priority { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 5px; white-space: nowrap; }
+.im-priority--danger { background: #dc3545; color: #fff; }
+.im-priority--medium { background: #ffc107; color: #333; }
+.im-priority--low    { background: #198754; color: #fff; }
+
+/* Action buttons */
+.im-actions { display: flex; align-items: center; gap: 0.4rem; }
+.im-act-btn {
+    width: 30px; height: 30px; border-radius: 7px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; cursor: pointer; text-decoration: none;
+    transition: opacity 0.15s, transform 0.15s;
+}
+.im-act-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+.im-act-btn--view   { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.im-act-btn--assign { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+
+/* Empty */
+.im-empty { text-align: center; padding: 4rem 2rem; }
+.im-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.im-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.im-empty-sub   { font-size: 0.85rem; color: var(--ink-3); }
+
+/* ── Modal ────────────────── */
+.im-modal { border: none; border-radius: 16px; overflow: hidden; }
+.im-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.im-modal-header--success { background: linear-gradient(135deg, #155724, #198754); }
+.im-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.im-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.im-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.im-modal-icon   { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.3rem; }
+.im-modal-icon--success { background: #d4edda; color: #155724; }
+.im-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.im-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 0; }
+.im-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 1rem; }
+.im-modal-note--info { background: #cce5ff; color: #004085; border: 1px solid #99caff; }
+
+/* Buttons */
+.im-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.im-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.im-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.im-btn--success { background: linear-gradient(135deg, #155724, #198754); color: #fff; box-shadow: 0 3px 10px rgba(25,135,84,0.25); }
+
+/* Toast */
+.im-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.im-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .im-stats { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px) { .im-wrapper { padding: 1rem; } .im-topbar { flex-direction: column; align-items: flex-start; } .im-filters { flex-direction: column; } }
+</style>
+
+<script>
+let incidentToAssign = null;
+
+function quickAssign(reportId) {
+    incidentToAssign = reportId;
+    const assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+    assignModal.show();
+    document.getElementById('confirmAssignBtn').onclick = function() {
+        performAssign(incidentToAssign);
+    };
+}
+
+function performAssign(reportId) {
+    bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+    showToast('Assigning incident to you...', 'info');
+
+    fetch(`/officer/incident/${reportId}/update-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'in_progress', comment: 'Assigned to me' })
+    })
+    .then(response => {
+        if (!response.ok) return response.json().then(err => { throw err; });
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('Incident assigned successfully!', true);
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.error || 'Failed to assign incident', false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast(error.message || 'Failed to assign incident', false);
+    });
+}
+
+// showAssignToast kept for any external calls — routes through unified toast
+function showAssignToast(type, title, message) {
+    const success = type === 'success' ? true : type === 'error' ? false : 'info';
+    showToast(message, success);
+}
+
+function showToast(msg, success) {
+    const t    = document.getElementById('im-toast');
+    const inner = t.querySelector('.im-toast-inner');
+    const icon  = document.getElementById('im-toast-icon');
+    if (success === 'info') {
+        inner.style.background = '#0d6efd';
+        icon.className = 'fas fa-spinner fa-spin';
+    } else {
+        inner.style.background = success ? '#198754' : '#dc3545';
+        icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    }
+    document.getElementById('im-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+
+{% endblock %}

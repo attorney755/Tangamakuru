@@ -1,0 +1,15 @@
+Flask==2.3.3
+Werkzeug==2.3.7  # Specific version compatible with Flask-Login
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.4
+Flask-Login==0.6.2
+Flask-WTF==1.1.1
+Flask-CORS==4.0.0
+psycopg2-binary==2.9.11
+python-dotenv==1.0.0
+PyJWT==2.8.0
+celery==5.3.1
+redis==4.6.0
+email-validator==2.0.0
+python-multipart==0.0.6
+requests==2.31.0

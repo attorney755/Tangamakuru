@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="rd-wrapper">
+
+    <!-- Top Bar -->
+    <div class="rd-topbar">
+        <div class="rd-topbar-left">
+            <a href="{{ url_for('officer.incidents') }}" class="rd-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+            <div class="rd-topbar-info">
+                <span class="rd-report-id">{{ report.report_id }}</span>
+                <span class="rd-topbar-sep">·</span>
+                <span class="rd-status-pill rd-status-{{ report.status }}">
+                    {% if report.status == 'pending' %}<i class="fas fa-clock"></i> Pending
+                    {% elif report.status == 'in_progress' %}<i class="fas fa-spinner"></i> In Progress
+                    {% elif report.status == 'resolved' %}<i class="fas fa-check-circle"></i> Resolved
+                    {% else %}{{ report.status|upper }}{% endif %}
+                </span>
+            </div>
+        </div>
+        <a href="{{ url_for('officer.print_report', report_id=report.id) }}" class="rd-print-btn" target="_blank">
+            <i class="fas fa-print"></i> Print Report
+        </a>
+    </div>
+
+    <!-- Body -->
+    <div class="rd-body">
+
+        <!-- LEFT COLUMN -->
+        <div class="rd-main">
+
+            <!-- Incident Info -->
+            <div class="rd-card">
+                <div class="rd-card-header">
+                    <i class="fas fa-file-alt"></i> Incident Information
+                </div>
+                <div class="rd-card-body">
+
+                    <div class="rd-title-row">
+                        <div>
+                            <div class="rd-field-label">Title</div>
+                            <div class="rd-field-value rd-field-value--lg">{{ report.title }}</div>
+                        </div>
+                        <div class="rd-title-tags">
+                            <span class="rd-category-tag">{{ report.category }}</span>
+                            <span class="rd-category-tag rd-category-tag--type">{{ report.report_type|upper }}</span>
+                        </div>
+                    </div>
+
+                    <div class="rd-meta-grid">
+                        <div class="rd-meta-item">
+                            <div class="rd-field-label">Status</div>
+                            <span class="rd-status-pill rd-status-{{ report.status }}">
+                                {% if report.status == 'pending' %}<i class="fas fa-clock"></i> Pending
+                                {% elif report.status == 'in_progress' %}<i class="fas fa-spinner"></i> In Progress
+                                {% elif report.status == 'resolved' %}<i class="fas fa-check-circle"></i> Resolved
+                                {% else %}{{ report.status }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="rd-meta-item">
+                            <div class="rd-field-label">Priority</div>
+                            <span class="rd-priority-pill rd-priority-{{ report.priority }}">
+                                {% if report.priority == 'urgent' %}<i class="fas fa-fire"></i> Urgent
+                                {% elif report.priority == 'high' %}<i class="fas fa-arrow-up"></i> High
+                                {% elif report.priority == 'medium' %}<i class="fas fa-minus"></i> Medium
+                                {% else %}<i class="fas fa-arrow-down"></i> Low{% endif %}
+                            </span>
+                        </div>
+                        <div class="rd-meta-item">
+                            <div class="rd-field-label">Incident Date</div>
+                            <div class="rd-field-value"><i class="far fa-calendar-alt rd-icon"></i> {{ report.incident_date.strftime('%Y-%m-%d') if report.incident_date else 'N/A' }}</div>
+                        </div>
+                        <div class="rd-meta-item">
+                            <div class="rd-field-label">Reported On</div>
+                            <div class="rd-field-value"><i class="far fa-clock rd-icon"></i> {{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else 'N/A' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="rd-section">
+                        <div class="rd-field-label">Description</div>
+                        <div class="rd-text-block">{{ report.description }}</div>
+                        {% if report.description and '[Additional Information' in report.description %}
+                        <div class="rd-additional-note">
+                            <i class="fas fa-info-circle"></i> This report contains additional information provided by the citizen.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="rd-section">
+                        <div class="rd-field-label">Location Details</div>
+                        <div class="rd-location-grid">
+                            <div class="rd-location-item">
+                                <span class="rd-loc-key">Province</span>
+                                <span class="rd-loc-val">{{ report.province }}</span>
+                            </div>
+                            <div class="rd-location-item">
+                                <span class="rd-loc-key">District</span>
+                                <span class="rd-loc-val">{{ report.district }}</span>
+                            </div>
+                            <div class="rd-location-item">
+                                <span class="rd-loc-key">Sector</span>
+                                <span class="rd-loc-val">{{ report.sector }}</span>
+                            </div>
+                            <div class="rd-location-item">
+                                <span class="rd-loc-key">Cell</span>
+                                <span class="rd-loc-val">{{ report.cell }}</span>
+                            </div>
+                            <div class="rd-location-item">
+                                <span class="rd-loc-key">Village</span>
+                                <span class="rd-loc-val">{{ report.village }}</span>
+                            </div>
+                            <div class="rd-location-item">
+                                <span class="rd-loc-key">Specific</span>
+                                <span class="rd-loc-val">{{ report.specific_location or '—' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if report.witness_info or report.evidence_details %}
+                    <div class="rd-section rd-row-2">
+                        <div>
+                            <div class="rd-field-label">Witness Information</div>
+                            <div class="rd-text-block">{{ report.witness_info or 'No witness information provided' }}</div>
+                        </div>
+                        <div>
+                            <div class="rd-field-label">Evidence Details</div>
+                            <div class="rd-text-block">{{ report.evidence_details or 'No evidence details provided' }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            <!-- Attached Evidence -->
+            <div class="rd-card">
+                <div class="rd-card-header">
+                    <i class="fas fa-paperclip"></i> Attached Evidence
+                </div>
+                <div class="rd-card-body">
+                    {% if media_files and media_files|length > 0 %}
+                    <div class="rd-evidence-grid">
+                        {% for media in media_files %}
+                        <div class="rd-evidence-item">
+                            {% if media.file_type.startswith('image/') %}
+                            <img src="{{ url_for('reports.serve_uploaded_file', filename=media.filename) }}" class="rd-evidence-img">
+                            {% else %}
+                            <div class="rd-evidence-icon"><i class="fas fa-file"></i></div>
+                            {% endif %}
+                            <div class="rd-evidence-name">{{ media.filename }}</div>
+                            <a href="{{ url_for('reports.serve_uploaded_file', filename=media.filename) }}"
+                               class="rd-btn rd-btn--outline rd-btn--sm" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> View
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="rd-empty-state">
+                        <div class="rd-empty-icon"><i class="fas fa-image"></i></div>
+                        <div class="rd-empty-title">No Evidence Attached</div>
+                        <p class="rd-empty-sub">This report was submitted without any supporting evidence.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="rd-sidebar">
+
+            <!-- Reporter Info -->
+            <div class="rd-card">
+                <div class="rd-card-header">
+                    <i class="fas fa-user"></i> Reporter Information
+                </div>
+                <div class="rd-card-body">
+                    {% if report.is_anonymous %}
+                    <div class="rd-empty-state">
+                        <div class="rd-empty-icon"><i class="fas fa-user-secret"></i></div>
+                        <p class="rd-empty-sub">Submitted anonymously</p>
+                    </div>
+                    {% elif reporter %}
+                    <div class="rd-person">
+                        <img src="https://ui-avatars.com/api/?name={{ reporter.first_name }}+{{ reporter.last_name }}&background=1a3a5c&color=fff&size=60" class="rd-person-avatar">
+                        <div>
+                            <div class="rd-person-name">{{ reporter.get_full_name() }}</div>
+                            <div class="rd-person-email">{{ reporter.email }}</div>
+                        </div>
+                    </div>
+                    <div class="rd-person-details">
+                        <div class="rd-detail-row">
+                            <span class="rd-detail-key"><i class="fas fa-phone"></i> Phone</span>
+                            <span class="rd-detail-val">{{ reporter.phone or 'Not provided' }}</span>
+                        </div>
+                        <div class="rd-detail-row">
+                            <span class="rd-detail-key"><i class="fas fa-map-marker-alt"></i> Location</span>
+                            <span class="rd-detail-val">{{ reporter.village or '' }} {{ reporter.cell or '' }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="rd-empty-sub">Reporter information not available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assignment -->
+            <div class="rd-card">
+                <div class="rd-card-header">
+                    <i class="fas fa-user-tie"></i> Assignment
+                </div>
+                <div class="rd-card-body">
+                    {% if assigned_officer %}
+                    <div class="rd-person">
+                        <div class="rd-officer-check"><i class="fas fa-check"></i></div>
+                        <div>
+                            <div class="rd-person-name">{{ assigned_officer.get_full_name() }}</div>
+                            <div class="rd-person-email">{{ assigned_officer.email }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="rd-empty-state">
+                        <div class="rd-empty-icon rd-empty-icon--warning"><i class="fas fa-user-clock"></i></div>
+                        <p class="rd-empty-sub">Not assigned to any officer</p>
+                        <button class="rd-btn rd-btn--primary rd-btn--sm" onclick="assignToMe()">
+                            <i class="fas fa-user-check"></i> Assign to Me
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Request Information -->
+            {% if report.status != 'resolved' and report.status != 'RESOLVED' %}
+            <div class="rd-card rd-card--info">
+                <div class="rd-card-header">
+                    <i class="fas fa-question-circle"></i> Request Information
+                </div>
+                <div class="rd-card-body">
+                    <p class="rd-info-desc">Need more details or evidence from the citizen? Send them a request.</p>
+                    <button class="rd-btn rd-btn--info rd-btn--full" onclick="showAskInfoModal({{ report.id }}, {{ report.user_id }})">
+                        <i class="fas fa-paper-plane"></i> Ask for More Information
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Update Status -->
+            <div class="rd-card">
+                <div class="rd-card-header">
+                    <i class="fas fa-sync-alt"></i> Update Status
+                </div>
+                <div class="rd-card-body">
+                    <form id="statusUpdateForm">
+                        <div class="rd-field">
+                            <label class="rd-field-label">New Status</label>
+                            <select class="rd-select" id="status" required>
+                                <option value="pending"     {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="in_progress" {% if report.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="resolved"    {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                <option value="cancelled"   {% if report.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="rd-field">
+                            <label class="rd-field-label">Officer Comment</label>
+                            <textarea class="rd-textarea" id="comment" rows="3"
+                                      placeholder="Add a comment about this update..."></textarea>
+                        </div>
+                        <button type="submit" class="rd-btn rd-btn--primary rd-btn--full">
+                            <i class="fas fa-save"></i> Update Status
+                        </button>
+                    </form>
+                    <div id="updateMessage" style="display:none; margin-top: 0.875rem;"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Ask Info Modal -->
+<div class="rd-modal-overlay" id="askInfoModal" style="display:none;">
+    <div class="rd-modal">
+        <div class="rd-modal-header">
+            <div class="rd-modal-title"><i class="fas fa-comment-dots"></i> Request More Information</div>
+            <button class="rd-modal-close" onclick="closeModal('askInfoModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="rd-modal-body">
+            <div class="rd-field">
+                <label class="rd-field-label">What information do you need?</label>
+                <textarea class="rd-textarea" id="infoRequest" rows="4"
+                          placeholder="e.g., Can you provide more details about what happened? Do you have any photos or videos?"></textarea>
+            </div>
+            <div class="rd-field">
+                <label class="rd-field-label">Request Type</label>
+                <select class="rd-select" id="requestType">
+                    <option value="text">Additional text information</option>
+                    <option value="evidence">Photos / Video evidence</option>
+                    <option value="both">Both text and evidence</option>
+                </select>
+            </div>
+            <div class="rd-modal-note">
+                <i class="fas fa-info-circle"></i>
+                The citizen will receive a notification and can respond in their report view.
+            </div>
+        </div>
+        <div class="rd-modal-footer">
+            <button class="rd-btn rd-btn--ghost" onclick="closeModal('askInfoModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="rd-btn rd-btn--primary" id="sendInfoRequestBtn"><i class="fas fa-paper-plane"></i> Send Request</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="rd-toast" class="rd-toast" style="display:none;">
+    <div class="rd-toast-inner">
+        <i id="rd-toast-icon" class="fas fa-check-circle"></i>
+        <span id="rd-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:       #1a3a5c;
+    --brand-dark:  #0f2440;
+    --accent:      #c0392b;
+    --ink:         #1a2332;
+    --ink-2:       #2d3f55;
+    --ink-3:       #5a7290;
+    --rule:        #d4dde8;
+    --surface:     #eef2f7;
+    --white:       #ffffff;
+    --status-pending-bg:  #fef3c7; --status-pending:  #92400e;
+    --status-progress-bg: #dbeafe; --status-progress: #1e40af;
+    --status-resolved-bg: #d1fae5; --status-resolved: #065f46;
+    --priority-urgent-bg: #fef2f2; --priority-urgent: #991b1b;
+    --priority-high-bg:   #fef2f2; --priority-high:   #c0392b;
+    --priority-medium-bg: #fffbeb; --priority-medium: #92400e;
+    --priority-low-bg:    #f0fdf4; --priority-low:    #065f46;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.rd-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.rd-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 0.875rem 1.25rem;
+    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;
+}
+.rd-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.rd-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.rd-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.rd-topbar-info  { display: flex; align-items: center; gap: 0.6rem; }
+.rd-report-id    { font-size: 0.85rem; font-weight: 700; color: var(--ink-2); font-family: monospace; background: var(--surface); padding: 0.3rem 0.65rem; border-radius: 6px; border: 1px solid var(--rule); }
+.rd-topbar-sep   { color: var(--rule); }
+.rd-print-btn    { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--brand-dark); color: #fff; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1.1rem; border-radius: 8px; text-decoration: none; transition: opacity 0.15s; }
+.rd-print-btn:hover { opacity: 0.85; color: #fff; }
+
+/* Pills */
+.rd-status-pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 999px; }
+.rd-status-pending     { background: var(--status-pending-bg);  color: var(--status-pending); }
+.rd-status-in_progress { background: var(--status-progress-bg); color: var(--status-progress); }
+.rd-status-resolved    { background: var(--status-resolved-bg); color: var(--status-resolved); }
+.rd-priority-pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 999px; }
+.rd-priority-urgent { background: var(--priority-urgent-bg); color: var(--priority-urgent); }
+.rd-priority-high   { background: var(--priority-high-bg);   color: var(--priority-high); }
+.rd-priority-medium { background: var(--priority-medium-bg); color: var(--priority-medium); }
+.rd-priority-low    { background: var(--priority-low-bg);    color: var(--priority-low); }
+
+/* ── Body layout ──────────── */
+.rd-body { display: grid; grid-template-columns: 1fr 310px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.rd-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.rd-card--info { border-color: #bfdbfe; }
+.rd-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 700; color: var(--brand); padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.rd-card-header i { font-size: 0.8rem; }
+.rd-card-body { padding: 1.25rem; }
+
+/* Fields */
+.rd-field-label { font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+.rd-field-value { font-size: 0.875rem; color: var(--ink-2); }
+.rd-field-value--lg { font-size: 1rem; font-weight: 700; color: var(--ink); }
+.rd-icon { color: var(--ink-3); font-size: 0.75rem; margin-right: 0.2rem; }
+
+.rd-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+.rd-title-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; flex-shrink: 0; }
+.rd-category-tag { display: inline-block; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 6px; }
+.rd-category-tag--type { background: #ede9fe; border-color: #c4b5fd; color: #5b21b6; }
+
+.rd-meta-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--rule); }
+
+.rd-section { margin-top: 1.1rem; }
+.rd-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.rd-text-block { background: var(--surface); border: 1px solid var(--rule); border-radius: 9px; padding: 0.875rem 1rem; font-size: 0.875rem; color: var(--ink-2); line-height: 1.65; white-space: pre-line; }
+.rd-additional-note { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--ink-3); margin-top: 0.5rem; }
+
+.rd-location-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+.rd-location-item { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 0.6rem 0.875rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.rd-loc-key { font-size: 0.65rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.rd-loc-val { font-size: 0.85rem; color: var(--ink); font-weight: 500; }
+
+/* Evidence */
+.rd-evidence-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.875rem; }
+.rd-evidence-item { border: 1px solid var(--rule); border-radius: 10px; padding: 0.75rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; }
+.rd-evidence-img { width: 100%; height: 80px; object-fit: cover; border-radius: 7px; }
+.rd-evidence-icon { font-size: 1.6rem; color: var(--brand); }
+.rd-evidence-name { font-size: 0.7rem; color: var(--ink-3); word-break: break-all; }
+
+/* Sidebar */
+.rd-person { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.875rem; }
+.rd-person-avatar { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; }
+.rd-officer-check { width: 46px; height: 46px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; color: #059669; font-size: 1.1rem; flex-shrink: 0; }
+.rd-person-name  { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+.rd-person-email { font-size: 0.775rem; color: var(--ink-3); margin-top: 1px; }
+.rd-person-details { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--rule); }
+.rd-detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+.rd-detail-key { color: var(--ink-3); display: flex; align-items: center; gap: 0.35rem; }
+.rd-detail-val { color: var(--ink-2); font-weight: 500; }
+
+.rd-info-desc { font-size: 0.825rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 0.875rem; }
+
+/* Empty states */
+.rd-empty-state { text-align: center; padding: 1.25rem 0.5rem; }
+.rd-empty-icon { width: 46px; height: 46px; border-radius: 11px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.65rem; font-size: 1.2rem; color: var(--ink-3); }
+.rd-empty-icon--warning { background: #fef3c7; color: #d97706; }
+.rd-empty-title { font-size: 0.875rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.3rem; }
+.rd-empty-sub { font-size: 0.8rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 0.75rem; }
+
+/* Form elements */
+.rd-field { margin-bottom: 0.875rem; }
+.rd-select, .rd-textarea {
+    width: 100%; padding: 0.72rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    margin-top: 0.35rem;
+}
+.rd-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; background-size: 10px; padding-right: 2.25rem; }
+.rd-textarea { resize: vertical; }
+.rd-select:focus, .rd-textarea:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.07); }
+
+/* Buttons */
+.rd-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.rd-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.rd-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(15,36,64,0.2); }
+.rd-btn--primary:hover { color: #fff; }
+.rd-btn--info    { background: #1e40af; color: #fff; }
+.rd-btn--info:hover { color: #fff; }
+.rd-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.rd-btn--outline { background: transparent; border: 1.5px solid var(--rule); color: var(--ink-2); }
+.rd-btn--sm      { padding: 0.45rem 0.8rem; font-size: 0.78rem; }
+.rd-btn--full    { width: 100%; justify-content: center; }
+
+/* Update message */
+.rd-update-msg { border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.85rem; }
+.rd-update-msg--success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.rd-update-msg--danger  { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* Modal */
+.rd-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.rd-modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); overflow: hidden; }
+.rd-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.rd-modal-title  { font-size: 0.95rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.rd-modal-close  { background: none; border: none; cursor: pointer; color: var(--ink-3); font-size: 0.9rem; padding: 0.25rem; border-radius: 5px; transition: background 0.15s; }
+.rd-modal-close:hover { background: var(--rule); color: var(--ink); }
+.rd-modal-body   { padding: 1.25rem; }
+.rd-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.rd-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; background: #dbeafe; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; color: #1e40af; margin-top: 0.875rem; line-height: 1.5; }
+
+/* Toast */
+.rd-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.rd-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .rd-body { grid-template-columns: 1fr; } .rd-meta-grid { grid-template-columns: repeat(2,1fr); } .rd-evidence-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px) { .rd-wrapper { padding: 1rem; } .rd-location-grid { grid-template-columns: repeat(2,1fr); } .rd-row-2 { grid-template-columns: 1fr; } .rd-evidence-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+
+<script>
+let currentReportId = null;
+let currentCitizenId = null;
+
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+document.getElementById('askInfoModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('askInfoModal');
+});
+
+function showAskInfoModal(reportId, citizenId) {
+    currentReportId = reportId;
+    currentCitizenId = citizenId;
+    document.getElementById('infoRequest').value = '';
+    document.getElementById('requestType').value = 'text';
+    document.getElementById('askInfoModal').style.display = 'flex';
+}
+
+document.getElementById('sendInfoRequestBtn').onclick = function() {
+    const request = document.getElementById('infoRequest').value.trim();
+    if (!request) { showToast('Please enter your request', false); return; }
+    closeModal('askInfoModal');
+
+    fetch('/officer/api/ask-for-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            report_id: currentReportId,
+            citizen_id: currentCitizenId,
+            request,
+            request_type: document.getElementById('requestType').value
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) showToast('Request sent to citizen successfully', true);
+        else showToast(data.error || 'Failed to send request', false);
+    })
+    .catch(() => showToast('Network error. Please try again.', false));
+};
+
+function assignToMe() {
+    fetch(`/officer/incident/{{ report.id }}/update-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'in_progress', comment: 'Assigned to me' })
+    })
+    .then(r => r.json())
+    .then(data => { if (data.success) location.reload(); else showToast('Error: ' + data.error, false); })
+    .catch(() => showToast('Failed to assign report', false));
+}
+
+document.getElementById('statusUpdateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    btn.disabled = true;
+
+    fetch(`/officer/incident/{{ report.id }}/update-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            status: document.getElementById('status').value,
+            comment: document.getElementById('comment').value
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const div = document.getElementById('updateMessage');
+            div.innerHTML = `<div class="rd-update-msg rd-update-msg--success"><i class="fas fa-check-circle"></i> Status updated successfully!</div>`;
+            div.style.display = 'block';
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            const div = document.getElementById('updateMessage');
+            div.innerHTML = `<div class="rd-update-msg rd-update-msg--danger"><i class="fas fa-exclamation-circle"></i> ${data.error}</div>`;
+            div.style.display = 'block';
+        }
+    })
+    .catch(() => showToast('Network error. Please try again.', false))
+    .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+});
+
+function showToast(msg, success) {
+    const toast = document.getElementById('rd-toast');
+    const inner = toast.querySelector('.rd-toast-inner');
+    const icon  = toast.querySelector('i');
+    inner.style.background = success ? '#059669' : '#c0392b';
+    icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    toast.querySelector('span').textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+</script>
+{% endblock %}

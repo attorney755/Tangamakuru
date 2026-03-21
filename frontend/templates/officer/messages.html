@@ -1,0 +1,804 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ms-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ms-topbar">
+        <div class="ms-topbar-left">
+            <a href="/officer/dashboard" class="ms-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="ms-topbar-title"><i class="fas fa-comments"></i> Messages</div>
+                <div class="ms-topbar-sub">Questions from admin about your cases</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="ms-body">
+
+        <!-- LEFT — Conversation List -->
+        <div class="ms-sidebar">
+            <div class="ms-sidebar-header">
+                <div class="ms-sidebar-title"><i class="fas fa-comments"></i> Questions from Admin</div>
+            </div>
+            <div id="conversationList" class="ms-conv-list">
+                <div class="ms-loading">
+                    <div class="ms-spinner"></div>
+                    <span>Loading conversations...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT — Message Area -->
+        <div class="ms-main">
+            <div class="ms-main-header">
+                <div class="ms-sidebar-title"><i class="fas fa-comment-dots"></i> Question Details</div>
+            </div>
+            <div class="ms-main-body" id="messageArea">
+                <div class="ms-empty">
+                    <div class="ms-empty-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="ms-empty-title">Select a question</div>
+                    <p class="ms-empty-sub">Choose a question from the left to view details and provide your report</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Reply Modal -->
+<div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ms-modal">
+            <div class="modal-header ms-modal-header ms-modal-header--info">
+                <h5 class="modal-title ms-modal-title"><i class="fas fa-reply"></i> Reply to Admin</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body ms-modal-body">
+                <div class="ms-modal-icon ms-modal-icon--info"><i class="fas fa-comment-dots"></i></div>
+                <div class="ms-modal-heading">Send a quick reply</div>
+                <p class="ms-modal-desc">Your message will be sent directly to the admin and appear in the conversation thread.</p>
+                <div class="ms-field">
+                    <label class="ms-label">Your Message</label>
+                    <textarea class="ms-textarea" id="replyMessage" rows="4" placeholder="Type your reply here..."></textarea>
+                </div>
+                <div class="ms-modal-note ms-modal-note--info">
+                    <i class="fas fa-info-circle"></i>
+                    Use this for quick updates. For detailed resolution, use the "Full Resolution Report" button.
+                </div>
+            </div>
+            <div class="modal-footer ms-modal-footer">
+                <button type="button" class="ms-btn ms-btn--ghost" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                <button type="button" class="ms-btn ms-btn--info" id="sendReplyBtn"><i class="fas fa-paper-plane"></i> Send Reply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content ms-modal">
+            <div class="modal-header ms-modal-header ms-modal-header--success">
+                <h5 class="modal-title ms-modal-title"><i class="fas fa-file-alt"></i> Provide Full Resolution Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body ms-modal-body">
+                <div class="ms-modal-icon ms-modal-icon--success"><i class="fas fa-clipboard-check"></i></div>
+                <div class="ms-modal-heading">How was this incident resolved?</div>
+                <p class="ms-modal-desc">Please provide detailed information about how you resolved this case. This will be visible to the admin and will close the inquiry.</p>
+
+                <form id="reportForm">
+                    <input type="hidden" id="reportId" name="reportId">
+                    <input type="hidden" id="adminId" name="adminId">
+
+                    <div class="ms-field">
+                        <label class="ms-label">Resolution Summary <span class="ms-req">*</span></label>
+                        <input type="text" class="ms-input" id="resolutionSummary" placeholder="Brief summary of the resolution" required>
+                    </div>
+
+                    <div class="ms-field">
+                        <label class="ms-label">Detailed Resolution <span class="ms-req">*</span></label>
+                        <textarea class="ms-textarea" id="resolutionDetails" rows="5"
+                                  placeholder="Describe in detail how the incident was resolved, what actions were taken, and any outcomes..." required></textarea>
+                    </div>
+
+                    <div class="ms-row-2">
+                        <div class="ms-field">
+                            <label class="ms-label">Resolution Date</label>
+                            <input type="date" class="ms-input" id="resolutionDate">
+                        </div>
+                        <div class="ms-field">
+                            <label class="ms-label">Follow-up Needed?</label>
+                            <select class="ms-input ms-select" id="followUp">
+                                <option value="no">No follow-up needed</option>
+                                <option value="yes">Yes, follow-up required</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ms-modal-note ms-modal-note--info">
+                        <i class="fas fa-info-circle"></i>
+                        This report will be added to the case comments and the admin will be notified. The "Ask Why" button will no longer appear.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer ms-modal-footer">
+                <button type="button" class="ms-btn ms-btn--ghost" data-bs-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+                <button type="button" class="ms-btn ms-btn--success" id="submitReportBtn"><i class="fas fa-paper-plane"></i> Submit Resolution Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="officerSuccessToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <small>just now</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">Action completed successfully!</div>
+    </div>
+</div>
+
+<!-- Error Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="officerErrorToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong class="me-auto">Error</strong>
+            <small>just now</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.ms-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ms-topbar {
+    display: flex; align-items: center;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.ms-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ms-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.ms-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ms-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ms-topbar-title i { color: var(--brand); }
+.ms-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Body Layout ──────────── */
+.ms-body {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    height: calc(100vh - 160px);
+    min-height: 500px;
+}
+
+/* ── Sidebar ──────────────── */
+.ms-sidebar {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.ms-sidebar-header {
+    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface); flex-shrink: 0;
+}
+.ms-sidebar-title { font-size: 0.82rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.ms-sidebar-title i { font-size: 0.75rem; }
+.ms-conv-list { flex: 1; overflow-y: auto; }
+
+/* Conversation items */
+.ms-conv-item {
+    display: block; padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+}
+.ms-conv-item:last-child { border-bottom: none; }
+.ms-conv-item:hover { background: var(--surface); }
+.ms-conv-item--unread { background: #f1f5f9; border-left-color: var(--brand); }
+.ms-conv-item--unread:hover { background: #e8edf4; }
+.ms-conv-item--active { background: var(--info-bg) !important; border-left-color: var(--info); }
+
+.ms-conv-report-num { font-size: 0.72rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.4rem; }
+.ms-conv-title      { font-size: 0.875rem; font-weight: 700; color: var(--ink); margin-bottom: 0.25rem; }
+.ms-conv-admin      { font-size: 0.75rem; color: var(--ink-3); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
+.ms-conv-preview    { font-size: 0.75rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ms-conv-footer     { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; }
+.ms-conv-status     { font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+.ms-conv-status--done    { color: var(--success); }
+.ms-conv-status--pending { color: var(--warning); }
+.ms-conv-badge { font-size: 0.65rem; font-weight: 700; background: var(--info); color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; }
+.ms-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--info); flex-shrink: 0; }
+
+/* ── Main Panel ───────────── */
+.ms-main {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.ms-main-header {
+    padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface); flex-shrink: 0;
+}
+.ms-main-body { flex: 1; overflow-y: auto; padding: 1.25rem; }
+
+/* ── Empty & Loading ──────── */
+.ms-empty { text-align: center; padding: 3rem 2rem; }
+.ms-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.ms-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.ms-empty-sub   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; }
+
+.ms-loading { display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 3rem; font-size: 0.875rem; color: var(--ink-3); }
+.ms-spinner { width: 20px; height: 20px; border: 2px solid var(--rule); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Message Thread ───────── */
+.ms-thread { max-height: 340px; overflow-y: auto; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.875rem; padding-right: 0.25rem; }
+.ms-thread::-webkit-scrollbar { width: 4px; }
+.ms-thread::-webkit-scrollbar-track { background: var(--surface); border-radius: 2px; }
+.ms-thread::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+
+.ms-bubble-wrap { display: flex; }
+.ms-bubble-wrap--me    { justify-content: flex-end; }
+.ms-bubble-wrap--them  { justify-content: flex-start; }
+
+.ms-bubble {
+    max-width: 70%; padding: 0.75rem 1rem;
+    border-radius: 12px; font-size: 0.85rem; line-height: 1.6;
+}
+.ms-bubble--me   { background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+.ms-bubble--them { background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-bottom-left-radius: 4px; }
+.ms-bubble-sender { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.25rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem; }
+.ms-bubble-text   { margin: 0; }
+.ms-bubble-time   { font-size: 0.65rem; opacity: 0.6; margin-top: 0.3rem; }
+
+/* Reply box */
+.ms-reply-box { border-top: 1px solid var(--rule); padding-top: 1rem; margin-bottom: 1.25rem; }
+.ms-reply-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+.ms-reply-textarea {
+    flex: 1; padding: 0.7rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; resize: none;
+    transition: border-color 0.15s, background 0.15s;
+}
+.ms-reply-textarea:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.07); }
+.ms-reply-send {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.7rem 1.1rem; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; font-size: 0.85rem; font-weight: 600;
+    font-family: inherit; cursor: pointer; white-space: nowrap;
+    transition: opacity 0.15s; flex-shrink: 0;
+}
+.ms-reply-send:hover { opacity: 0.85; }
+
+/* Divider */
+.ms-divider { height: 1px; background: var(--rule); margin: 1.25rem 0; }
+
+/* Resolution section */
+.ms-resolution-box { text-align: center; padding: 1rem; }
+.ms-resolution-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 0.4rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.ms-resolution-desc  { font-size: 0.825rem; color: var(--ink-3); margin-bottom: 1rem; line-height: 1.55; }
+
+.ms-resolved-alert {
+    display: flex; align-items: flex-start; gap: 0.875rem;
+    background: var(--success-bg); border: 1px solid var(--success-border);
+    border-radius: 12px; padding: 1rem 1.25rem; text-align: left;
+}
+.ms-resolved-alert-icon { font-size: 1.2rem; color: var(--success); flex-shrink: 0; margin-top: 2px; }
+.ms-resolved-alert-title { font-size: 0.875rem; font-weight: 700; color: var(--success); margin-bottom: 0.2rem; }
+.ms-resolved-alert-desc  { font-size: 0.8rem; color: #047857; }
+
+/* Conv header */
+.ms-conv-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.ms-conv-header-title { font-size: 0.95rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+
+/* ── Form fields in modal ─── */
+.ms-field { margin-bottom: 1rem; }
+.ms-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.ms-req   { color: #dc2626; }
+.ms-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.ms-input {
+    width: 100%; padding: 0.72rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+}
+.ms-input:focus { border-color: var(--brand); background: var(--white); }
+.ms-textarea {
+    width: 100%; padding: 0.72rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; resize: vertical;
+    transition: border-color 0.15s, background 0.15s;
+}
+.ms-textarea:focus { border-color: var(--brand); background: var(--white); }
+.ms-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.25rem; }
+
+/* ── Modals ───────────────── */
+.ms-modal { border: none; border-radius: 16px; overflow: hidden; }
+.ms-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.ms-modal-header--info    { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+.ms-modal-header--success { background: linear-gradient(135deg, #065f46, #059669); }
+.ms-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.ms-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.ms-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.ms-modal-icon   { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.3rem; }
+.ms-modal-icon--info    { background: var(--info-bg);    color: var(--info); }
+.ms-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.ms-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.ms-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 1rem; }
+.ms-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 0.875rem; }
+.ms-modal-note--info { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); }
+
+/* Buttons */
+.ms-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.ms-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.ms-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.ms-btn--info    { background: linear-gradient(135deg, #1e40af, #3b82f6); color: #fff; box-shadow: 0 3px 10px rgba(59,130,246,0.25); }
+.ms-btn--success { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 3px 10px rgba(5,150,105,0.25); }
+.ms-btn--outline-info { background: var(--info-bg); border: 1.5px solid var(--info-border); color: var(--info); }
+
+/* Retry button used in JS-generated HTML */
+.btn-outline-info { background: var(--info-bg); border: 1.5px solid var(--info-border); color: var(--info); display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.825rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.15s; }
+.btn-outline-info:hover { opacity: 0.85; color: var(--info); }
+
+/* Responsive */
+@media (max-width: 860px) {
+    .ms-body { grid-template-columns: 1fr; height: auto; }
+    .ms-sidebar { height: 300px; }
+    .ms-main { min-height: 400px; }
+}
+@media (max-width: 600px) {
+    .ms-wrapper { padding: 1rem; }
+    .ms-row-2 { grid-template-columns: 1fr; }
+    .ms-topbar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
+<script>
+
+// Suppress announcement fetch errors
+const originalFetch = window.fetch;
+window.fetch = function(url, options) {
+    if (url.includes('/api/announcements/unread-count')) {
+        return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ count: 0 })
+        });
+    }
+    return originalFetch(url, options);
+};
+
+
+let currentReportId = null;
+let currentAdminId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadConversations();
+});
+
+function loadConversations() {
+    fetch('/officer/api/messages/conversations')
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const conversationList = document.getElementById('conversationList');
+
+            if (data.conversations && data.conversations.length > 0) {
+                let html = '';
+                data.conversations.forEach(conv => {
+                    const isUnread = conv.unread_count > 0;
+                    const adminId = conv.admin_id || 0;
+                    
+                    // Create a safe string by escaping all problematic characters
+                    const adminName = (conv.admin_name || 'Admin')
+                        .replace(/&/g, '&amp;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    
+                    const question = (conv.question || 'No question')
+                        .replace(/&/g, '&amp;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    
+                    const questionTime = (conv.question_time || '').replace(/'/g, "\\'");
+                    
+                    html += `
+                        <div class="ms-conv-item ${isUnread ? 'ms-conv-item--unread' : ''}"
+                             data-report-id="${conv.report_id}"
+                             data-admin-id="${adminId}"
+                             data-admin-name="${adminName}"
+                             data-question="${question}"
+                             data-question-time="${questionTime}"
+                             data-has-report="${conv.has_report}"
+                             onclick="loadQuestionFromData(this)">
+                            <div class="ms-conv-report-num">
+                                ${isUnread ? '<span class="ms-unread-dot"></span>' : ''}
+                                ${conv.report_number}
+                                ${isUnread ? `<span class="ms-conv-badge">${conv.unread_count} new</span>` : ''}
+                            </div>
+                            <div class="ms-conv-title">${conv.report_title || 'Report'}</div>
+                            <div class="ms-conv-admin"><i class="fas fa-user-tie"></i> ${conv.admin_name || 'Admin'}</div>
+                            <div class="ms-conv-preview"><i class="fas fa-question-circle"></i> ${conv.question || 'No question'}</div>
+                            <div class="ms-conv-footer">
+                                <span class="ms-conv-status ${conv.has_report ? 'ms-conv-status--done' : 'ms-conv-status--pending'}">
+                                    <i class="fas ${conv.has_report ? 'fa-check-circle' : 'fa-clock'}"></i>
+                                    ${conv.has_report ? 'Report provided' : 'Awaiting report'}
+                                </span>
+                                <span style="font-size:0.68rem;color:var(--ink-3);">
+                                    <i class="far fa-clock"></i> ${conv.question_time || ''}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                conversationList.innerHTML = html;
+            } else {
+                conversationList.innerHTML = `
+                    <div class="ms-empty" style="padding:2.5rem 1.5rem;">
+                        <div class="ms-empty-icon"><i class="fas fa-inbox"></i></div>
+                        <div class="ms-empty-title">No messages yet</div>
+                        <p class="ms-empty-sub">When admin asks about your cases, they'll appear here.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading conversations:', error);
+            document.getElementById('conversationList').innerHTML = `
+                <div class="ms-empty" style="padding:2.5rem 1.5rem;">
+                    <div class="ms-empty-icon" style="background:var(--danger-bg);color:var(--danger);"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="ms-empty-title" style="color:var(--danger);">Error loading</div>
+                    <p class="ms-empty-sub">Please try again later.</p>
+                    <button class="btn-outline-info mt-2" onclick="loadConversations()">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+            `;
+        });
+}
+
+function loadQuestionFromData(element) {
+    const reportId = element.dataset.reportId;
+    const adminId = element.dataset.adminId;
+    const adminName = element.dataset.adminName;
+    const question = element.dataset.question;
+    const questionTime = element.dataset.questionTime;
+    const hasReport = element.dataset.hasReport === 'true';
+    
+    loadQuestion(reportId, adminId, adminName, question, questionTime, hasReport);
+}
+
+if (document.getElementById('messageArea')) {
+    document.getElementById('messageArea').innerHTML = `
+        <div class="ms-empty">
+            <div class="ms-empty-icon"><i class="fas fa-comment-dots"></i></div>
+            <div class="ms-empty-title">Select a question</div>
+            <p class="ms-empty-sub">Choose a question from the left to view details and provide your report</p>
+        </div>
+    `;
+}
+
+function loadQuestion(reportId, adminId, adminName, question, questionTime, hasReport) {
+    // Escape undefined values
+    if (!adminId || adminId === 0 || adminId === '0') {
+        console.error('No admin ID found for this conversation');
+        showOfficerToast('error', 'Error', 'Cannot load conversation: No admin associated');
+        return;
+    }
+    
+    currentReportId = reportId;
+    currentAdminId = adminId;
+
+    const messageArea = document.getElementById('messageArea');
+    messageArea.innerHTML = `<div class="ms-loading"><div class="ms-spinner"></div><span>Loading conversation...</span></div>`;
+
+    fetch(`/officer/api/messages/${reportId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load messages');
+            }
+            return response.json();
+        })
+        .then(data => {
+            let html = `<div class="ms-conv-header-box">
+                <div class="ms-conv-header-title"><i class="fas fa-question-circle" style="color:var(--info);"></i> Conversation with Admin</div>
+            </div>
+            <div class="ms-thread" id="messageThread">`;
+
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(msg => {
+                    const time = new Date(msg.created_at).toLocaleString();
+                    html += `
+                        <div class="ms-bubble-wrap ${msg.is_me ? 'ms-bubble-wrap--me' : 'ms-bubble-wrap--them'}">
+                            <div class="ms-bubble ${msg.is_me ? 'ms-bubble--me' : 'ms-bubble--them'}">
+                                <div class="ms-bubble-sender"><i class="fas fa-user"></i> ${msg.sender}</div>
+                                <p class="ms-bubble-text">${msg.message}</p>
+                                <div class="ms-bubble-time"><i class="far fa-clock"></i> ${time}</div>
+                            </div>
+                        </div>
+                    `;
+                    if (!msg.is_me && !msg.is_read) {
+                        fetch(`/officer/api/messages/${msg.id}/read`, { method: 'POST' })
+                            .then(() => {
+                                // Refresh conversation list to update unread counts
+                                loadConversations();
+                            })
+                            .catch(err => console.error('Error marking message as read:', err));
+                    }
+                });
+            } else {
+                html += `<div class="ms-empty" style="padding:1rem;">
+                    <p>No messages in this conversation yet.</p>
+                </div>`;
+            }
+
+            html += `</div>
+            <div class="ms-reply-box">
+                <div class="ms-reply-row">
+                    <textarea class="ms-reply-textarea" id="replyMessage" rows="2" placeholder="Type your reply..."></textarea>
+                    <button class="ms-reply-send" id="sendReplyBtn" onclick="sendReply()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+            <div class="ms-divider"></div>`;
+
+            if (hasReport) {
+                html += `
+                    <div class="ms-resolved-alert">
+                        <div class="ms-resolved-alert-icon"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="ms-resolved-alert-title">Resolution Report Already Provided</div>
+                            <div class="ms-resolved-alert-desc">You have already submitted a resolution report for this case. The admin has been notified.</div>
+                        </div>
+                    </div>`;
+            } else {
+                html += `
+                    <div class="ms-resolution-box">
+                        <div class="ms-resolution-title"><i class="fas fa-file-alt" style="color:var(--success);"></i> Resolution Report</div>
+                        <p class="ms-resolution-desc">Once you've resolved the case, provide a detailed report below. This will be added to the case comments and the admin will be notified.</p>
+                        <button class="ms-btn ms-btn--success" onclick="showReportModal()">
+                            <i class="fas fa-file-alt"></i> Provide Full Resolution Report
+                        </button>
+                    </div>`;
+            }
+
+            messageArea.innerHTML = html;
+
+            setTimeout(() => {
+                const thread = document.getElementById('messageThread');
+                if (thread) thread.scrollTop = thread.scrollHeight;
+            }, 100);
+
+            updateMessageCount();
+        })
+        .catch(error => {
+            console.error('Error loading messages:', error);
+            messageArea.innerHTML = `
+                <div class="ms-empty">
+                    <div class="ms-empty-icon" style="background:var(--danger-bg);color:var(--danger);"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="ms-empty-title" style="color:var(--danger);">Error loading conversation</div>
+                    <p class="ms-empty-sub">Please try again later.</p>
+                </div>`;
+        });
+}
+
+function sendReply() {
+    const reply = document.getElementById('replyMessage').value.trim();
+    if (!reply) return;
+    document.getElementById('replyMessage').disabled = true;
+    document.getElementById('sendReplyBtn').disabled = true;
+
+    fetch('/officer/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: currentReportId, receiver_id: currentAdminId, message: reply })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('replyMessage').value = '';
+            loadQuestion(currentReportId, currentAdminId, '', '', '', false);
+            loadConversations();
+        } else { alert('Error sending message: ' + data.error); }
+    })
+    .catch(error => { console.error('Error:', error); alert('Failed to send message'); })
+    .finally(() => {
+        if (document.getElementById('replyMessage')) document.getElementById('replyMessage').disabled = false;
+        if (document.getElementById('sendReplyBtn')) document.getElementById('sendReplyBtn').disabled = false;
+    });
+}
+
+function updateMessageCount() {
+    fetch('/officer/api/messages/unread-count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('messageCount');
+            if (badge) { badge.textContent = data.count; badge.style.display = data.count > 0 ? 'flex' : 'none'; }
+        })
+        .catch(error => console.log('Error updating message count:', error));
+}
+
+function showReplyModal() {
+    document.getElementById('replyMessage').value = '';
+    const replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+    replyModal.show();
+}
+
+function showReportModal() {
+    document.getElementById('reportId').value = currentReportId;
+    document.getElementById('adminId').value = currentAdminId;
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('resolutionDate').value = today;
+    document.getElementById('resolutionSummary').value = '';
+    document.getElementById('resolutionDetails').value = '';
+    document.getElementById('followUp').value = 'no';
+    const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+    reportModal.show();
+}
+
+function goBackToConversations() {
+    loadConversations();
+    document.getElementById('messageArea').innerHTML = `
+        <div class="ms-empty">
+            <div class="ms-empty-icon"><i class="fas fa-comment-dots"></i></div>
+            <div class="ms-empty-title">Select a question</div>
+            <p class="ms-empty-sub">Choose a question from the left to view details</p>
+        </div>`;
+}
+
+document.getElementById('sendReplyBtn').onclick = function() {
+    const reply = document.getElementById('replyMessage').value.trim();
+    if (!reply) { showOfficerToast('error', 'Error', 'Please enter a message'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('replyModal')).hide();
+    showOfficerToast('warning', 'Sending...', 'Your reply is being sent.');
+
+    fetch('/officer/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: currentReportId, receiver_id: currentAdminId, message: reply })
+    })
+    .then(response => { if (!response.ok) return response.json().then(err => { throw err; }); return response.json(); })
+    .then(data => {
+        if (data.success) {
+            showOfficerToast('success', 'Sent!', 'Your reply has been sent to the admin.');
+            setTimeout(() => { loadConversations(); document.getElementById('messageArea').innerHTML = `
+                <div class="ms-empty">
+                    <div class="ms-empty-icon" style="background:var(--success-bg);color:var(--success);"><i class="fas fa-check-circle"></i></div>
+                    <div class="ms-empty-title" style="color:var(--success);">Reply Sent!</div>
+                    <p class="ms-empty-sub">Your reply has been sent to the admin successfully.</p>
+                    <button class="ms-btn ms-btn--ghost" onclick="goBackToConversations()" style="margin-top:0.75rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Conversations
+                    </button>
+                </div>`; }, 1000);
+        } else { showOfficerToast('error', 'Error', data.error || 'Failed to send reply'); }
+    })
+    .catch(error => { console.error('Error:', error); showOfficerToast('error', 'Error', error.message || 'Failed to send reply'); });
+};
+
+document.getElementById('submitReportBtn').onclick = function() {
+    const summary = document.getElementById('resolutionSummary').value.trim();
+    const details = document.getElementById('resolutionDetails').value.trim();
+    const resolutionDate = document.getElementById('resolutionDate').value;
+    const followUp = document.getElementById('followUp').value;
+
+    if (!summary || !details) { showOfficerToast('error', 'Missing Information', 'Please fill in all required fields'); return; }
+    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+    showOfficerToast('warning', 'Submitting...', 'Your report is being submitted.');
+
+    const resolutionText = `RESOLUTION REPORT\nDate: ${resolutionDate}\nSummary: ${summary}\nDetails: ${details}\nFollow-up: ${followUp === 'yes' ? 'Yes' : 'No'}`;
+
+    fetch('/officer/api/messages/provide-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: currentReportId, admin_id: currentAdminId, resolution: resolutionText })
+    })
+    .then(response => { if (!response.ok) return response.json().then(err => { throw err; }); return response.json(); })
+    .then(data => {
+        if (data.success) {
+            showOfficerToast('success', 'Success!', 'Your resolution report has been submitted.');
+            setTimeout(() => {
+                loadConversations();
+                document.getElementById('messageArea').innerHTML = `
+                    <div class="ms-empty">
+                        <div class="ms-empty-icon" style="background:var(--success-bg);color:var(--success);"><i class="fas fa-check-circle"></i></div>
+                        <div class="ms-empty-title" style="color:var(--success);">Report Submitted!</div>
+                        <p class="ms-empty-sub">Thank you for providing the resolution details. The admin has been notified.</p>
+                        <button class="ms-btn ms-btn--ghost" onclick="loadConversations();goBackToConversations();" style="margin-top:0.75rem;">
+                            <i class="fas fa-sync-alt"></i> Refresh Conversations
+                        </button>
+                    </div>`;
+            }, 1000);
+        } else { showOfficerToast('error', 'Error', data.error || 'Failed to submit report'); }
+    })
+    .catch(error => { console.error('Error:', error); showOfficerToast('error', 'Error', error.message || 'Failed to submit report'); });
+};
+
+function showOfficerToast(type, title, message) {
+    let toastElement, toastHeader, toastBody;
+    if (type === 'success') {
+        toastElement = document.getElementById('officerSuccessToast');
+        toastHeader = toastElement.querySelector('.toast-header');
+        toastBody   = toastElement.querySelector('.toast-body');
+        toastHeader.className = 'toast-header bg-success text-white';
+        toastHeader.innerHTML = '<i class="fas fa-check-circle me-2"></i><strong class="me-auto">' + title + '</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
+    } else if (type === 'error') {
+        toastElement = document.getElementById('officerErrorToast');
+        toastHeader = toastElement.querySelector('.toast-header');
+        toastBody   = toastElement.querySelector('.toast-body');
+        toastHeader.className = 'toast-header bg-danger text-white';
+        toastHeader.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i><strong class="me-auto">' + title + '</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
+    } else {
+        toastElement = document.getElementById('officerSuccessToast');
+        toastHeader = toastElement.querySelector('.toast-header');
+        toastBody   = toastElement.querySelector('.toast-body');
+        toastHeader.className = 'toast-header bg-warning text-dark';
+        toastHeader.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i><strong class="me-auto">' + title + '</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
+    }
+    toastBody.textContent = message;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    setTimeout(() => { toast.hide(); }, 3000);
+}
+</script>
+
+{% endblock %}

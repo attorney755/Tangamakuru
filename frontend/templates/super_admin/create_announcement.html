@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="sc-wrapper">
+
+    <!-- Top Bar -->
+    <div class="sc-topbar">
+        <div class="sc-topbar-left">
+            <a href="{{ url_for('super_admin.announcements') }}" class="sc-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Announcements
+            </a>
+            <div>
+                <div class="sc-topbar-title"><i class="fas fa-tower-broadcast"></i> System Announcement</div>
+                <div class="sc-topbar-sub">Create system-wide notifications and maintenance alerts</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="sc-body">
+
+        <!-- LEFT — Form -->
+        <div class="sc-main">
+            <form id="announcementForm" onsubmit="createAnnouncement(event)">
+
+                <!-- Content -->
+                <div class="sc-card">
+                    <div class="sc-card-header"><i class="fas fa-pen"></i> Announcement Content</div>
+                    <div class="sc-card-body">
+
+                        <div class="sc-field">
+                            <label class="sc-label">Title <span class="sc-req">*</span></label>
+                            <input type="text" class="sc-input" id="title" required
+                                   placeholder="e.g., Scheduled System Maintenance">
+                        </div>
+
+                        <div class="sc-field">
+                            <label class="sc-label">Message <span class="sc-req">*</span></label>
+                            <textarea class="sc-textarea" id="content" rows="6" required
+                                      placeholder="Describe the maintenance or announcement details..."></textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="sc-card">
+                    <div class="sc-card-header"><i class="fas fa-sliders-h"></i> Delivery Settings</div>
+                    <div class="sc-card-body">
+
+                        <div class="sc-row-2">
+                            <div class="sc-field">
+                                <label class="sc-label">Priority</label>
+                                <div class="sc-priority-group" id="priorityGroup">
+                                    <label class="sc-priority-option sc-priority-option--active" data-value="normal">
+                                        <input type="radio" name="priority" value="normal" checked>
+                                        <div class="sc-priority-dot sc-priority-dot--normal"></div>
+                                        Normal
+                                    </label>
+                                    <label class="sc-priority-option" data-value="important">
+                                        <input type="radio" name="priority" value="important">
+                                        <div class="sc-priority-dot sc-priority-dot--important"></div>
+                                        Important
+                                    </label>
+                                    <label class="sc-priority-option" data-value="urgent">
+                                        <input type="radio" name="priority" value="urgent">
+                                        <div class="sc-priority-dot sc-priority-dot--urgent"></div>
+                                        Urgent
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="sc-field">
+                                <label class="sc-label">Target Audience</label>
+                                <select class="sc-input sc-select" id="target_audience">
+                                    <option value="all">All Users</option>
+                                    <option value="admins">Admins Only</option>
+                                    <option value="officers">Officers Only</option>
+                                    <option value="citizens">Citizens Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Maintenance Window -->
+                <div class="sc-card sc-card--maintenance">
+                    <div class="sc-card-header sc-card-header--maintenance">
+                        <i class="fas fa-tools"></i> Maintenance Window
+                        <span class="sc-optional-badge">Optional</span>
+                    </div>
+                    <div class="sc-card-body">
+                        <p class="sc-maintenance-note">
+                            <i class="fas fa-info-circle"></i>
+                            Set a maintenance window to automatically include start and end times in the announcement.
+                        </p>
+                        <div class="sc-row-2">
+                            <div class="sc-field">
+                                <label class="sc-label">Maintenance Start</label>
+                                <div class="sc-input-wrap">
+                                    <i class="fas fa-play sc-input-icon"></i>
+                                    <input type="datetime-local" class="sc-input sc-input--icon" id="maintenance_start">
+                                </div>
+                            </div>
+                            <div class="sc-field">
+                                <label class="sc-label">Maintenance End</label>
+                                <div class="sc-input-wrap">
+                                    <i class="fas fa-stop sc-input-icon"></i>
+                                    <input type="datetime-local" class="sc-input sc-input--icon" id="maintenance_end">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sc-info-note">
+                    <i class="fas fa-bell"></i>
+                    <div>System announcements will appear in users' notification centers <strong>immediately</strong> after publishing.</div>
+                </div>
+
+                <div id="formMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                <!-- Actions -->
+                <div class="sc-actions">
+                    <a href="{{ url_for('super_admin.announcements') }}" class="sc-btn sc-btn--ghost">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="sc-btn sc-btn--primary" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> Publish Announcement
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- RIGHT — Sidebar -->
+        <div class="sc-sidebar">
+
+            <!-- Live Preview -->
+            <div class="sc-card">
+                <div class="sc-card-header"><i class="fas fa-eye"></i> Live Preview</div>
+                <div class="sc-card-body">
+                    <div class="sc-preview" id="previewCard">
+                        <div class="sc-preview-icon sc-preview-icon--normal" id="previewIcon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="sc-preview-content">
+                            <div class="sc-preview-badges" id="previewBadges">
+                                <span class="sc-pill sc-pill--normal" id="previewPriorityBadge" style="display:none;"></span>
+                                <span class="sc-pill sc-pill--audience" id="previewAudienceBadge">All Users</span>
+                            </div>
+                            <div class="sc-preview-title" id="previewTitle">Your announcement title will appear here</div>
+                            <div class="sc-preview-body" id="previewBody">Your message content will appear here as you type...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="sc-card">
+                <div class="sc-card-header"><i class="fas fa-lightbulb"></i> Announcement Tips</div>
+                <div class="sc-card-body">
+                    <div class="sc-tips">
+                        <div class="sc-tip">
+                            <div class="sc-tip-icon"><i class="fas fa-tools"></i></div>
+                            <div>
+                                <div class="sc-tip-title">Maintenance Alerts</div>
+                                <div class="sc-tip-desc">Use the maintenance window to clearly communicate scheduled downtime to all users.</div>
+                            </div>
+                        </div>
+                        <div class="sc-tip">
+                            <div class="sc-tip-icon"><i class="fas fa-fire"></i></div>
+                            <div>
+                                <div class="sc-tip-title">Use Urgent Wisely</div>
+                                <div class="sc-tip-desc">Reserve urgent priority for critical outages or security incidents only.</div>
+                            </div>
+                        </div>
+                        <div class="sc-tip">
+                            <div class="sc-tip-icon"><i class="fas fa-users"></i></div>
+                            <div>
+                                <div class="sc-tip-title">Target Audience</div>
+                                <div class="sc-tip-desc">Send to specific groups to avoid notification fatigue for unaffected users.</div>
+                            </div>
+                        </div>
+                        <div class="sc-tip">
+                            <div class="sc-tip-icon"><i class="fas fa-bell"></i></div>
+                            <div>
+                                <div class="sc-tip-title">Instant Delivery</div>
+                                <div class="sc-tip-desc">Announcements are delivered immediately — double-check content before publishing.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="sc-toast" class="sc-toast" style="display:none;">
+    <div class="sc-toast-inner">
+        <i id="sc-toast-icon" class="fas fa-check-circle"></i>
+        <span id="sc-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --super:      #0a1929;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+    --maintenance-bg:     #ecfeff;
+    --maintenance-border: #a5f3fc;
+    --maintenance-color:  #0e7490;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.sc-wrapper { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.sc-topbar {
+    display: flex; align-items: center;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.sc-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sc-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.sc-back-btn:hover { background: var(--super); border-color: var(--super); color: #fff; }
+.sc-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.sc-topbar-title i { color: var(--brand); }
+.sc-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Layout ───────────────── */
+.sc-body { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.sc-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.sc-card:last-child { margin-bottom: 0; }
+.sc-card--maintenance { border-color: var(--maintenance-border); }
+
+.sc-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.sc-card-header i { font-size: 0.75rem; }
+.sc-card-header--maintenance { background: var(--maintenance-bg); color: var(--maintenance-color); border-bottom-color: var(--maintenance-border); }
+
+.sc-optional-badge { font-size: 0.65rem; font-weight: 600; background: var(--white); border: 1px solid var(--maintenance-border); color: var(--maintenance-color); padding: 0.15rem 0.5rem; border-radius: 5px; margin-left: 0.25rem; text-transform: none; letter-spacing: 0; }
+
+.sc-card-body { padding: 1.25rem; }
+
+/* ── Form ─────────────────── */
+.sc-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+.sc-field { display: flex; flex-direction: column; margin-bottom: 1rem; }
+.sc-field:last-child { margin-bottom: 0; }
+.sc-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.4rem; }
+.sc-req   { color: #dc2626; }
+
+.sc-input-wrap { position: relative; }
+.sc-input-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.72rem; color: var(--ink-3); pointer-events: none; }
+
+.sc-input {
+    width: 100%; padding: 0.75rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.sc-input--icon { padding-left: 2.3rem; }
+.sc-input::placeholder { color: #8fa8c0; }
+.sc-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+
+.sc-textarea {
+    width: 100%; padding: 0.75rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit; resize: vertical;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.sc-textarea::placeholder { color: #8fa8c0; }
+.sc-textarea:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+
+.sc-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; background-size: 10px; padding-right: 2.25rem; cursor: pointer; }
+
+/* Priority group */
+.sc-priority-group { display: flex; gap: 0.5rem; }
+.sc-priority-option {
+    display: flex; align-items: center; gap: 0.45rem;
+    flex: 1; padding: 0.65rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    background: var(--surface); cursor: pointer;
+    font-size: 0.825rem; font-weight: 600; color: var(--ink-3);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.sc-priority-option input[type="radio"] { display: none; }
+.sc-priority-option:hover { border-color: var(--brand); color: var(--ink); }
+.sc-priority-option--active { border-color: var(--brand); background: var(--info-bg); color: var(--brand); }
+
+.sc-priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sc-priority-dot--normal   { background: var(--ink-3); }
+.sc-priority-dot--important{ background: #d97706; }
+.sc-priority-dot--urgent   { background: #dc2626; }
+
+/* Maintenance note */
+.sc-maintenance-note {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    font-size: 0.8rem; color: var(--maintenance-color);
+    margin-bottom: 0.875rem; line-height: 1.5;
+}
+.sc-maintenance-note i { flex-shrink: 0; margin-top: 1px; }
+
+/* Info note */
+.sc-info-note {
+    display: flex; align-items: flex-start; gap: 0.65rem;
+    background: var(--info-bg); border: 1px solid var(--info-border);
+    border-radius: 10px; padding: 0.875rem 1.1rem;
+    font-size: 0.875rem; color: var(--info); line-height: 1.55;
+    margin-bottom: 1.25rem;
+}
+.sc-info-note i { flex-shrink: 0; margin-top: 1px; }
+
+/* Inline message */
+.sc-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.875rem; }
+.sc-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.sc-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* Actions */
+.sc-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; }
+
+/* Buttons */
+.sc-btn { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.9rem; font-weight: 600; font-family: inherit; padding: 0.75rem 1.4rem; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.sc-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.sc-btn--primary { background: linear-gradient(135deg, var(--super), var(--brand)); color: #fff; box-shadow: 0 4px 14px rgba(10,25,41,0.22); }
+.sc-btn--primary:hover { color: #fff; }
+.sc-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* ── Preview ──────────────── */
+.sc-preview {
+    display: flex; gap: 0.875rem; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem;
+    border-left: 3px solid var(--brand);
+}
+.sc-preview-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+.sc-preview-icon--normal   { background: var(--info-bg);    color: var(--info); }
+.sc-preview-icon--important{ background: var(--warning-bg); color: var(--warning); }
+.sc-preview-icon--urgent   { background: var(--danger-bg);  color: var(--danger); }
+.sc-preview-content { flex: 1; min-width: 0; }
+.sc-preview-badges { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.sc-preview-title { font-size: 0.85rem; font-weight: 700; color: var(--ink); margin-bottom: 0.3rem; }
+.sc-preview-body  { font-size: 0.775rem; color: var(--ink-3); line-height: 1.55; }
+
+.sc-pill { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 999px; }
+.sc-pill--normal   { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.sc-pill--important{ background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.sc-pill--urgent   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.sc-pill--audience { background: var(--surface);    color: var(--ink-3);   border: 1px solid var(--rule); }
+
+/* Tips */
+.sc-tips { display: flex; flex-direction: column; gap: 1rem; }
+.sc-tip  { display: flex; align-items: flex-start; gap: 0.75rem; }
+.sc-tip-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--maintenance-bg); color: var(--maintenance-color); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; flex-shrink: 0; }
+.sc-tip-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.sc-tip-desc  { font-size: 0.76rem; color: var(--ink-3); line-height: 1.5; }
+
+/* Toast */
+.sc-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.sc-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 860px) { .sc-body { grid-template-columns: 1fr; } .sc-row-2 { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .sc-wrapper { padding: 1rem; } .sc-priority-group { flex-direction: column; } .sc-actions { flex-direction: column; } .sc-btn { width: 100%; justify-content: center; } }
+</style>
+
+<script>
+// ── Priority toggle ──────────
+document.querySelectorAll('.sc-priority-option').forEach(opt => {
+    opt.addEventListener('click', function() {
+        document.querySelectorAll('.sc-priority-option').forEach(o => o.classList.remove('sc-priority-option--active'));
+        this.classList.add('sc-priority-option--active');
+        this.querySelector('input[type="radio"]').checked = true;
+        updatePreview();
+    });
+});
+
+// ── Live Preview ─────────────
+const priorityConfig = {
+    normal:    { icon: 'fas fa-info-circle',          iconClass: 'sc-preview-icon--normal',    pillClass: 'sc-pill--normal',    label: null },
+    important: { icon: 'fas fa-exclamation-triangle',  iconClass: 'sc-preview-icon--important', pillClass: 'sc-pill--important', label: 'Important' },
+    urgent:    { icon: 'fas fa-exclamation-circle',    iconClass: 'sc-preview-icon--urgent',    pillClass: 'sc-pill--urgent',    label: 'Urgent' },
+};
+const audienceLabels = { all: 'All Users', admins: 'Admins Only', officers: 'Officers Only', citizens: 'Citizens Only' };
+const borderColors   = { normal: 'var(--brand)', important: '#d97706', urgent: '#dc2626' };
+
+function updatePreview() {
+    const title    = document.getElementById('title').value.trim();
+    const content  = document.getElementById('content').value.trim();
+    const priority = document.querySelector('input[name="priority"]:checked')?.value || 'normal';
+    const audience = document.getElementById('target_audience').value;
+    const cfg      = priorityConfig[priority];
+
+    document.getElementById('previewTitle').textContent = title || 'Your announcement title will appear here';
+    document.getElementById('previewBody').textContent  = content || 'Your message content will appear here as you type...';
+
+    const icon = document.getElementById('previewIcon');
+    icon.className = `sc-preview-icon ${cfg.iconClass}`;
+    icon.innerHTML = `<i class="${cfg.icon}"></i>`;
+
+    const pb = document.getElementById('previewPriorityBadge');
+    if (cfg.label) {
+        pb.textContent   = cfg.label;
+        pb.className     = `sc-pill ${cfg.pillClass}`;
+        pb.style.display = '';
+    } else {
+        pb.style.display = 'none';
+    }
+
+    document.getElementById('previewAudienceBadge').textContent = audienceLabels[audience] || audience;
+    document.querySelector('.sc-preview').style.borderLeftColor = borderColors[priority];
+}
+
+document.getElementById('title').addEventListener('input', updatePreview);
+document.getElementById('content').addEventListener('input', updatePreview);
+document.getElementById('target_audience').addEventListener('change', updatePreview);
+
+// ── Submit ───────────────────
+function createAnnouncement(event) {
+    event.preventDefault();
+    const btn  = document.getElementById('submitBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+    btn.disabled  = true;
+
+    const formData = {
+        title:              document.getElementById('title').value,
+        content:            document.getElementById('content').value,
+        priority:           document.querySelector('input[name="priority"]:checked')?.value || 'normal',
+        target_audience:    document.getElementById('target_audience').value,
+        maintenance_start:  document.getElementById('maintenance_start').value,
+        maintenance_end:    document.getElementById('maintenance_end').value
+    };
+
+    fetch('/super-admin/announcements/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showFormMsg('Announcement published successfully! Redirecting...', 'success');
+            showToast('Published successfully', true);
+            setTimeout(() => { window.location.href = '/super-admin/announcements'; }, 1500);
+        } else {
+            showFormMsg(data.error || 'Failed to publish', 'danger');
+            btn.innerHTML = orig; btn.disabled = false;
+        }
+    })
+    .catch(() => {
+        showFormMsg('Network error. Please try again.', 'danger');
+        btn.innerHTML = orig; btn.disabled = false;
+    });
+}
+
+function showFormMsg(text, type) {
+    const icons = { success:'check-circle', danger:'exclamation-circle' };
+    const div = document.getElementById('formMessage');
+    div.innerHTML = `<div class="sc-msg sc-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.style.display = 'block';
+    if (type !== 'success') setTimeout(() => { div.style.display = 'none'; }, 6000);
+}
+
+function showToast(msg, success) {
+    const t = document.getElementById('sc-toast');
+    t.querySelector('.sc-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('sc-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('sc-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+</script>
+
+{% endblock %}

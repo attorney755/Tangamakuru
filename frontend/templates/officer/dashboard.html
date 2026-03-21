@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="od-wrapper">
+
+    <!-- Welcome Header -->
+    <div class="od-header">
+        <div class="od-header-left">
+            <div class="od-header-avatar"><i class="fas fa-shield-alt"></i></div>
+            <div>
+                <div class="od-welcome">{{ officer.first_name }} {{ officer.last_name }}</div>
+                <div class="od-header-sub">
+                    <span class="od-sector-tag"><i class="fas fa-map-marker-alt"></i> {{ officer.sector or 'No sector' }}</span>
+                    <span class="od-header-sep">·</span>
+                    <span>Sector Officer</span>
+                </div>
+            </div>
+        </div>
+        <a href="/officer/monthly-report" class="od-report-btn">
+            <i class="fas fa-file-pdf"></i> Monthly Report
+        </a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="od-stats">
+        <div class="od-stat">
+            <div class="od-stat-icon od-stat-icon--blue"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <div class="od-stat-num">{{ stats.total }}</div>
+                <div class="od-stat-label">Total</div>
+            </div>
+        </div>
+        <div class="od-stat">
+            <div class="od-stat-icon od-stat-icon--amber"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="od-stat-num">{{ stats.pending }}</div>
+                <div class="od-stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="od-stat">
+            <div class="od-stat-icon od-stat-icon--cyan"><i class="fas fa-spinner"></i></div>
+            <div>
+                <div class="od-stat-num">{{ stats.in_progress }}</div>
+                <div class="od-stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="od-stat">
+            <div class="od-stat-icon od-stat-icon--green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="od-stat-num">{{ stats.resolved }}</div>
+                <div class="od-stat-label">Resolved</div>
+            </div>
+        </div>
+        <div class="od-stat">
+            <div class="od-stat-icon od-stat-icon--red"><i class="fas fa-user-slash"></i></div>
+            <div>
+                <div class="od-stat-num">{{ stats.unassigned }}</div>
+                <div class="od-stat-label">Unassigned</div>
+            </div>
+        </div>
+        <div class="od-stat">
+            <div class="od-stat-icon od-stat-icon--purple"><i class="fas fa-user-tie"></i></div>
+            <div>
+                <div class="od-stat-num">{{ stats.my_assigned }}</div>
+                <div class="od-stat-label">My Cases</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="od-body">
+
+        <!-- LEFT — Recent Incidents -->
+        <div class="od-main">
+            <div class="od-card">
+                <div class="od-card-header">
+                    <div class="od-card-title">
+                        <i class="fas fa-history"></i>
+                        Recent Incidents in {{ officer.sector or 'Your' }} Sector
+                    </div>
+                    <a href="{{ url_for('officer.incidents') }}" class="od-view-all">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="od-card-body od-card-body--flush">
+
+                    {% if recent_reports %}
+                    <div class="od-table-wrap">
+                        <table class="od-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Date</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in recent_reports %}
+                                <tr>
+                                    <td><span class="od-report-id">{{ report.report_id }}</span></td>
+                                    <td>
+                                        <a href="{{ url_for('officer.view_incident', report_id=report.id) }}"
+                                           class="od-report-title">{{ report.title }}</a>
+                                    </td>
+                                    <td class="od-category">{{ report.category }}</td>
+                                    <td>
+                                        {% if report.status == 'pending' %}
+                                        <span class="od-status od-status--pending"><i class="fas fa-clock"></i> Pending</span>
+                                        {% elif report.status == 'in_progress' %}
+                                        <span class="od-status od-status--progress"><i class="fas fa-spinner"></i> In Progress</span>
+                                        {% elif report.status == 'resolved' %}
+                                        <span class="od-status od-status--resolved"><i class="fas fa-check-circle"></i> Resolved</span>
+                                        {% else %}
+                                        <span class="od-status od-status--other">{{ report.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if report.priority == 'high' %}
+                                        <span class="od-priority od-priority--high">High</span>
+                                        {% elif report.priority == 'medium' %}
+                                        <span class="od-priority od-priority--medium">Medium</span>
+                                        {% else %}
+                                        <span class="od-priority od-priority--low">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="od-date"><i class="far fa-calendar-alt"></i> {{ report.created_at }}</td>
+                                    <td>
+                                        <div class="od-actions">
+                                            <a href="{{ url_for('officer.view_incident', report_id=report.id) }}"
+                                               class="od-act-btn od-act-btn--view" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if report.is_unassigned %}
+                                            <button type="button" class="od-act-btn od-act-btn--assign"
+                                                    onclick="quickAssign({{ report.id }})" title="Assign to me">
+                                                <i class="fas fa-user-check"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="od-empty">
+                        <div class="od-empty-icon"><i class="fas fa-inbox"></i></div>
+                        <div class="od-empty-title">No Incidents Yet</div>
+                        <p class="od-empty-sub">No incidents have been reported in your sector yet.</p>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT — Sidebar -->
+        <div class="od-sidebar">
+
+            <!-- Quick Actions -->
+            <div class="od-card" style="margin-bottom:1.1rem;">
+                <div class="od-card-header">
+                    <div class="od-card-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+                </div>
+                <div class="od-card-body">
+                    <div class="od-qa-list">
+                        <a href="{{ url_for('officer.incidents') }}?status=pending" class="od-qa-item od-qa-item--amber">
+                            <div class="od-qa-icon"><i class="fas fa-clock"></i></div>
+                            <div class="od-qa-label">Pending Incidents</div>
+                            <span class="od-qa-badge od-qa-badge--amber">{{ stats.pending }}</span>
+                        </a>
+                        <a href="{{ url_for('officer.incidents') }}?status=in_progress" class="od-qa-item od-qa-item--cyan">
+                            <div class="od-qa-icon"><i class="fas fa-spinner"></i></div>
+                            <div class="od-qa-label">In Progress</div>
+                            <span class="od-qa-badge od-qa-badge--cyan">{{ stats.in_progress }}</span>
+                        </a>
+                        <a href="{{ url_for('officer.incidents') }}" class="od-qa-item od-qa-item--blue">
+                            <div class="od-qa-icon"><i class="fas fa-list"></i></div>
+                            <div class="od-qa-label">All Incidents</div>
+                            <span class="od-qa-badge od-qa-badge--blue">{{ stats.total }}</span>
+                        </a>
+                        <a href="{{ url_for('officer.statistics') }}" class="od-qa-item od-qa-item--green">
+                            <div class="od-qa-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div class="od-qa-label">View Statistics</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Chart -->
+            <div class="od-card">
+                <div class="od-card-header">
+                    <div class="od-card-title"><i class="fas fa-chart-pie"></i> Reports by Category</div>
+                </div>
+                <div class="od-card-body">
+                    {% if category_labels and category_data and category_labels|length > 0 %}
+                    <canvas id="categoryChart" height="220"></canvas>
+                    <div class="od-cat-list">
+                        {% for i in range(category_labels|length) %}
+                        <div class="od-cat-row">
+                            <span class="od-cat-name">{{ category_labels[i] }}</span>
+                            <span class="od-cat-badge">{{ category_data[i] }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="od-empty od-empty--sm">
+                        <div class="od-empty-icon"><i class="fas fa-chart-pie"></i></div>
+                        <div class="od-empty-title">No Category Data</div>
+                        <p class="od-empty-sub">Categories will appear once citizens submit reports in your sector.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="dashboardAssignModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content od-modal">
+            <div class="modal-header od-modal-header od-modal-header--success">
+                <h5 class="modal-title od-modal-title"><i class="fas fa-user-check"></i> Assign Incident</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body od-modal-body">
+                <div class="od-modal-icon od-modal-icon--success"><i class="fas fa-user-check"></i></div>
+                <div class="od-modal-heading">Assign this incident to yourself?</div>
+                <p class="od-modal-desc">You are about to take ownership of this incident. You will be responsible for following up and resolving it.</p>
+                <div class="od-modal-note od-modal-note--info">
+                    <i class="fas fa-info-circle"></i>
+                    The incident status will be updated to "In Progress" automatically.
+                </div>
+            </div>
+            <div class="modal-footer od-modal-footer">
+                <button type="button" class="od-btn od-btn--ghost" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="od-btn od-btn--success" id="dashboardConfirmAssignBtn">
+                    <i class="fas fa-check-circle"></i> Yes, Assign to Me
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="od-toast" class="od-toast" style="display:none;">
+    <div class="od-toast-inner">
+        <i id="od-toast-icon" class="fas fa-check-circle"></i>
+        <span id="od-toast-msg"></span>
+    </div>
+</div>
+
+<!-- Legacy Bootstrap toasts (kept for JS compatibility) -->
+<div style="position:fixed;bottom:0;right:0;padding:1rem;z-index:1;pointer-events:none;opacity:0;">
+    <div id="dashboardSuccessToast" class="toast hide" role="alert" aria-atomic="true">
+        <div class="toast-header bg-success text-white"><i class="fas fa-check-circle me-2"></i><strong class="me-auto">Success</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div>
+        <div class="toast-body">Incident assigned successfully!</div>
+    </div>
+    <div id="dashboardErrorToast" class="toast hide" role="alert" aria-atomic="true">
+        <div class="toast-header bg-danger text-white"><i class="fas fa-exclamation-circle me-2"></i><strong class="me-auto">Error</strong><small>just now</small><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button></div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.od-wrapper { max-width: 1300px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Welcome Header ───────── */
+.od-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    border-radius: 18px; padding: 1.5rem 2rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+}
+.od-header::after { content:''; position:absolute; right:-50px; top:-50px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,0.04); pointer-events:none; }
+.od-header-left { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
+.od-header-avatar { width: 48px; height: 48px; border-radius: 13px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; flex-shrink: 0; }
+.od-welcome    { font-size: 1.2rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.od-header-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 3px; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.od-header-sep { opacity: 0.4; }
+.od-sector-tag { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(255,255,255,0.12); padding: 0.18rem 0.6rem; border-radius: 999px; color: rgba(255,255,255,0.75); font-weight: 600; }
+.od-report-btn {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
+    color: #fff; font-size: 0.875rem; font-weight: 600;
+    padding: 0.6rem 1.25rem; border-radius: 9px; text-decoration: none;
+    transition: background 0.15s; position: relative; z-index: 1; white-space: nowrap;
+}
+.od-report-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+/* ── Stats ────────────────── */
+.od-stats {
+    display: grid; grid-template-columns: repeat(6,1fr); gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.od-stat {
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 1rem 1.1rem;
+    display: flex; align-items: center; gap: 0.875rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.od-stat:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.07); }
+.od-stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+.od-stat-icon--blue   { background: rgba(13,110,253,0.1);  color: #0d6efd; }
+.od-stat-icon--amber  { background: rgba(255,193,7,0.15);  color: #b45309; }
+.od-stat-icon--cyan   { background: rgba(13,202,240,0.12); color: #0dcaf0; }
+.od-stat-icon--green  { background: rgba(25,135,84,0.1);   color: #198754; }
+.od-stat-icon--red    { background: rgba(220,53,69,0.1);   color: #dc3545; }
+.od-stat-icon--purple { background: rgba(111,66,193,0.1);  color: #6f42c1; }
+.od-stat-num   { font-size: 1.5rem; font-weight: 800; color: var(--ink); line-height: 1; }
+.od-stat-label { font-size: 0.68rem; color: var(--ink-3); font-weight: 500; margin-top: 2px; }
+
+/* ── Body Layout ──────────── */
+.od-body { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+
+/* ── Cards ────────────────── */
+.od-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+.od-card-header { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.od-card-title  { font-size: 0.82rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.5rem; }
+.od-card-title i { font-size: 0.78rem; }
+.od-card-body   { padding: 1.25rem; }
+.od-card-body--flush { padding: 0; }
+.od-view-all {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--brand);
+    text-decoration: none; border-bottom: 1.5px solid transparent;
+    transition: border-color 0.15s;
+}
+.od-view-all:hover { border-bottom-color: var(--brand); }
+
+/* ── Table ────────────────── */
+.od-table-wrap { overflow-x: auto; }
+.od-table { width: 100%; border-collapse: collapse; }
+.od-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.od-table th { padding: 0.7rem 1rem; font-size: 0.68rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.od-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.od-table tbody tr:last-child td { border-bottom: none; }
+.od-table tbody tr:hover { background: #f8fafb; }
+
+.od-report-id    { font-family: monospace; font-size: 0.72rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.18rem 0.5rem; border-radius: 5px; }
+.od-report-title { font-size: 0.85rem; font-weight: 700; color: var(--brand); text-decoration: none; }
+.od-report-title:hover { text-decoration: underline; }
+.od-category     { font-size: 0.8rem; color: var(--ink-3); }
+.od-date         { font-size: 0.72rem; color: var(--ink-3); white-space: nowrap; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Status — original colors preserved */
+.od-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 999px; white-space: nowrap; }
+.od-status--pending  { background: #fff3cd; color: #856404; }
+.od-status--progress { background: #cff4fc; color: #055160; }
+.od-status--resolved { background: #d1e7dd; color: #0a3622; }
+.od-status--other    { background: #e2e3e5; color: #383d41; }
+
+/* Priority — original colors preserved */
+.od-priority { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 5px; white-space: nowrap; }
+.od-priority--high   { background: #dc3545; color: #fff; }
+.od-priority--medium { background: #ffc107; color: #333; }
+.od-priority--low    { background: #198754; color: #fff; }
+
+/* Action buttons */
+.od-actions  { display: flex; align-items: center; gap: 0.4rem; }
+.od-act-btn  { width: 28px; height: 28px; border-radius: 7px; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.od-act-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+.od-act-btn--view   { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.od-act-btn--assign { background: #d1e7dd; color: #0a3622; border: 1px solid #a3cfbb; }
+
+/* Empty */
+.od-empty    { text-align: center; padding: 3rem 2rem; }
+.od-empty--sm{ padding: 1.5rem; }
+.od-empty-icon { width: 52px; height: 52px; border-radius: 13px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.875rem; font-size: 1.3rem; color: var(--ink-3); }
+.od-empty-title{ font-size: 0.95rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.3rem; }
+.od-empty-sub  { font-size: 0.8rem; color: var(--ink-3); line-height: 1.55; }
+
+/* ── Quick Actions ────────── */
+.od-qa-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.od-qa-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 0.875rem; border-radius: 10px;
+    border: 1.5px solid var(--rule); background: var(--surface);
+    text-decoration: none; color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    transition: border-color 0.15s, background 0.15s;
+}
+.od-qa-item:hover { background: var(--white); }
+.od-qa-icon  { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; }
+.od-qa-label { flex: 1; color: var(--ink-2); }
+.od-qa-badge { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 999px; flex-shrink: 0; }
+
+.od-qa-item--amber { } .od-qa-item--amber .od-qa-icon { background: #fff3cd; color: #856404; } .od-qa-item--amber:hover { border-color: #ffc107; }
+.od-qa-item--cyan  { } .od-qa-item--cyan  .od-qa-icon { background: #cff4fc; color: #055160; } .od-qa-item--cyan:hover  { border-color: #0dcaf0; }
+.od-qa-item--blue  { } .od-qa-item--blue  .od-qa-icon { background: #dbeafe; color: #1d4ed8; } .od-qa-item--blue:hover  { border-color: #0d6efd; }
+.od-qa-item--green { } .od-qa-item--green .od-qa-icon { background: #d1e7dd; color: #0a3622; } .od-qa-item--green:hover { border-color: #198754; }
+
+.od-qa-badge--amber { background: #ffc107; color: #333; }
+.od-qa-badge--cyan  { background: #0dcaf0; color: #055160; }
+.od-qa-badge--blue  { background: #0d6efd; color: #fff; }
+
+/* ── Category list ────────── */
+.od-cat-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; border-top: 1px solid var(--rule); padding-top: 0.875rem; }
+.od-cat-row  { display: flex; align-items: center; justify-content: space-between; }
+.od-cat-name { font-size: 0.8rem; color: var(--ink-2); text-transform: capitalize; }
+.od-cat-badge{ font-size: 0.7rem; font-weight: 700; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 0.18rem 0.6rem; border-radius: 999px; }
+
+/* ── Modal ────────────────── */
+.od-modal { border: none; border-radius: 16px; overflow: hidden; }
+.od-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.od-modal-header--success { background: linear-gradient(135deg, #155724, #198754); }
+.od-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.od-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.od-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.od-modal-icon   { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.3rem; }
+.od-modal-icon--success { background: #d1e7dd; color: #0a3622; }
+.od-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.od-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 0; }
+.od-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 1rem; }
+.od-modal-note--info { background: #cff4fc; color: #055160; border: 1px solid #9eeaf9; }
+
+/* Buttons */
+.od-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.od-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.od-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.od-btn--success { background: linear-gradient(135deg, #155724, #198754); color: #fff; box-shadow: 0 3px 10px rgba(25,135,84,0.25); }
+
+/* Toast */
+.od-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.od-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 1100px) { .od-stats { grid-template-columns: repeat(3,1fr); } .od-body { grid-template-columns: 1fr; } }
+@media (max-width: 700px)  { .od-stats { grid-template-columns: repeat(2,1fr); } .od-wrapper { padding: 1rem; } .od-header { flex-direction: column; align-items: flex-start; } }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if category_labels and category_data %}
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|tojson }},
+            datasets: [{
+                data: {{ category_data|tojson }},
+                backgroundColor: ['#0d6efd','#ffc107','#198754','#dc3545','#6c757d','#0dcaf0'],
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '62%',
+            plugins: { legend: { display: false } }
+        }
+    });
+    {% endif %}
+});
+
+let dashboardReportToAssign = null;
+
+function quickAssign(reportId) {
+    dashboardReportToAssign = reportId;
+    const assignModal = new bootstrap.Modal(document.getElementById('dashboardAssignModal'));
+    assignModal.show();
+    document.getElementById('dashboardConfirmAssignBtn').onclick = function() {
+        performDashboardAssign(dashboardReportToAssign);
+    };
+}
+
+function performDashboardAssign(reportId) {
+    bootstrap.Modal.getInstance(document.getElementById('dashboardAssignModal')).hide();
+    showToast('Assigning incident to you...', 'info');
+
+    fetch(`/officer/incident/${reportId}/update-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'in_progress', comment: 'Assigned to me' })
+    })
+    .then(response => {
+        if (!response.ok) return response.json().then(err => { throw err; });
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showToast('Incident assigned successfully!', true);
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.error || 'Failed to assign incident', false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast(error.message || 'Failed to assign incident', false);
+    });
+}
+
+// Legacy function kept for compatibility
+function showDashboardToast(type, title, message) {
+    const success = type === 'success' ? true : type === 'error' ? false : 'info';
+    showToast(message, success);
+}
+
+function showToast(msg, success) {
+    const t     = document.getElementById('od-toast');
+    const inner = t.querySelector('.od-toast-inner');
+    const icon  = document.getElementById('od-toast-icon');
+    if (success === 'info') {
+        inner.style.background = '#0d6efd';
+        icon.className = 'fas fa-spinner fa-spin';
+    } else {
+        inner.style.background = success ? '#198754' : '#dc3545';
+        icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    }
+    document.getElementById('od-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+{% endblock %}

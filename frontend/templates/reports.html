@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mr-wrapper">
+
+    <!-- Top Bar -->
+    <div class="mr-topbar">
+        <div class="mr-topbar-left">
+            <a href="/dashboard" class="mr-back-btn">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+            <div>
+                <div class="mr-topbar-title"><i class="fas fa-file-alt"></i> My Reports</div>
+                <div class="mr-topbar-sub">View and manage all your submitted reports</div>
+            </div>
+        </div>
+        <a href="/submit-report" class="mr-new-btn">
+            <i class="fas fa-plus-circle"></i> New Report
+        </a>
+    </div>
+
+    <!-- Summary + Filter Strip -->
+    <div class="mr-summary">
+        <div class="mr-summary-text">
+            You have submitted <strong>{{ total_reports }}</strong> report{{ 's' if total_reports != 1 }} in total.
+        </div>
+        <div class="mr-filter-pills" id="filterPills">
+            <button class="mr-pill mr-pill--active" onclick="filterReports('all', this)">
+                All
+            </button>
+            <button class="mr-pill mr-pill--pending" onclick="filterReports('pending', this)">
+                <i class="fas fa-clock"></i> Pending
+            </button>
+            <button class="mr-pill mr-pill--progress" onclick="filterReports('in_progress', this)">
+                <i class="fas fa-spinner"></i> In Progress
+            </button>
+            <button class="mr-pill mr-pill--resolved" onclick="filterReports('resolved', this)">
+                <i class="fas fa-check-circle"></i> Resolved
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="mr-card">
+
+        <!-- Card Header -->
+        <div class="mr-card-header">
+            <div class="mr-card-title">
+                <i class="fas fa-list"></i> All Reports
+                <span class="mr-count-badge" id="headerCount">{{ total_reports }} total</span>
+            </div>
+            <div class="mr-card-search">
+                <div class="mr-search-wrap">
+                    <i class="fas fa-search mr-search-icon"></i>
+                    <input type="text" class="mr-search" id="searchReports"
+                           placeholder="Search reports..." onkeyup="searchReports()">
+                </div>
+            </div>
+        </div>
+
+        {% if reports %}
+        <!-- Table -->
+        <div class="mr-table-wrap">
+            <table class="mr-table" id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td><span class="mr-report-id">{{ report.report_id }}</span></td>
+                        <td>
+                            <div class="mr-title-main" title="{{ report.title }}">{{ report.title }}</div>
+                            {% if report.description %}
+                            <div class="mr-title-sub" title="{{ report.description }}">{{ report.description }}</div>
+                            {% endif %}
+                        </td>
+                        <td><span class="mr-category-tag">{{ report.category }}</span></td>
+                        <td>
+                            <span class="mr-status mr-status--{{ report.status|lower|replace(' ', '_') }}">
+                                {% if report.status == 'pending' %}<i class="fas fa-clock"></i>
+                                {% elif report.status == 'in_progress' %}<i class="fas fa-spinner"></i>
+                                {% elif report.status == 'resolved' %}<i class="fas fa-check-circle"></i>
+                                {% endif %}
+                                {{ report.status|replace('_',' ')|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="mr-priority mr-priority--{{ report.priority|lower }}">
+                                {{ report.priority|title }}
+                            </span>
+                        </td>
+                        <td class="mr-date"><i class="far fa-calendar-alt"></i> {{ report.date }}</td>
+                        <td>
+                            <div class="mr-actions">
+                                <a href="/view-report/{{ report.id }}" class="mr-act-btn mr-act-btn--view" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user.role in ['officer', 'admin'] %}
+                                <a href="#" class="mr-act-btn mr-act-btn--edit" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" class="mr-act-btn mr-act-btn--delete" title="Delete"
+                                   onclick="confirmDeleteTable({{ report.id }}, event)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="mr-footer">
+            <span class="mr-showing" id="showingText">
+                Showing <strong>1–{{ reports|length }}</strong> of <strong>{{ total_reports }}</strong> reports
+            </span>
+            <a href="/submit-report" class="mr-add-btn">
+                <i class="fas fa-plus-circle"></i> Add New Report
+            </a>
+        </div>
+
+        {% else %}
+        <div class="mr-empty">
+            <div class="mr-empty-icon"><i class="fas fa-inbox"></i></div>
+            <div class="mr-empty-title">No Reports Found</div>
+            <p class="mr-empty-sub">You haven't submitted any reports yet. Help keep your community safe.</p>
+            <a href="/submit-report" class="mr-empty-btn">
+                <i class="fas fa-plus-circle"></i> Create Your First Report
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content mr-modal">
+            <div class="modal-header mr-modal-header mr-modal-header--danger">
+                <h5 class="modal-title mr-modal-title"><i class="fas fa-trash-alt"></i> Delete Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body mr-modal-body">
+                <div class="mr-modal-icon"><i class="fas fa-trash-alt"></i></div>
+                <div class="mr-modal-heading">Are you absolutely sure?</div>
+                <p class="mr-modal-desc">This will permanently delete the report and all associated evidence and comments. This action cannot be undone.</p>
+                <div class="mr-modal-note">
+                    <i class="fas fa-exclamation-circle"></i>
+                    This action is permanent and cannot be reversed.
+                </div>
+            </div>
+            <div class="modal-footer mr-modal-footer">
+                <button type="button" class="mr-btn mr-btn--ghost" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="mr-btn mr-btn--danger" id="confirmDeleteReportBtn">
+                    <i class="fas fa-trash-alt"></i> Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="mr-toast" class="mr-toast" style="display:none;">
+    <div class="mr-toast-inner">
+        <i id="mr-toast-icon" class="fas fa-check-circle"></i>
+        <span id="mr-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.mr-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.mr-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.1rem; gap: 1rem; flex-wrap: wrap;
+}
+.mr-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.mr-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.mr-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.mr-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.mr-topbar-title i { color: var(--brand); }
+.mr-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.mr-new-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--accent); color: #fff;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.65rem 1.35rem; border-radius: 10px; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(192,57,43,0.3);
+    transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+}
+.mr-new-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Summary Strip ────────── */
+.mr-summary {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 12px; padding: 0.875rem 1.25rem;
+    margin-bottom: 1.1rem; gap: 1rem; flex-wrap: wrap;
+}
+.mr-summary-text { font-size: 0.875rem; color: var(--ink-3); }
+.mr-summary-text strong { color: var(--ink); }
+
+.mr-filter-pills { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.mr-pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.4rem 0.875rem; border-radius: 999px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--rule); background: var(--surface);
+    color: var(--ink-3); font-family: inherit;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.mr-pill:hover { border-color: var(--brand); color: var(--brand); }
+.mr-pill--active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.mr-pill--pending:hover   { border-color: #d97706; color: #d97706; }
+.mr-pill--progress:hover  { border-color: var(--info); color: var(--info); }
+.mr-pill--resolved:hover  { border-color: var(--success); color: var(--success); }
+
+/* ── Main Card ────────────── */
+.mr-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+
+.mr-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface); gap: 1rem; flex-wrap: wrap;
+}
+.mr-card-title { font-size: 0.875rem; font-weight: 700; color: var(--brand); display: flex; align-items: center; gap: 0.6rem; }
+.mr-count-badge { font-size: 0.72rem; font-weight: 600; color: var(--ink-3); background: var(--white); border: 1px solid var(--rule); padding: 0.2rem 0.65rem; border-radius: 999px; }
+
+.mr-card-search { flex-shrink: 0; }
+.mr-search-wrap { position: relative; }
+.mr-search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.72rem; color: var(--ink-3); pointer-events: none; }
+.mr-search {
+    padding: 0.55rem 0.875rem 0.55rem 2.1rem; width: 220px;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.85rem; color: var(--ink); background: var(--white);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s;
+}
+.mr-search:focus { border-color: var(--brand); }
+
+/* ── Table ────────────────── */
+.mr-table-wrap { overflow-x: auto; }
+.mr-table { width: 100%; border-collapse: collapse; }
+.mr-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.mr-table th { padding: 0.7rem 1rem; font-size: 0.69rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.mr-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.mr-table tbody tr:last-child td { border-bottom: none; }
+.mr-table tbody tr:hover { background: #f8fafb; }
+
+.mr-report-id { font-family: monospace; font-size: 0.75rem; font-weight: 700; background: var(--surface); border: 1px solid var(--rule); color: var(--brand); padding: 0.2rem 0.55rem; border-radius: 5px; }
+
+.mr-title-main { font-size: 0.875rem; font-weight: 700; color: var(--ink); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-title-sub  { font-size: 0.75rem; color: var(--ink-3); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+.mr-category-tag { display: inline-block; font-size: 0.72rem; font-weight: 600; background: var(--surface); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.22rem 0.6rem; border-radius: 6px; white-space: nowrap; }
+
+.mr-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+.mr-status--pending     { background: var(--warning-bg); color: var(--warning); }
+.mr-status--in_progress { background: var(--info-bg);    color: var(--info); }
+.mr-status--resolved    { background: var(--success-bg); color: var(--success); }
+
+.mr-priority { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 5px; white-space: nowrap; }
+.mr-priority--urgent { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); animation: urgentPulse 2s infinite; }
+.mr-priority--high   { background: #fef3c7;            color: #b45309;       border: 1px solid #fde68a; }
+.mr-priority--medium { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.mr-priority--low    { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+@keyframes urgentPulse { 0%,100% { opacity:1; } 50% { opacity:0.65; } }
+
+.mr-date { font-size: 0.75rem; color: var(--ink-3); white-space: nowrap; display: flex; align-items: center; gap: 0.3rem; }
+
+.mr-actions { display: flex; align-items: center; gap: 0.4rem; }
+.mr-act-btn { width: 28px; height: 28px; border-radius: 7px; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.mr-act-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+.mr-act-btn--view   { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.mr-act-btn--edit   { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.mr-act-btn--delete { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* Footer */
+.mr-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.875rem 1.25rem; border-top: 1px solid var(--rule);
+    background: var(--surface); flex-wrap: wrap; gap: 0.75rem;
+}
+.mr-showing { font-size: 0.8rem; color: var(--ink-3); }
+.mr-showing strong { color: var(--ink-2); }
+.mr-add-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.82rem; font-weight: 600; padding: 0.5rem 1rem;
+    border-radius: 8px; text-decoration: none;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff; box-shadow: 0 2px 8px rgba(15,36,64,0.18);
+    transition: opacity 0.15s;
+}
+.mr-add-btn:hover { opacity: 0.88; color: #fff; }
+
+/* Empty */
+.mr-empty { text-align: center; padding: 4rem 2rem; }
+.mr-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.mr-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.mr-empty-sub   { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 1.25rem; line-height: 1.55; max-width: 360px; margin-left: auto; margin-right: auto; }
+.mr-empty-btn   { display: inline-flex; align-items: center; gap: 0.45rem; background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; font-size: 0.9rem; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(15,36,64,0.22); transition: opacity 0.15s; }
+.mr-empty-btn:hover { opacity: 0.88; color: #fff; }
+
+/* Row animation */
+@keyframes fadeOut { from { opacity:1; } to { opacity:0; transform: translateX(20px); } }
+tr.fade-out { animation: fadeOut 0.4s ease-out forwards; }
+
+/* ── Modal ────────────────── */
+.mr-modal { border: none; border-radius: 16px; overflow: hidden; }
+.mr-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
+.mr-modal-header--danger { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.mr-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.mr-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.mr-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.mr-modal-icon   { width: 56px; height: 56px; border-radius: 14px; background: var(--danger-bg); color: var(--danger); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.3rem; }
+.mr-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.mr-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 0; }
+.mr-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; color: var(--warning); line-height: 1.5; text-align: left; margin-top: 1rem; }
+
+/* Buttons */
+.mr-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+.mr-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.mr-btn--ghost  { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.mr-btn--danger { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; box-shadow: 0 3px 10px rgba(220,38,38,0.2); }
+
+/* Toast */
+.mr-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.mr-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 768px) { .mr-wrapper { padding: 1rem; } .mr-topbar { flex-direction: column; align-items: flex-start; } .mr-summary { flex-direction: column; align-items: flex-start; } .mr-search { width: 100%; } }
+</style>
+
+<script>
+// ── Filter ───────────────────
+function filterReports(status, btn) {
+    document.querySelectorAll('.mr-pill').forEach(p => {
+        p.classList.remove('mr-pill--active');
+        p.style.background = '';
+        p.style.borderColor = '';
+        p.style.color = '';
+    });
+    if (btn) btn.classList.add('mr-pill--active');
+
+    const rows = document.querySelectorAll('#reportsTable tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+        const badge = row.querySelector('.mr-status');
+        if (!badge) return;
+        const s = badge.textContent.trim().toLowerCase().replace(/ /g,'_');
+        const show = status === 'all' || s === status || s.includes(status);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    updateFooter(visible);
+}
+
+// ── Search ───────────────────
+function searchReports() {
+    const term = document.getElementById('searchReports').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#reportsTable tbody tr');
+    let visible = 0;
+    rows.forEach(row => {
+        const match = term === '' || row.textContent.toLowerCase().includes(term);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    updateFooter(visible);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const si = document.getElementById('searchReports');
+    if (si) si.addEventListener('keyup', function(e) { if(e.key==='Enter') searchReports(); });
+    updateFooter({{ reports|length }});
+});
+
+function updateFooter(count) {
+    const el = document.getElementById('showingText');
+    if (el) el.innerHTML = `Showing <strong>1–${count}</strong> of <strong>{{ total_reports }}</strong> reports`;
+}
+
+// ── Delete ───────────────────
+let reportToDelete = null;
+
+function confirmDeleteTable(reportId, event) {
+    if (event) event.preventDefault();
+    reportToDelete = reportId;
+    new bootstrap.Modal(document.getElementById('deleteReportModal')).show();
+    document.getElementById('confirmDeleteReportBtn').onclick = function() {
+        performDeleteReport(reportToDelete);
+    };
+}
+
+function performDeleteReport(reportId) {
+    bootstrap.Modal.getInstance(document.getElementById('deleteReportModal')).hide();
+    showToast('Deleting report...', 'info');
+
+    const row = document.querySelector(`tr:has(a[onclick*="confirmDeleteTable(${reportId}"])`);
+
+    fetch(`/reports/${reportId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => {
+        if (response.status === 401) {
+            showToast('Session expired. Redirecting...', false);
+            setTimeout(() => { window.location.href = '/login'; }, 2000);
+            return null;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.success) {
+            showToast(`Report ${data.report_id || ''} deleted successfully!`, true);
+            if (row) {
+                row.classList.add('fade-out');
+                setTimeout(() => {
+                    row.remove();
+                    updateReportCounts();
+                    if (!document.querySelectorAll('#reportsTable tbody tr').length) {
+                        setTimeout(() => location.reload(), 500);
+                    }
+                }, 400);
+            } else { setTimeout(() => location.reload(), 1800); }
+        } else if (data) { showToast(data.error || 'Failed to delete report.', false); }
+    })
+    .catch(() => showToast('Network error. Please try again.', false));
+}
+
+function updateReportCounts() {
+    const table = document.getElementById('reportsTable');
+    if (!table) return;
+    const visible = table.querySelectorAll('tbody tr:not([style*="display: none"])').length;
+    updateFooter(visible);
+}
+
+// ── Toast ────────────────────
+function showToast(msg, success) {
+    const t = document.getElementById('mr-toast');
+    const inner = t.querySelector('.mr-toast-inner');
+    const icon  = document.getElementById('mr-toast-icon');
+    if (success === 'info') {
+        inner.style.background = '#1e40af';
+        icon.className = 'fas fa-spinner fa-spin';
+    } else {
+        inner.style.background = success ? '#059669' : '#c0392b';
+        icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    }
+    document.getElementById('mr-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+
+// Legacy functions kept for compatibility
+function showReportToast(type, title, message) {
+    const success = type === 'success' ? true : type === 'error' ? false : 'info';
+    showToast(message, success);
+}
+function performDeleteTable(reportId) { performDeleteReport(reportId); }
+function showDeleteModal(reportId)    { confirmDeleteTable(reportId, null); }
+function showResultModal(type, title, message) { showToast(message, type === 'success'); }
+</script>
+
+{% endblock %}

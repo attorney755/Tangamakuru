@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="cp-wrapper">
+
+    <!-- Top Bar -->
+    <div class="cp-topbar">
+        <div class="cp-topbar-left">
+            <a href="{% if user.role == 'admin' %}/admin/dashboard{% else %}/dashboard{% endif %}" class="cp-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="cp-topbar-title"><i class="fas fa-user"></i> My Profile</div>
+                <div class="cp-topbar-sub">Manage your personal information</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="cp-body">
+
+        <!-- LEFT — Profile Card -->
+        <div class="cp-sidebar">
+
+            <div class="cp-profile-card">
+                <div class="cp-profile-banner"></div>
+                <div class="cp-profile-body">
+                    <img src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=1a3a5c&color=fff&size=120"
+                         class="cp-avatar">
+                    <div class="cp-profile-name">{{ user.first_name }} {{ user.last_name }}</div>
+                    <div class="cp-profile-email"><i class="fas fa-envelope"></i> {{ user.email }}</div>
+                    {% if user.role == 'admin' %}
+                    <span class="cp-role-badge cp-role-badge--admin"><i class="fas fa-crown"></i> Administrator</span>
+                    {% elif user.role == 'officer' %}
+                    <span class="cp-role-badge cp-role-badge--officer"><i class="fas fa-shield-alt"></i> Sector Officer</span>
+                    {% else %}
+                    <span class="cp-role-badge cp-role-badge--citizen"><i class="fas fa-user"></i> Citizen</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="cp-nav">
+                <button class="cp-nav-item cp-nav-item--active" id="tab-view" onclick="showTab('view')">
+                    <i class="fas fa-user"></i> Profile Info
+                </button>
+                <button class="cp-nav-item" id="tab-edit" onclick="showTab('edit')">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+                <button class="cp-nav-item" id="tab-password" onclick="showTab('password')">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+
+        </div>
+
+        <!-- RIGHT — Content -->
+        <div class="cp-main">
+
+            <!-- ── View Profile ── -->
+            <div id="panel-view">
+                <div class="cp-card">
+                    <div class="cp-card-header"><i class="fas fa-user"></i> Personal Information</div>
+                    <div class="cp-card-body">
+                        <div class="cp-details-grid">
+                            <div class="cp-detail-item">
+                                <div class="cp-detail-label">First Name</div>
+                                <div class="cp-detail-value">{{ user.first_name }}</div>
+                            </div>
+                            <div class="cp-detail-item">
+                                <div class="cp-detail-label">Last Name</div>
+                                <div class="cp-detail-value">{{ user.last_name }}</div>
+                            </div>
+                            <div class="cp-detail-item">
+                                <div class="cp-detail-label">Email Address</div>
+                                <div class="cp-detail-value"><i class="fas fa-envelope cp-detail-icon"></i>{{ user.email }}</div>
+                            </div>
+                            <div class="cp-detail-item">
+                                <div class="cp-detail-label">Phone Number</div>
+                                <div class="cp-detail-value">
+                                    {% if user.phone %}<i class="fas fa-phone cp-detail-icon"></i>{{ user.phone }}
+                                    {% else %}<span class="cp-detail-empty">Not provided</span>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if user.province %}
+                <div class="cp-card">
+                    <div class="cp-card-header"><i class="fas fa-map-marker-alt"></i> Location Information</div>
+                    <div class="cp-card-body">
+                        <div class="cp-location-grid">
+                            <div class="cp-location-item">
+                                <div class="cp-loc-key">Province</div>
+                                <div class="cp-loc-val">{{ user.province or '—' }}</div>
+                            </div>
+                            <div class="cp-location-item">
+                                <div class="cp-loc-key">District</div>
+                                <div class="cp-loc-val">{{ user.district or '—' }}</div>
+                            </div>
+                            <div class="cp-location-item">
+                                <div class="cp-loc-key">Sector</div>
+                                <div class="cp-loc-val">{{ user.sector or '—' }}</div>
+                            </div>
+                            <div class="cp-location-item">
+                                <div class="cp-loc-key">Cell</div>
+                                <div class="cp-loc-val">{{ user.cell or '—' }}</div>
+                            </div>
+                            <div class="cp-location-item">
+                                <div class="cp-loc-key">Village</div>
+                                <div class="cp-loc-val">{{ user.village or '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ── Edit Profile ── -->
+            <div id="panel-edit" style="display:none;">
+                <div class="cp-card">
+                    <div class="cp-card-header"><i class="fas fa-edit"></i> Edit Profile</div>
+                    <div class="cp-card-body">
+                        <form id="profileEditForm">
+
+                            <div class="cp-section-label">Personal Details</div>
+                            <div class="cp-row-2">
+                                <div class="cp-field">
+                                    <label class="cp-label">First Name</label>
+                                    <input type="text" class="cp-input" id="first_name" value="{{ user.first_name }}" required>
+                                </div>
+                                <div class="cp-field">
+                                    <label class="cp-label">Last Name</label>
+                                    <input type="text" class="cp-input" id="last_name" value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                            <div class="cp-field">
+                                <label class="cp-label">Phone Number</label>
+                                <div class="cp-input-wrap">
+                                    <i class="fas fa-phone cp-input-icon"></i>
+                                    <input type="tel" class="cp-input cp-input--icon" id="phone"
+                                           value="{{ user.phone or '' }}" placeholder="078X XXX XXX">
+                                </div>
+                            </div>
+
+                            {% if user.role != 'admin' %}
+                            <div class="cp-section-label">Location</div>
+                            <div class="cp-row-2">
+                                <div class="cp-field">
+                                    <label class="cp-label">Province</label>
+                                    <select class="cp-input cp-select" id="province">
+                                        <option value="Kigali City" {% if user.province == 'Kigali City' %}selected{% endif %}>Kigali City</option>
+                                        <option value="Eastern"     {% if user.province == 'Eastern' %}selected{% endif %}>Eastern Province</option>
+                                        <option value="Southern"    {% if user.province == 'Southern' %}selected{% endif %}>Southern Province</option>
+                                        <option value="Western"     {% if user.province == 'Western' %}selected{% endif %}>Western Province</option>
+                                        <option value="Northern"    {% if user.province == 'Northern' %}selected{% endif %}>Northern Province</option>
+                                    </select>
+                                </div>
+                                <div class="cp-field">
+                                    <label class="cp-label">District</label>
+                                    <input type="text" class="cp-input" id="district" value="{{ user.district or '' }}" placeholder="e.g., Gasabo">
+                                </div>
+                            </div>
+                            <div class="cp-row-3">
+                                <div class="cp-field">
+                                    <label class="cp-label">Sector</label>
+                                    <input type="text" class="cp-input" id="sector" value="{{ user.sector or '' }}" placeholder="e.g., Remera">
+                                </div>
+                                <div class="cp-field">
+                                    <label class="cp-label">Cell</label>
+                                    <input type="text" class="cp-input" id="cell" value="{{ user.cell or '' }}" placeholder="e.g., Gishushu">
+                                </div>
+                                <div class="cp-field">
+                                    <label class="cp-label">Village</label>
+                                    <input type="text" class="cp-input" id="village" value="{{ user.village or '' }}" placeholder="e.g., Amahoro">
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div id="editMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                            <div class="cp-form-actions">
+                                <button type="button" class="cp-btn cp-btn--ghost" onclick="showTab('view')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="cp-btn cp-btn--primary" id="saveBtn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Change Password ── -->
+            <div id="panel-password" style="display:none;">
+                <div class="cp-card">
+                    <div class="cp-card-header"><i class="fas fa-key"></i> Change Password</div>
+                    <div class="cp-card-body">
+                        <form id="changePasswordForm">
+
+                            <div class="cp-field">
+                                <label class="cp-label">Current Password</label>
+                                <div class="cp-input-wrap">
+                                    <i class="fas fa-lock cp-input-icon"></i>
+                                    <input type="password" class="cp-input cp-input--icon" id="current_password"
+                                           placeholder="Enter current password" required>
+                                </div>
+                            </div>
+
+                            <div class="cp-divider"></div>
+
+                            <div class="cp-row-2">
+                                <div class="cp-field">
+                                    <label class="cp-label">New Password</label>
+                                    <div class="cp-input-wrap">
+                                        <i class="fas fa-key cp-input-icon"></i>
+                                        <input type="password" class="cp-input cp-input--icon" id="new_password"
+                                               placeholder="Min. 6 characters" required minlength="6">
+                                    </div>
+                                    <div class="cp-hint">Minimum 6 characters</div>
+                                </div>
+                                <div class="cp-field">
+                                    <label class="cp-label">Confirm New Password</label>
+                                    <div class="cp-input-wrap">
+                                        <i class="fas fa-key cp-input-icon"></i>
+                                        <input type="password" class="cp-input cp-input--icon" id="confirm_password"
+                                               placeholder="Re-enter new password" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="pwMessage" style="display:none; margin-bottom:1rem;"></div>
+
+                            <div class="cp-form-actions">
+                                <button type="button" class="cp-btn cp-btn--ghost" onclick="showTab('view')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="cp-btn cp-btn--primary" id="changePwBtn">
+                                    <i class="fas fa-key"></i> Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="cp-toast" class="cp-toast" style="display:none;">
+    <div class="cp-toast-inner">
+        <i id="cp-toast-icon" class="fas fa-check-circle"></i>
+        <span id="cp-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.cp-wrapper { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.cp-topbar {
+    display: flex; align-items: center;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.cp-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.cp-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.cp-back-btn:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.cp-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.cp-topbar-title i { color: var(--brand); }
+.cp-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+/* ── Layout ───────────────── */
+.cp-body { display: grid; grid-template-columns: 260px 1fr; gap: 1.25rem; align-items: start; }
+
+/* ── Profile card ─────────── */
+.cp-profile-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1rem; }
+.cp-profile-banner { height: 72px; background: linear-gradient(135deg, var(--brand-dark), var(--brand)); }
+.cp-profile-body {
+    padding: 0 1.25rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.cp-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    border: 4px solid var(--white); box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    margin-top: -36px; margin-bottom: 0.75rem;
+}
+.cp-profile-name  { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.25rem; }
+.cp-profile-email { font-size: 0.75rem; color: var(--ink-3); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.3rem; }
+
+.cp-role-badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.875rem; border-radius: 999px; }
+.cp-role-badge--admin   { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.cp-role-badge--officer { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+.cp-role-badge--citizen { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+/* ── Nav ──────────────────── */
+.cp-nav { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+.cp-nav-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    width: 100%; padding: 0.875rem 1.1rem;
+    background: none; border: none; border-bottom: 1px solid var(--rule);
+    font-size: 0.85rem; font-weight: 600; color: var(--ink-3);
+    cursor: pointer; font-family: inherit; text-align: left;
+    transition: background 0.15s, color 0.15s;
+}
+.cp-nav-item:last-child { border-bottom: none; }
+.cp-nav-item i { width: 16px; text-align: center; }
+.cp-nav-item:hover { background: var(--surface); color: var(--brand); }
+.cp-nav-item--active { background: var(--info-bg) !important; color: var(--brand) !important; border-left: 3px solid var(--brand); }
+
+/* ── Cards ────────────────── */
+.cp-card { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; }
+.cp-card:last-child { margin-bottom: 0; }
+.cp-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.cp-card-header i { font-size: 0.75rem; }
+.cp-card-body { padding: 1.25rem; }
+
+/* ── Details ──────────────── */
+.cp-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.cp-detail-label { font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+.cp-detail-value { font-size: 0.9rem; color: var(--ink-2); font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
+.cp-detail-empty { font-size: 0.85rem; color: var(--ink-3); font-style: italic; font-weight: 400; }
+.cp-detail-icon  { color: var(--ink-3); font-size: 0.72rem; }
+
+/* ── Location ─────────────── */
+.cp-location-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+.cp-location-item { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 0.65rem 0.875rem; }
+.cp-loc-key { font-size: 0.65rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.cp-loc-val { font-size: 0.875rem; color: var(--ink); font-weight: 600; }
+
+/* ── Form ─────────────────── */
+.cp-section-label { font-size: 0.72rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.07em; padding-bottom: 0.5rem; border-bottom: 1.5px solid var(--rule); margin-bottom: 0.875rem; margin-top: 1.1rem; }
+.cp-section-label:first-child { margin-top: 0; }
+.cp-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 0.875rem; }
+.cp-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; }
+.cp-field { display: flex; flex-direction: column; margin-bottom: 0.875rem; }
+.cp-field:last-child { margin-bottom: 0; }
+.cp-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.cp-hint  { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.28rem; }
+.cp-divider { height: 1px; background: var(--rule); margin: 1.1rem 0; }
+
+.cp-input-wrap { position: relative; }
+.cp-input-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--ink-3); pointer-events: none; }
+.cp-input {
+    width: 100%; padding: 0.75rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.cp-input--icon { padding-left: 2.3rem; }
+.cp-input::placeholder { color: #8fa8c0; }
+.cp-input:focus { border-color: var(--brand); background: var(--white); box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.cp-input.cp-invalid { border-color: var(--danger) !important; }
+.cp-input.cp-valid   { border-color: #059669 !important; }
+.cp-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; background-size: 10px; padding-right: 2.25rem; cursor: pointer; }
+
+.cp-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); margin-top: 0.5rem; }
+
+/* Inline messages */
+.cp-msg { display: flex; align-items: center; gap: 0.55rem; border-radius: 9px; padding: 0.75rem 1rem; font-size: 0.85rem; }
+.cp-msg--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.cp-msg--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.cp-msg--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+/* Buttons */
+.cp-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.7rem 1.35rem; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.cp-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.cp-btn--primary { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); color: #fff; box-shadow: 0 3px 10px rgba(15,36,64,0.2); }
+.cp-btn--primary:hover { color: #fff; }
+.cp-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+
+/* Toast */
+.cp-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.cp-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 860px) { .cp-body { grid-template-columns: 1fr; } .cp-location-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .cp-wrapper { padding: 1rem; } .cp-details-grid { grid-template-columns: 1fr; } .cp-row-2 { grid-template-columns: 1fr; } .cp-row-3 { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+function showTab(tab) {
+    ['view','edit','password'].forEach(t => {
+        document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
+        document.getElementById(`tab-${t}`).classList.toggle('cp-nav-item--active', t === tab);
+    });
+}
+
+document.getElementById('profileEditForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    btn.disabled = true;
+
+    const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name:  document.getElementById('last_name').value,
+        phone:      document.getElementById('phone').value || '',
+        province:   document.getElementById('province')?.value || '',
+        district:   document.getElementById('district')?.value || '',
+        sector:     document.getElementById('sector')?.value || '',
+        cell:       document.getElementById('cell')?.value || '',
+        village:    document.getElementById('village')?.value || ''
+    };
+
+    try {
+        const res  = await fetch('/api/profile/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formData) });
+        const data = await res.json();
+        if (res.ok) {
+            showInlineMsg('editMessage', 'Profile updated successfully!', 'success');
+            showToast('Profile updated successfully', true);
+            setTimeout(() => location.reload(), 1600);
+        } else {
+            showInlineMsg('editMessage', data.error || 'Failed to update profile', 'danger');
+        }
+    } catch { showInlineMsg('editMessage', 'Network error. Please try again.', 'danger'); }
+    finally { btn.innerHTML = orig; btn.disabled = false; }
+});
+
+document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const np = document.getElementById('new_password').value;
+    const cp = document.getElementById('confirm_password').value;
+    if (np !== cp)    { showInlineMsg('pwMessage', 'Passwords do not match', 'warning'); return; }
+    if (np.length < 6){ showInlineMsg('pwMessage', 'Password must be at least 6 characters', 'warning'); return; }
+
+    const btn = document.getElementById('changePwBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing...';
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch('/api/profile/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password: document.getElementById('current_password').value, new_password: np }) });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Password changed successfully', true);
+            this.reset();
+            showTab('view');
+        } else {
+            showInlineMsg('pwMessage', data.error || 'Failed to change password', 'danger');
+        }
+    } catch { showInlineMsg('pwMessage', 'Network error. Please try again.', 'danger'); }
+    finally { btn.innerHTML = orig; btn.disabled = false; }
+});
+
+document.getElementById('confirm_password')?.addEventListener('input', function() {
+    const match = this.value === document.getElementById('new_password').value;
+    this.classList.toggle('cp-invalid', !match);
+    this.classList.toggle('cp-valid', match && this.value.length > 0);
+});
+document.getElementById('new_password')?.addEventListener('input', function() {
+    const cp = document.getElementById('confirm_password');
+    if (!cp.value) return;
+    const match = cp.value === this.value;
+    cp.classList.toggle('cp-invalid', !match);
+    cp.classList.toggle('cp-valid', match);
+});
+
+function showInlineMsg(id, text, type) {
+    const icons = { success:'check-circle', danger:'times-circle', warning:'exclamation-triangle' };
+    const div = document.getElementById(id);
+    div.innerHTML = `<div class="cp-msg cp-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.style.display = 'block';
+    setTimeout(() => { div.style.display = 'none'; }, 5000);
+}
+
+function showToast(msg, success) {
+    const t = document.getElementById('cp-toast');
+    t.querySelector('.cp-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    document.getElementById('cp-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    document.getElementById('cp-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+
+{% endblock %}

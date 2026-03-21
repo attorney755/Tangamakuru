@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ma-wrapper">
+
+    <!-- Top Bar -->
+    <div class="ma-topbar">
+        <div class="ma-topbar-left">
+            <a href="{{ url_for('super_admin.dashboard') }}" class="ma-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div>
+                <div class="ma-topbar-title"><i class="fas fa-user-tie"></i> Manage Administrators</div>
+                <div class="ma-topbar-sub">View and manage all admin accounts</div>
+            </div>
+        </div>
+        <a href="{{ url_for('super_admin.create_admin') }}" class="ma-create-btn">
+            <i class="fas fa-user-plus"></i> New Admin
+        </a>
+    </div>
+
+    <!-- Main Card -->
+    <div class="ma-card">
+        {% if admins %}
+        <div class="ma-table-wrap">
+            <table class="ma-table">
+                <thead>
+                    <tr>
+                        <th>Administrator</th>
+                        <th>Email</th>
+                        <th>District</th>
+                        <th>Sector</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in admins %}
+                    <tr id="admin-row-{{ admin.id }}">
+                        <td>
+                            <div class="ma-person">
+                                <img src="https://ui-avatars.com/api/?name={{ admin.first_name }}+{{ admin.last_name }}&background=0a1929&color=fff&size=40"
+                                     class="ma-avatar">
+                                <div class="ma-person-name">{{ admin.first_name }} {{ admin.last_name }}</div>
+                            </div>
+                        </td>
+                        <td class="ma-email">{{ admin.email }}</td>
+                        <td><span class="ma-district-tag">{{ admin.district or '—' }}</span></td>
+                        <td class="ma-sector">{{ admin.sector or '—' }}</td>
+                        <td class="ma-date"><i class="far fa-calendar-alt"></i> {{ admin.created_at.strftime('%d %b %Y') }}</td>
+                        <td>
+                            {% if admin.is_active %}
+                            <span class="ma-status ma-status--active"><i class="fas fa-check-circle"></i> Active</span>
+                            {% else %}
+                            <span class="ma-status ma-status--inactive"><i class="fas fa-ban"></i> Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="ma-actions">
+                                <a href="{{ url_for('super_admin.edit_admin', admin_id=admin.id) }}"
+                                   class="ma-act-btn ma-act-btn--edit" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if admin.is_active %}
+                                <button class="ma-act-btn ma-act-btn--deactivate" onclick="deactivateAdmin({{ admin.id }})" title="Deactivate">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                                {% else %}
+                                <button class="ma-act-btn ma-act-btn--activate" onclick="activateAdmin({{ admin.id }})" title="Activate">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                                {% endif %}
+                                <button class="ma-act-btn ma-act-btn--delete" onclick="deleteAdmin({{ admin.id }})" title="Delete Permanently">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="ma-empty">
+            <div class="ma-empty-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="ma-empty-title">No Admin Accounts</div>
+            <p class="ma-empty-sub">Create your first administrator to get started.</p>
+            <a href="{{ url_for('super_admin.create_admin') }}" class="ma-btn ma-btn--primary">
+                <i class="fas fa-user-plus"></i> Create Admin
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Deactivate Modal -->
+<div class="ma-modal-overlay" id="deactivateModal" style="display:none;">
+    <div class="ma-modal">
+        <div class="ma-modal-header ma-modal-header--danger">
+            <div class="ma-modal-title"><i class="fas fa-user-slash"></i> Deactivate Admin</div>
+            <button class="ma-modal-close" onclick="closeModal('deactivateModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ma-modal-body">
+            <div class="ma-modal-icon ma-modal-icon--danger"><i class="fas fa-user-slash"></i></div>
+            <div class="ma-modal-heading">Are you absolutely sure?</div>
+            <p class="ma-modal-desc">This admin will lose system access immediately. They cannot log in until reactivated.</p>
+            <div class="ma-modal-note ma-modal-note--warning">
+                <i class="fas fa-exclamation-circle"></i>
+                This action can be reversed by activating the account again.
+            </div>
+        </div>
+        <div class="ma-modal-footer">
+            <button class="ma-btn ma-btn--ghost" onclick="closeModal('deactivateModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="ma-btn ma-btn--danger" id="confirmDeactivateBtn"><i class="fas fa-user-slash"></i> Deactivate Admin</button>
+        </div>
+    </div>
+</div>
+
+<!-- Activate Modal -->
+<div class="ma-modal-overlay" id="activateModal" style="display:none;">
+    <div class="ma-modal">
+        <div class="ma-modal-header ma-modal-header--success">
+            <div class="ma-modal-title"><i class="fas fa-user-check"></i> Activate Admin</div>
+            <button class="ma-modal-close" onclick="closeModal('activateModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ma-modal-body">
+            <div class="ma-modal-icon ma-modal-icon--success"><i class="fas fa-user-check"></i></div>
+            <div class="ma-modal-heading">Activate this admin account?</div>
+            <p class="ma-modal-desc">This admin will regain full system access and be able to log in immediately.</p>
+        </div>
+        <div class="ma-modal-footer">
+            <button class="ma-btn ma-btn--ghost" onclick="closeModal('activateModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="ma-btn ma-btn--success" id="confirmActivateBtn"><i class="fas fa-user-check"></i> Activate Admin</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="ma-modal-overlay" id="deleteModal" style="display:none;">
+    <div class="ma-modal ma-modal--wide">
+        <div class="ma-modal-header ma-modal-header--danger">
+            <div class="ma-modal-title"><i class="fas fa-trash-alt"></i> Delete Admin Account</div>
+            <button class="ma-modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ma-modal-body">
+            <div class="ma-modal-icon ma-modal-icon--danger"><i class="fas fa-trash-alt"></i></div>
+            <div class="ma-modal-heading">Are you absolutely sure?</div>
+            <p class="ma-modal-desc">This action is permanent and cannot be undone. The admin account and all associated data will be deleted immediately.</p>
+
+            <div class="ma-delete-form">
+                <div class="ma-field">
+                    <label class="ma-label">Reason for Deletion <span class="ma-req">*</span></label>
+                    <select class="ma-input ma-select" id="deleteReason" required>
+                        <option value="">Select a reason...</option>
+                        <option value="No longer needed">No longer needed</option>
+                        <option value="Policy violation">Policy violation</option>
+                        <option value="Inactivity">Inactivity</option>
+                        <option value="Duplicate account">Duplicate account</option>
+                        <option value="Requested by admin">Requested by admin</option>
+                        <option value="Other">Other (specify below)</option>
+                    </select>
+                </div>
+                <div class="ma-field" id="otherReasonDiv" style="display:none;">
+                    <label class="ma-label">Please specify</label>
+                    <textarea class="ma-textarea" id="otherReason" rows="2" placeholder="Enter reason..."></textarea>
+                </div>
+                <div class="ma-field">
+                    <label class="ma-label">Type your full name to confirm <span class="ma-req">*</span></label>
+                    <input type="text" class="ma-input" id="confirmName" placeholder="Enter your full name">
+                    <div class="ma-hint">Type exactly: <strong>{{ user.first_name }} {{ user.last_name }}</strong></div>
+                </div>
+                <div class="ma-modal-note ma-modal-note--danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    This action is permanent and cannot be reversed. The admin will lose all access immediately.
+                </div>
+            </div>
+        </div>
+        <div class="ma-modal-footer">
+            <button class="ma-btn ma-btn--ghost" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i> Cancel</button>
+            <button class="ma-btn ma-btn--danger" id="confirmDeleteBtn" disabled><i class="fas fa-trash-alt"></i> Delete Permanently</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="ma-toast" class="ma-toast" style="display:none;">
+    <div class="ma-toast-inner">
+        <i id="ma-toast-icon" class="fas fa-check-circle"></i>
+        <span id="ma-toast-msg"></span>
+    </div>
+</div>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --super:      #0a1929;
+    --super-mid:  #1a3a5f;
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --success:    #065f46;
+    --success-bg: #d1fae5;
+    --success-border: #a7f3d0;
+    --danger:     #991b1b;
+    --danger-bg:  #fef2f2;
+    --danger-border: #fecaca;
+    --warning:    #92400e;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --info:       #1e40af;
+    --info-bg:    #dbeafe;
+    --info-border:#bfdbfe;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+
+/* ── Wrapper ──────────────── */
+.ma-wrapper { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+/* ── Topbar ───────────────── */
+.ma-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.ma-topbar-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.ma-back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1.5px solid var(--rule);
+    color: var(--ink-2); font-size: 0.875rem; font-weight: 600;
+    padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap;
+}
+.ma-back-btn:hover { background: var(--super); border-color: var(--super); color: #fff; }
+.ma-topbar-title { font-size: 1rem; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 0.5rem; }
+.ma-topbar-title i { color: var(--brand); }
+.ma-topbar-sub   { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+.ma-create-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, var(--super), var(--super-mid));
+    color: #fff; font-size: 0.875rem; font-weight: 600;
+    padding: 0.6rem 1.25rem; border-radius: 9px; text-decoration: none;
+    box-shadow: 0 3px 10px rgba(10,25,41,0.2);
+    transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+}
+.ma-create-btn:hover { opacity: 0.88; transform: translateY(-1px); color: #fff; }
+
+/* ── Card ─────────────────── */
+.ma-card { background: var(--white); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+
+/* ── Table ────────────────── */
+.ma-table-wrap { overflow-x: auto; }
+.ma-table { width: 100%; border-collapse: collapse; }
+.ma-table thead tr { background: var(--surface); border-bottom: 1.5px solid var(--rule); }
+.ma-table th { padding: 0.75rem 1.1rem; font-size: 0.7rem; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; white-space: nowrap; }
+.ma-table td { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.ma-table tbody tr:last-child td { border-bottom: none; }
+.ma-table tbody tr:hover { background: var(--surface); }
+
+.ma-person { display: flex; align-items: center; gap: 0.75rem; }
+.ma-avatar  { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--rule); flex-shrink: 0; }
+.ma-person-name { font-size: 0.875rem; font-weight: 700; color: var(--ink); }
+.ma-email   { font-size: 0.8rem; color: var(--ink-3); }
+.ma-sector  { font-size: 0.8rem; color: var(--ink-2); }
+.ma-date    { font-size: 0.78rem; color: var(--ink-3); display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+
+.ma-district-tag { display: inline-block; background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 6px; }
+
+.ma-status { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; padding: 0.28rem 0.7rem; border-radius: 999px; }
+.ma-status--active   { background: var(--success-bg); color: var(--success); }
+.ma-status--inactive { background: var(--danger-bg);  color: var(--danger); }
+
+/* Action buttons */
+.ma-actions { display: flex; align-items: center; gap: 0.4rem; }
+.ma-act-btn {
+    width: 30px; height: 30px; border-radius: 7px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s; text-decoration: none;
+}
+.ma-act-btn:hover { opacity: 0.82; transform: translateY(-1px); }
+.ma-act-btn--edit       { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.ma-act-btn--deactivate { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+.ma-act-btn--activate   { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.ma-act-btn--delete     { background: #1a1a2e;           color: #f87171;        border: 1px solid #3f1f1f; }
+
+/* Empty */
+.ma-empty { text-align: center; padding: 4rem 2rem; }
+.ma-empty-icon { width: 60px; height: 60px; border-radius: 15px; background: var(--surface); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; color: var(--ink-3); }
+.ma-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink-2); margin-bottom: 0.35rem; }
+.ma-empty-sub   { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 1.25rem; }
+
+/* Buttons */
+.ma-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; font-weight: 600; font-family: inherit; padding: 0.65rem 1.25rem; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; transition: opacity 0.15s, transform 0.15s; }
+.ma-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.ma-btn--primary { background: linear-gradient(135deg, var(--super), var(--super-mid)); color: #fff; box-shadow: 0 3px 10px rgba(10,25,41,0.2); }
+.ma-btn--primary:hover { color: #fff; }
+.ma-btn--ghost   { background: var(--surface); border: 1.5px solid var(--rule); color: var(--ink-2); }
+.ma-btn--danger  { background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; box-shadow: 0 3px 10px rgba(220,38,38,0.2); }
+.ma-btn--success { background: linear-gradient(135deg, #065f46, #059669); color: #fff; box-shadow: 0 3px 10px rgba(5,150,105,0.2); }
+.ma-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── Modals ───────────────── */
+.ma-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.ma-modal { background: var(--white); border-radius: 16px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; }
+.ma-modal--wide { max-width: 520px; }
+.ma-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; }
+.ma-modal-header--danger  { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.ma-modal-header--success { background: linear-gradient(135deg, #065f46, #059669); }
+.ma-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+.ma-modal-close  { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
+.ma-modal-close:hover { background: rgba(255,255,255,0.25); }
+.ma-modal-body   { padding: 1.75rem 1.5rem; text-align: center; }
+.ma-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
+.ma-modal-icon   { width: 58px; height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.4rem; }
+.ma-modal-icon--danger  { background: var(--danger-bg);  color: var(--danger); }
+.ma-modal-icon--success { background: var(--success-bg); color: var(--success); }
+.ma-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; }
+.ma-modal-desc   { font-size: 0.85rem; color: var(--ink-3); line-height: 1.55; margin-bottom: 0; }
+.ma-modal-note   { display: flex; align-items: flex-start; gap: 0.5rem; border-radius: 8px; padding: 0.65rem 0.875rem; font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 1rem; }
+.ma-modal-note--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.ma-modal-note--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-border); }
+
+/* Delete form fields */
+.ma-delete-form { text-align: left; margin-top: 1.1rem; }
+.ma-field { margin-bottom: 0.875rem; }
+.ma-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 0.38rem; }
+.ma-req   { color: #dc2626; }
+.ma-hint  { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.28rem; }
+.ma-input {
+    width: 100%; padding: 0.72rem 0.875rem;
+    border: 1.5px solid var(--rule); border-radius: 9px;
+    font-size: 0.875rem; color: var(--ink); background: var(--surface);
+    outline: none; font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+}
+.ma-input:focus { border-color: var(--brand); background: var(--white); }
+.ma-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%235a7290' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.25rem; cursor: pointer; }
+.ma-textarea { width: 100%; padding: 0.72rem 0.875rem; border: 1.5px solid var(--rule); border-radius: 9px; font-size: 0.875rem; color: var(--ink); background: var(--surface); outline: none; font-family: inherit; resize: vertical; transition: border-color 0.15s; }
+.ma-textarea:focus { border-color: var(--brand); background: var(--white); }
+
+/* Toast */
+.ma-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 10000; animation: slideUp 0.3s ease-out; }
+.ma-toast-inner { display: flex; align-items: center; gap: 0.6rem; background: var(--ink); color: #fff; padding: 0.875rem 1.25rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Responsive */
+@media (max-width: 900px) { .ma-table td:nth-child(3), .ma-table th:nth-child(3) { display: none; } }
+@media (max-width: 600px) { .ma-wrapper { padding: 1rem; } .ma-topbar { flex-direction: column; align-items: flex-start; } }
+</style>
+
+<script>
+let currentAdminId   = null;
+const superAdminName = "{{ user.first_name }} {{ user.last_name }}";
+
+// ── Modal helpers ────────────
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+['deactivateModal','activateModal','deleteModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) closeModal(id);
+    });
+});
+
+// ── Deactivate ───────────────
+function deactivateAdmin(id) {
+    currentAdminId = id;
+    document.getElementById('deactivateModal').style.display = 'flex';
+}
+document.getElementById('confirmDeactivateBtn').onclick = function() {
+    closeModal('deactivateModal');
+    performAction(currentAdminId, 'deactivate');
+};
+
+// ── Activate ─────────────────
+function activateAdmin(id) {
+    currentAdminId = id;
+    document.getElementById('activateModal').style.display = 'flex';
+}
+document.getElementById('confirmActivateBtn').onclick = function() {
+    closeModal('activateModal');
+    performAction(currentAdminId, 'activate');
+};
+
+function performAction(adminId, action) {
+    showToast(`${action === 'deactivate' ? 'Deactivating' : 'Activating'} admin...`, 'info');
+    fetch(`/super-admin/admins/${adminId}/${action}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { showToast(`Admin ${action}d successfully`, true); setTimeout(() => location.reload(), 1500); }
+        else showToast(data.error || `Failed to ${action} admin`, false);
+    })
+    .catch(() => showToast(`Failed to ${action} admin`, false));
+}
+
+// ── Delete ───────────────────
+let adminToDelete = null;
+
+function deleteAdmin(id) {
+    adminToDelete = id;
+    document.getElementById('deleteReason').value = '';
+    document.getElementById('otherReason').value  = '';
+    document.getElementById('otherReasonDiv').style.display = 'none';
+    document.getElementById('confirmName').value  = '';
+    document.getElementById('confirmDeleteBtn').disabled = true;
+    document.getElementById('deleteModal').style.display  = 'flex';
+}
+
+document.getElementById('deleteReason').addEventListener('change', function() {
+    document.getElementById('otherReasonDiv').style.display = this.value === 'Other' ? 'block' : 'none';
+    checkDeleteForm();
+});
+document.getElementById('confirmName').addEventListener('input', checkDeleteForm);
+document.getElementById('otherReason').addEventListener('input', checkDeleteForm);
+
+function checkDeleteForm() {
+    const reason      = document.getElementById('deleteReason').value;
+    const otherReason = document.getElementById('otherReason').value.trim();
+    const confirmName = document.getElementById('confirmName').value;
+    const valid = reason && (reason !== 'Other' || otherReason) && confirmName === superAdminName;
+    document.getElementById('confirmDeleteBtn').disabled = !valid;
+}
+
+document.getElementById('confirmDeleteBtn').onclick = function() {
+    const reason      = document.getElementById('deleteReason').value;
+    const otherReason = document.getElementById('otherReason').value;
+    const finalReason = reason === 'Other' ? otherReason : reason;
+    closeModal('deleteModal');
+    showToast('Deleting admin account...', 'info');
+
+    fetch(`/super-admin/admins/${adminToDelete}/delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: finalReason, deleted_by: superAdminName })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { showToast('Admin account deleted successfully', true); setTimeout(() => location.reload(), 1500); }
+        else showToast(data.error || 'Failed to delete admin', false);
+    })
+    .catch(() => showToast('Failed to delete admin', false));
+};
+
+// ── Toast ────────────────────
+function showToast(msg, success) {
+    const t = document.getElementById('ma-toast');
+    const inner = t.querySelector('.ma-toast-inner');
+    const icon  = t.querySelector('i');
+
+    if (success === 'info') {
+        inner.style.background = '#1e40af';
+        icon.className = 'fas fa-spinner fa-spin';
+    } else {
+        inner.style.background = success ? '#059669' : '#c0392b';
+        icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    }
+    document.getElementById('ma-toast-msg').textContent = msg;
+    t.style.display = 'block';
+    if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+}
+</script>
+
+{% endblock %}

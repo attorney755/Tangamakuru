@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="lg-page">
+
+    <div class="lg-card">
+
+        <!-- Left dark side -->
+        <div class="lg-left">
+
+            <!-- Back to Home at top of dark panel -->
+            <a href="/" class="lg-back-home">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+
+            <h1 class="lg-headline">Report.<br>Track.<br>Stay Safe.</h1>
+            <p class="lg-desc">A secure platform connecting citizens and law enforcement across Rwanda.</p>
+            <div class="lg-stats">
+                <div class="lg-stat">
+                    <div class="lg-stat-num">24/7</div>
+                    <div class="lg-stat-label">Always on</div>
+                </div>
+                <div class="lg-stat-divider"></div>
+                <div class="lg-stat">
+                    <div class="lg-stat-num">30+</div>
+                    <div class="lg-stat-label">Districts</div>
+                </div>
+                <div class="lg-stat-divider"></div>
+                <div class="lg-stat">
+                    <div class="lg-stat-num">100%</div>
+                    <div class="lg-stat-label">Confidential</div>
+                </div>
+            </div>
+            <div class="lg-emergency-strip">🚨 Emergency? Call 112</div>
+        </div>
+
+        <!-- Right white side -->
+        <div class="lg-right">
+
+            <div class="lg-form-header">
+                <h2 class="lg-form-title">Welcome back</h2>
+                <p class="lg-form-sub">Sign in to your account to continue</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('frontend.login') }}">
+                {{ form.hidden_tag() }}
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {% if category == 'error' %}
+                            <div class="lg-alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ message }}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="lg-field">
+                    <label class="lg-label">Email Address</label>
+                    <div class="lg-input-wrap">
+                        <i class="fas fa-envelope lg-input-icon"></i>
+                        {{ form.email(class="lg-input", placeholder="you@example.com") }}
+                    </div>
+                </div>
+
+                <div class="lg-field">
+                    <div class="lg-label-row">
+                        <label class="lg-label">Password</label>
+                        <a href="#" class="lg-forgot">Forgot password?</a>
+                    </div>
+                    <div class="lg-input-wrap">
+                        <i class="fas fa-lock lg-input-icon"></i>
+                        {{ form.password(class="lg-input", placeholder="Enter your password") }}
+                    </div>
+                </div>
+
+                <div class="lg-remember">
+                    {{ form.remember_me(class="lg-checkbox") }}
+                    <label for="remember_me" class="lg-remember-label">Keep me signed in</label>
+                </div>
+
+                <button type="submit" class="lg-submit">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="lg-footer-links">
+                <p>Don't have an account? <a href="{{ url_for('frontend.register') }}">Sign up as Citizen</a></p>
+                <p>Are you an officer? <a href="/officer/register"><i class="fas fa-user-shield"></i> Register here</a></p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Deactivation Modal -->
+{% if deactivated %}
+<div class="lg-modal-overlay">
+    <div class="lg-modal">
+        <div class="lg-modal-icon"><i class="fas fa-user-slash"></i></div>
+        <h4 class="lg-modal-title">Account Deactivated</h4>
+        <p class="lg-modal-sub">This account has been deactivated for the following reason:</p>
+        <div class="lg-modal-reason">{{ deactivation_reason }}</div>
+        <p class="lg-modal-note">Please contact your super administrator for more information.</p>
+        <a href="/" class="lg-modal-btn"><i class="fas fa-home"></i> Go to Homepage</a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --brand:      #1a3a5c;
+    --brand-dark: #0f2440;
+    --brand-mid:  #1e4976;
+    --accent:     #c0392b;
+    --ink:        #1a2332;
+    --ink-2:      #2d3f55;
+    --ink-3:      #5a7290;
+    --rule:       #d4dde8;
+    --surface:    #eef2f7;
+    --white:      #ffffff;
+    --danger:     #c0392b;
+    --danger-bg:  #fdf0ef;
+}
+
+html, body {
+    min-height: 100%;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--surface);
+}
+
+/* ── Page centering ───────── */
+.lg-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+}
+
+/* ── Card ─────────────────── */
+.lg-card {
+    display: grid;
+    grid-template-columns: 500px 420px;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(15,36,64,0.18), 0 4px 16px rgba(15,36,64,0.1);
+}
+
+/* ── Left dark panel ──────── */
+.lg-left {
+    background: linear-gradient(160deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
+    padding: 2.75rem 3rem 4.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    gap: 0;
+}
+.lg-left::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+}
+.lg-left::after {
+    content: '';
+    position: absolute; bottom: 50px; left: -70px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+}
+
+/* ── Back to Home button — top of left panel ── */
+.lg-back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: fit-content;
+    padding: 0.65rem 1.25rem;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.85);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    margin-bottom: 2.5rem;
+    position: relative; z-index: 1;
+}
+.lg-back-home:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+}
+.lg-back-home i { font-size: 0.8rem; }
+
+.lg-emergency-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--accent);
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.95);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: center;
+}
+
+.lg-headline {
+    font-size: 2.6rem; font-weight: 800; color: #fff;
+    line-height: 1.15; margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+    position: relative; z-index: 1;
+}
+.lg-headline::after {
+    content: '';
+    display: block;
+    width: 44px; height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin-top: 0.9rem;
+}
+.lg-desc {
+    font-size: 0.9rem; color: rgba(255,255,255,0.45);
+    line-height: 1.7; margin-bottom: 2.5rem;
+    position: relative; z-index: 1;
+    max-width: 340px;
+}
+.lg-stats {
+    display: flex; align-items: center; gap: 1.5rem;
+    position: relative; z-index: 1;
+}
+.lg-stat-num   { font-size: 1.2rem; font-weight: 800; color: #fff; }
+.lg-stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.38); margin-top: 2px; }
+.lg-stat-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.12); }
+
+/* ── Right white panel ──────── */
+.lg-right {
+    background: var(--white);
+    padding: 2.5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.lg-form-header  { margin-bottom: 1.5rem; }
+.lg-form-title {
+    font-size: 1.5rem; font-weight: 800; color: var(--ink);
+    margin-bottom: 0.3rem; letter-spacing: -0.02em;
+}
+.lg-form-sub { font-size: 0.875rem; color: var(--ink-3); }
+
+/* Alert */
+.lg-alert {
+    display: flex; align-items: center; gap: 0.55rem;
+    background: var(--danger-bg); color: var(--danger);
+    border: 1px solid #f5c6c2; border-radius: 9px;
+    padding: 0.75rem 0.875rem; font-size: 0.85rem;
+    margin-bottom: 1.1rem;
+}
+
+/* Fields */
+.lg-field { margin-bottom: 1rem; }
+.lg-label {
+    display: block; font-size: 0.875rem;
+    font-weight: 600; color: var(--ink-2); margin-bottom: 0.4rem;
+}
+.lg-label-row {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 0.4rem;
+}
+.lg-forgot { font-size: 0.8rem; color: var(--ink-3); text-decoration: none; transition: color 0.15s; }
+.lg-forgot:hover { color: var(--brand); }
+
+.lg-input-wrap   { position: relative; }
+.lg-input-icon {
+    position: absolute; left: 0.875rem; top: 50%;
+    transform: translateY(-50%); font-size: 0.78rem;
+    color: var(--ink-3); pointer-events: none;
+}
+.lg-input {
+    width: 100%;
+    padding: 0.8rem 0.875rem 0.8rem 2.4rem;
+    border: 1.5px solid var(--rule); border-radius: 10px;
+    font-size: 0.925rem; color: var(--ink);
+    background: var(--surface); outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.lg-input::placeholder { color: #8fa8c0; }
+.lg-input:focus {
+    border-color: var(--brand);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
+}
+
+/* Remember */
+.lg-remember {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin: 0.2rem 0 1.1rem;
+}
+.lg-checkbox { width: 15px; height: 15px; accent-color: var(--brand); cursor: pointer; }
+.lg-remember-label { font-size: 0.875rem; color: var(--ink-3); cursor: pointer; }
+
+/* Submit */
+.lg-submit {
+    width: 100%; padding: 0.9rem 1rem;
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+    color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; font-family: inherit;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    margin-bottom: 1.4rem;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(15,36,64,0.25);
+    letter-spacing: 0.01em;
+}
+.lg-submit:hover  { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15,36,64,0.3); }
+.lg-submit:active { transform: translateY(0); }
+
+/* Footer links */
+.lg-footer-links {
+    text-align: center; display: flex; flex-direction: column; gap: 0.45rem;
+    padding-top: 1rem; border-top: 1px solid var(--rule);
+}
+.lg-footer-links p { font-size: 0.85rem; color: var(--ink-3); }
+.lg-footer-links a {
+    color: var(--brand); font-weight: 700; text-decoration: none;
+    border-bottom: 1.5px solid transparent; transition: border-color 0.15s;
+}
+.lg-footer-links a:hover { border-bottom-color: var(--brand); }
+.lg-footer-links i { font-size: 0.72rem; }
+
+/* ── Modal ──────────────── */
+.lg-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 1rem;
+}
+.lg-modal {
+    background: var(--white); border-radius: 18px;
+    padding: 2.25rem 2rem; max-width: 400px; width: 100%; text-align: center;
+}
+.lg-modal-icon {
+    width: 60px; height: 60px; background: var(--danger-bg); border-radius: 15px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.1rem; font-size: 1.4rem; color: var(--danger);
+}
+.lg-modal-title  { font-size: 1.15rem; font-weight: 800; color: var(--ink); margin-bottom: 0.45rem; }
+.lg-modal-sub    { font-size: 0.875rem; color: var(--ink-3); margin-bottom: 0.875rem; }
+.lg-modal-reason {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 9px;
+    padding: 0.8rem 1rem; font-size: 0.875rem; color: var(--ink-2);
+    margin-bottom: 0.875rem; font-style: italic;
+}
+.lg-modal-note   { font-size: 0.775rem; color: var(--ink-3); margin-bottom: 1.4rem; }
+.lg-modal-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--brand); color: #fff; text-decoration: none;
+    padding: 0.7rem 1.4rem; border-radius: 9px;
+    font-size: 0.875rem; font-weight: 600; transition: opacity 0.2s;
+}
+.lg-modal-btn:hover { opacity: 0.85; color: #fff; }
+
+/* ── Responsive ─────────── */
+@media (max-width: 980px) {
+    .lg-page { padding: 1.5rem 1rem; align-items: flex-start; padding-top: 2rem; }
+    .lg-card { grid-template-columns: 1fr; width: 100%; max-width: 460px; }
+    .lg-left { padding: 2rem 1.75rem 3.5rem; }
+    .lg-headline { font-size: 1.8rem; }
+    .lg-right { padding: 2rem 1.75rem; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.lg-alert');
+    if (alerts.length > 1) {
+        for (let i = 1; i < alerts.length; i++) alerts[i].remove();
+    }
+});
+</script>
+
+{% endblock %}

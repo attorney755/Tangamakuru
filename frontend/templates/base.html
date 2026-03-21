@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TANGAMAKURU - Rwanda Crime Reporting System</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a237e'/%3E%3Cstop offset='100%25' stop-color='%233949ab'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23grad)' d='M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z'/%3E%3Ctext x='50' y='68' font-size='48' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial, sans-serif'%3ET%3C/text%3E%3C/svg%3E">
+    <link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a237e'/%3E%3Cstop offset='100%25' stop-color='%233949ab'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23grad)' d='M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z'/%3E%3Ctext x='50' y='68' font-size='48' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial, sans-serif'%3ET%3C/text%3E%3C/svg%3E">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        :root {
+            --primary: #1a237e;
+            --primary-dark: #0d1b58;
+            --primary-light: #e8eaf6;
+            --secondary: #5c6bc0;
+            --accent: #ff9800;
+            --success: #4caf50;
+            --warning: #ffb74d;
+            --danger: #f44336;
+            --info: #29b6f6;
+            --dark: #263238;
+            --light: #f8f9fa;
+            --gray: #78909c;
+            --gradient-primary: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            --gradient-dark: linear-gradient(135deg, #0d1b58 0%, #283593 100%);
+            --shadow-sm: 0 2px 8px rgba(26,35,126,0.08);
+            --shadow: 0 5px 20px rgba(26,35,126,0.1);
+            --shadow-lg: 0 10px 40px rgba(26,35,126,0.15);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+
+            /* New navbar tokens */
+            --nav-bg:        #ffffff;
+            --nav-border:    #e8eaf6;
+            --nav-height:    68px;
+            --nav-link-ink:  #263238;
+            --nav-link-hover:#1a237e;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #eef2f7 100%);
+            color: var(--dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1,h2,h3,h4,h5,h6 { font-family: 'Poppins', sans-serif; font-weight: 600; }
+
+        /* ── Preloader ────────────────── */
+        #preloader {
+            position: fixed; inset: 0; background: white;
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .loader {
+            width: 60px; height: 60px;
+            border: 4px solid var(--primary-light);
+            border-radius: 50%; border-top-color: var(--primary);
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
+        .loader-text { color: var(--primary); font-weight: 500; font-size: 1rem; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ── Navbar ───────────────────── */
+        .navbar {
+            background: var(--nav-bg) !important;
+            border-bottom: 2px solid var(--nav-border);
+            box-shadow: 0 2px 16px rgba(26,35,126,0.07);
+            padding: 0;
+            height: var(--nav-height);
+            transition: var(--transition);
+        }
+        .navbar.scrolled {
+            box-shadow: 0 4px 24px rgba(26,35,126,0.12);
+        }
+        .navbar > .container {
+            height: 100%;
+            display: flex; align-items: center;
+        }
+
+        /* Brand */
+        .navbar-brand {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700; font-size: 1.35rem;
+            color: var(--primary) !important;
+            text-decoration: none; padding: 0;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+        .navbar-brand:hover { opacity: 0.85; transform: translateY(-1px); }
+        .brand-shield {
+            width: 38px; height: 38px; flex-shrink: 0;
+        }
+        .brand-text { letter-spacing: 0.02em; }
+
+        /* Toggler — clean hamburger */
+        .navbar-toggler {
+            border: none; padding: 0.4rem;
+            background: none !important;
+            box-shadow: none !important;
+        }
+        .navbar-toggler:focus { outline: none; box-shadow: none; }
+        .toggler-icon {
+            display: flex; flex-direction: column; gap: 5px;
+            width: 24px;
+        }
+        .toggler-icon span {
+            display: block; height: 2px; background: var(--primary);
+            border-radius: 2px; transition: var(--transition);
+        }
+        .navbar-toggler[aria-expanded="true"] .toggler-icon span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .navbar-toggler[aria-expanded="true"] .toggler-icon span:nth-child(2) { opacity: 0; }
+        .navbar-toggler[aria-expanded="true"] .toggler-icon span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Nav links */
+        #mainNav {
+            display: flex; align-items: center; gap: 0.15rem;
+            list-style: none; padding: 0; margin: 0;
+        }
+        .nav-item { position: relative; }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 0.35rem;
+            color: var(--nav-link-ink) !important;
+            font-size: 0.875rem; font-weight: 500;
+            padding: 0.5rem 0.875rem !important;
+            border-radius: 8px;
+            position: relative;
+            transition: var(--transition);
+            white-space: nowrap; text-decoration: none;
+        }
+        .nav-link i { font-size: 0.78rem; opacity: 0.75; }
+        .nav-link:hover {
+            color: var(--nav-link-hover) !important;
+            background: var(--primary-light);
+        }
+        .nav-link.active {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+            font-weight: 600;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute; bottom: -2px; left: 50%;
+            transform: translateX(-50%);
+            width: 20px; height: 2.5px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Icon-only links (bell, message) */
+        .nav-link--icon {
+            width: 38px; height: 38px;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            justify-content: center;
+            background: var(--primary-light);
+            color: var(--primary) !important;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .nav-link--icon:hover { background: #dde0f5 !important; }
+        .nav-link--icon.active { background: var(--primary) !important; color: white !important; }
+        .nav-link--icon.active::after { display: none; }
+        .nav-link--icon i { opacity: 1; font-size: 0.875rem; }
+
+        /* Notification badge */
+        .notif-dot {
+            position: absolute; top: 2px; right: 2px;
+            min-width: 18px; height: 18px;
+            background: var(--danger); color: white;
+            font-size: 0.6rem; font-weight: 700;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid white;
+            padding: 0 3px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+        /* Inline count badge for nav links (notifications, messages in mobile menu) */
+        .notif-dot--inline {
+            position: relative !important;
+            top: auto !important; right: auto !important;
+            display: inline-flex !important;
+            margin-left: 5px;
+            border: none !important;
+            border-radius: 999px;
+            padding: 0 5px;
+            min-width: 18px; height: 18px;
+            font-size: 0.65rem; font-weight: 700;
+            vertical-align: middle;
+        }
+
+        /* Inline count badge for mobile nav links */
+        .nav-count-badge {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            background: #f44336; color: #fff;
+            font-size: 0.62rem; font-weight: 700;
+            min-width: 18px; height: 18px;
+            border-radius: 999px; padding: 0 4px;
+            margin-left: 5px; vertical-align: middle;
+        }
+
+        /* User avatar button */
+        .user-btn {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: none; border: 1.5px solid var(--nav-border);
+            border-radius: 999px; padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+            cursor: pointer; transition: var(--transition);
+            text-decoration: none; color: var(--dark) !important;
+            font-size: 0.875rem; font-weight: 500;
+            white-space: nowrap;
+        }
+        .user-btn:hover, .user-btn[aria-expanded="true"] {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .user-avatar-img {
+            width: 30px; height: 30px; border-radius: 50%;
+            object-fit: cover; flex-shrink: 0;
+        }
+        .user-btn .fa-chevron-down {
+            font-size: 0.65rem; color: var(--gray);
+            transition: transform 0.2s;
+        }
+        .user-btn[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+        .user-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Dropdown menu */
+        .dropdown-menu {
+            border: 1px solid var(--nav-border);
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(26,35,126,0.14);
+            padding: 0.5rem;
+            min-width: 230px;
+            margin-top: 8px !important;
+            overflow: hidden;
+        }
+        .dropdown-header {
+            padding: 0.75rem 0.875rem 0.6rem;
+            font-size: 0.78rem;
+        }
+        .dropdown-header strong {
+            display: block; font-size: 0.875rem;
+            color: var(--dark); font-weight: 700;
+        }
+        .dropdown-header small { color: var(--gray); }
+        .dropdown-divider { border-color: var(--nav-border); margin: 0.35rem 0; }
+
+        .dropdown-item {
+            display: flex; align-items: center; gap: 0.65rem;
+            padding: 0.6rem 0.875rem;
+            font-size: 0.85rem; font-weight: 500;
+            color: var(--dark);
+            border-radius: 9px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .dropdown-item i {
+            width: 16px; text-align: center;
+            font-size: 0.8rem; opacity: 0.65; flex-shrink: 0;
+        }
+        .dropdown-item:hover { background: var(--primary-light); color: var(--primary); }
+        .dropdown-item:hover i { opacity: 1; }
+        .dropdown-item.text-danger { color: #dc3545 !important; }
+        .dropdown-item.text-danger:hover { background: #fef2f2 !important; }
+
+        .dropdown-item-badge {
+            margin-left: auto;
+            background: var(--danger); color: white;
+            font-size: 0.65rem; font-weight: 700;
+            padding: 0.1rem 0.45rem; border-radius: 999px;
+            min-width: 18px; text-align: center;
+        }
+
+        /* Section labels inside dropdown */
+        .dropdown-section-label {
+            font-size: 0.65rem; font-weight: 700;
+            color: var(--gray); text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.5rem 0.875rem 0.2rem;
+        }
+
+        /* Login button */
+        .btn-nav-login {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--gradient-primary);
+            color: white !important; font-size: 0.875rem; font-weight: 600;
+            padding: 0.5rem 1.25rem; border-radius: 999px;
+            text-decoration: none; border: none;
+            box-shadow: 0 3px 10px rgba(26,35,126,0.25);
+            transition: var(--transition); white-space: nowrap;
+        }
+        .btn-nav-login:hover { opacity: 0.88; transform: translateY(-1px); color: white !important; }
+
+        /* ── Mobile nav ───────────────── */
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                position: fixed;
+                top: var(--nav-height); left: 0; right: 0;
+                background: white;
+                border-top: 1px solid var(--nav-border);
+                box-shadow: 0 8px 32px rgba(26,35,126,0.12);
+                padding: 1rem;
+                z-index: 1040;
+                max-height: calc(100vh - var(--nav-height));
+                overflow-y: auto;
+            }
+
+            #mainNav {
+                flex-direction: column; align-items: stretch;
+                gap: 0.2rem; width: 100%;
+            }
+
+            .nav-link {
+                padding: 0.7rem 1rem !important;
+                border-radius: 10px;
+            }
+            .nav-link.active::after { display: none; }
+
+            /* Mobile icon links become full-width rows */
+            .nav-link--icon {
+                width: auto; height: auto; border-radius: 10px !important;
+                padding: 0.7rem 1rem !important;
+                justify-content: flex-start; gap: 0.65rem;
+                background: var(--primary-light) !important;
+            }
+            .nav-link--icon::before { content: attr(data-label); font-size: 0.875rem; }
+
+            /* User button full width */
+            .user-btn {
+                width: 100%; border-radius: 10px;
+                padding: 0.7rem 1rem;
+            }
+            .user-name { max-width: none; }
+
+            /* Mobile dropdown inline (not floating) */
+            .mobile-dropdown { padding-left: 0.5rem; display: none; }
+            .mobile-dropdown.show { display: block; }
+            .mobile-dropdown .dropdown-item { border-radius: 8px; }
+            .mobile-dropdown .dropdown-divider { margin: 0.25rem 0; }
+
+            /* Mobile auth section */
+            .mobile-auth { margin-top: 0.5rem; }
+            .btn-nav-login { width: 100%; justify-content: center; border-radius: 10px; }
+        }
+
+        /* ── KEEP ALL ORIGINAL STYLES ─ */
+        .btn {
+            border-radius: var(--radius); padding: 0.7rem 1.5rem;
+            font-weight: 500; transition: var(--transition);
+            position: relative; overflow: hidden;
+        }
+        .btn::after { content:''; position:absolute; top:50%; left:50%; width:0; height:0; border-radius:50%; background:rgba(255,255,255,0.2); transform:translate(-50%,-50%); transition: width 0.6s, height 0.6s; }
+        .btn:hover::after { width:300px; height:300px; }
+        .btn-primary { background: var(--gradient-primary); border: none; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .btn-outline-primary { border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline-primary:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+
+        .card { border:none; border-radius: var(--radius); box-shadow: var(--shadow); transition: var(--transition); overflow:hidden; background:white; }
+        .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .card-header { background: var(--gradient-primary); color: white; border-radius: var(--radius) var(--radius) 0 0 !important; padding: 1.2rem 1.5rem; font-weight: 600; }
+
+        .stat-card { background:white; padding:1.8rem; border-radius: var(--radius); text-align:center; box-shadow: var(--shadow); position:relative; overflow:hidden; }
+        .stat-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:4px; background: var(--gradient-primary); }
+        .stat-card .stat-number { font-size:2.5rem; font-weight:700; background: var(--gradient-primary); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.5rem; }
+
+        .status-badge { padding:0.4rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:600; display:inline-block; }
+        .status-pending { background:#fff3cd; color:#856404; }
+        .status-in_progress { background:#cce5ff; color:#004085; }
+        .status-resolved { background:#d4edda; color:#155724; }
+
+        .priority-badge { padding:0.3rem 0.8rem; border-radius:15px; font-size:0.8rem; font-weight:500; }
+        .priority-low { background:#d1ecf1; color:#0c5460; }
+        .priority-medium { background:#fff3cd; color:#856404; }
+        .priority-high { background:#f8d7da; color:#721c24; }
+
+        .dashboard-container { max-width:1100px; margin:2rem auto; padding:0 1.5rem; }
+        .glass { background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.2); border-radius: var(--radius); }
+
+        .float { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-15px); } }
+        .fade-in { animation: fadeIn 1s ease-in-out; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-dark); }
+
+        footer { background: var(--dark); color: white; padding: 3rem 0 1.5rem; margin-top: 4rem; position: relative; }
+        footer::before { content:''; position:absolute; top:0; left:0; width:100%; height:4px; background: var(--gradient-primary); }
+        .footer-links a { color:rgba(255,255,255,0.7); text-decoration:none; transition: var(--transition); display:block; margin-bottom:0.5rem; }
+        .footer-links a:hover { color:white; padding-left:5px; }
+
+        .back-to-top { position:fixed; bottom:30px; right:30px; width:50px; height:50px; background: var(--gradient-primary); color:white; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; visibility:hidden; transition: var(--transition); z-index:1000; box-shadow: var(--shadow); }
+        .back-to-top.show { opacity:1; visibility:visible; }
+        .back-to-top:hover { transform:translateY(-5px); box-shadow: var(--shadow-lg); }
+
+        body.login-page .navbar, body.register-page .navbar { display:none !important; }
+        body.login-page footer, body.register-page footer { display:none !important; }
+
+        .pulse-animation { animation: pulse 1s ease-in-out; }
+    </style>
+</head>
+<body class="{% if request.path == '/login' %}login-page{% elif request.path == '/register' %}register-page{% endif %}"
+      data-user-role="{{ session.user.role if session.get('user') else 'guest' }}">
+
+    <!-- Preloader -->
+    <div id="preloader" class="animate__animated animate__fadeIn">
+        <div class="loader"></div>
+        <div class="loader-text">Loading TANGAMAKURU...</div>
+    </div>
+
+    <!-- Navbar -->
+    {% if not (request.path == '/login' or request.path == '/register' or hide_navbar) %}
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+
+            <!-- Brand -->
+            <a class="navbar-brand" href="/">
+                <svg class="brand-shield" viewBox="0 0 100 100">
+                    <defs>
+                        <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#1a237e"/>
+                            <stop offset="100%" stop-color="#3949ab"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#navGrad)" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
+                    <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text>
+                </svg>
+                <span class="brand-text">TANGAMAKURU</span>
+            </a>
+
+            <!-- Toggler -->
+            <button class="navbar-toggler ms-auto" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <div class="toggler-icon">
+                    <span></span><span></span><span></span>
+                </div>
+            </button>
+
+            <!-- Collapsible -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+
+               {% if session.get('user') %}
+<!-- ── LOGGED IN ── -->
+<ul class="navbar-nav mx-auto" id="mainNav">
+
+    <!-- Home -->
+    <li class="nav-item">
+        <a class="nav-link" href="/" id="nav-home">
+            <i class="fas fa-home"></i> Home
+        </a>
+    </li>
+
+    <!-- Dashboard -->
+    <li class="nav-item">
+        <a class="nav-link" id="nav-dashboard" href="
+            {% if session.user.role == 'super_admin' %}{{ url_for('super_admin.dashboard') }}
+            {% elif session.user.role == 'admin' %}{{ url_for('admin.dashboard') }}
+            {% elif session.user.role == 'officer' %}{{ url_for('officer.dashboard') }}
+            {% else %}{{ url_for('frontend.dashboard') }}
+            {% endif %}">
+            <i class="fas fa-tachometer-alt"></i>
+            {% if session.user.role == 'super_admin' %}Super Admin
+            {% elif session.user.role == 'admin' %}Admin Dashboard
+            {% elif session.user.role == 'officer' %}Officer Dashboard
+            {% else %}Dashboard
+            {% endif %}
+        </a>
+    </li>
+
+    <!-- MOBILE ONLY: Notifications -->
+    <li class="nav-item position-relative d-lg-none">
+        <a class="nav-link" href="/notifications" id="nav-notifications-mobile">
+            <i class="fas fa-bell"></i> Notifications
+            <span class="nav-count-badge" id="notificationCountMobile" style="display:none;">0</span>
+        </a>
+    </li>
+
+    <!-- MOBILE ONLY: Messages -->
+    {% if session.user.role in ['admin', 'officer'] %}
+    <li class="nav-item d-lg-none">
+        <a class="nav-link" id="nav-messages-mobile"
+           href="{% if session.user.role == 'admin' %}{{ url_for('admin.messages_page') }}{% else %}{{ url_for('officer.messages_page') }}{% endif %}">
+            <i class="fas fa-comment-dots"></i> Messages
+            <span class="nav-count-badge" id="messageCountMobile" style="display:none;">0</span>
+        </a>
+    </li>
+    {% endif %}
+
+    <!-- MOBILE ONLY: Profile -->
+    <li class="nav-item d-lg-none">
+        <a class="nav-link" href="
+            {% if session.user.role == 'super_admin' %}{{ url_for('super_admin.profile') }}
+            {% elif session.user.role == 'admin' %}{{ url_for('admin.profile') }}
+            {% else %}{{ url_for('frontend.profile') }}
+            {% endif %}">
+            <i class="fas fa-user"></i> Profile
+        </a>
+    </li>
+
+    <!-- MOBILE ONLY: My Reports (citizen) -->
+    {% if session.user.role == 'citizen' %}
+    <li class="nav-item d-lg-none">
+        <a class="nav-link" href="{{ url_for('frontend.reports') }}">
+            <i class="fas fa-file-alt"></i> My Reports
+        </a>
+    </li>
+    {% endif %}
+
+</ul>
+
+<!-- Right controls — DESKTOP ONLY (unchanged) -->
+<div class="navbar-nav d-flex flex-row align-items-center gap-2 ms-auto ms-lg-0">
+
+    <!-- Desktop notifications icon -->
+    <li class="nav-item position-relative d-none d-lg-flex">
+        <a class="nav-link nav-link--icon" href="/notifications"
+           id="nav-notifications" title="Notifications">
+            <i class="fas fa-bell"></i>
+            {% if notification_count > 0 %}
+            <span class="notif-dot" id="notificationCount">{{ notification_count }}</span>
+            {% else %}
+            <span class="notif-dot" id="notificationCount" style="display:none;">0</span>
+            {% endif %}
+        </a>
+    </li>
+
+    <!-- Desktop messages icon -->
+    {% if session.user.role in ['admin', 'officer'] %}
+    <li class="nav-item position-relative d-none d-lg-flex">
+        <a class="nav-link nav-link--icon" id="nav-messages" title="Messages"
+           href="{% if session.user.role == 'admin' %}{{ url_for('admin.messages_page') }}{% else %}{{ url_for('officer.messages_page') }}{% endif %}">
+            <i class="fas fa-comment-dots"></i>
+            <span class="notif-dot" id="messageCount" style="display:none;">0</span>
+        </a>
+    </li>
+    {% endif %}
+
+    <!-- User Dropdown -->
+    <li class="nav-item dropdown">
+        <a class="user-btn dropdown-toggle" href="#"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://ui-avatars.com/api/?name={{ session.user.first_name|default('User') }}+{{ session.user.last_name|default('') }}&background=1a237e&color=fff&size=60"
+                 class="user-avatar-img" alt="avatar">
+            <span class="user-name d-none d-sm-inline">
+                {{ session.user.first_name|default('User') }}
+            </span>
+            {% if session.user.role == 'admin' %}
+            <span class="notif-dot" id="newOfficersBadge"
+                  style="display:none;position:relative;top:auto;right:auto;margin-left:2px;border:none;">0</span>
+            {% endif %}
+            <i class="fas fa-chevron-down ms-1"></i>
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end">
+
+            <!-- User info header -->
+            <li>
+                <div class="dropdown-header">
+                    <strong>{{ session.user.first_name }} {{ session.user.last_name }}</strong>
+                    <small>{{ session.user.email }}</small>
+                </div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+
+            <!-- Dashboard & Profile — DESKTOP ONLY (mobile has them as nav links) -->
+            <li class="d-none d-lg-block">
+                <a class="dropdown-item" href="
+                    {% if session.user.role == 'super_admin' %}{{ url_for('super_admin.dashboard') }}
+                    {% elif session.user.role == 'admin' %}{{ url_for('admin.dashboard') }}
+                    {% elif session.user.role == 'officer' %}{{ url_for('officer.dashboard') }}
+                    {% else %}{{ url_for('frontend.dashboard') }}
+                    {% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            <li class="d-none d-lg-block">
+                <a class="dropdown-item" href="
+                    {% if session.user.role == 'super_admin' %}{{ url_for('super_admin.profile') }}
+                    {% elif session.user.role == 'admin' %}{{ url_for('admin.profile') }}
+                    {% else %}{{ url_for('frontend.profile') }}
+                    {% endif %}">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+            </li>
+            <li class="d-none d-lg-block"><hr class="dropdown-divider"></li>
+
+            <!-- Citizen reports — DESKTOP ONLY -->
+            {% if session.user.role == 'citizen' %}
+            <li class="d-none d-lg-block">
+                <hr class="dropdown-divider">
+            </li>
+            <div class="dropdown-section-label d-none d-lg-block">Reports</div>
+            <li class="d-none d-lg-block">
+                <a class="dropdown-item" href="{{ url_for('frontend.reports') }}">
+                    <i class="fas fa-file-alt"></i> My Reports
+                </a>
+            </li>
+            {% endif %}
+
+            <!-- Super Admin -->
+            {% if session.user.role == 'super_admin' %}
+            <li><hr class="dropdown-divider"></li>
+            <div class="dropdown-section-label">Administration</div>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('super_admin.list_admins') }}">
+                    <i class="fas fa-user-tie"></i> Manage Admins
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('super_admin.announcements') }}">
+                    <i class="fas fa-bullhorn"></i> System Announcements
+                </a>
+            </li>
+            {% endif %}
+
+            <!-- Admin -->
+            {% if session.user.role == 'admin' %}
+            <li><hr class="dropdown-divider"></li>
+            <div class="dropdown-section-label">Management</div>
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center"
+                   href="{{ url_for('admin.pending_officers') }}">
+                    <span><i class="fas fa-user-clock"></i> New Officers</span>
+                    <span class="dropdown-item-badge" id="newOfficersCount" style="display:none;">0</span>
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('admin.officers_list') }}">
+                    <i class="fas fa-users"></i> Manage Officers
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('admin.all_reports') }}">
+                    <i class="fas fa-file-alt"></i> All Reports
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('admin.announcements') }}">
+                    <i class="fas fa-bullhorn"></i> Announcements
+                </a>
+            </li>
+            {% endif %}
+
+            <!-- Officer -->
+            {% if session.user.role == 'officer' %}
+            <li><hr class="dropdown-divider"></li>
+            <div class="dropdown-section-label">Operations</div>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('officer.incidents') }}">
+                    <i class="fas fa-list"></i> All Incidents
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('officer.announcements') }}">
+                    <i class="fas fa-bullhorn"></i> Announcements
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('officer.statistics') }}">
+                    <i class="fas fa-chart-bar"></i> Statistics
+                </a>
+            </li>
+            {% endif %}
+
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item text-danger" href="{{ url_for('frontend.logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+
+        </ul>
+    </li>
+</div>
+
+{% else %}
+<!-- ── GUEST ── -->
+<ul class="navbar-nav mx-auto" id="mainNav">
+    <li class="nav-item"><a class="nav-link" href="/" id="nav-home"><i class="fas fa-home"></i> Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="#how-it-works"><i class="fas fa-play-circle"></i> How It Works</a></li>
+    <li class="nav-item"><a class="nav-link" href="#success-stories"><i class="fas fa-trophy"></i> Success Stories</a></li>
+    <li class="nav-item"><a class="nav-link" href="#about"><i class="fas fa-info-circle"></i> About</a></li>
+    <li class="nav-item"><a class="nav-link" href="#contact"><i class="fas fa-envelope"></i> Contact</a></li>
+</ul>
+<div class="navbar-nav ms-auto ms-lg-0 mobile-auth">
+    <a href="/login" class="btn-nav-login">
+        <i class="fas fa-sign-in-alt"></i> Login
+    </a>
+</div>
+{% endif %}
+
+            </div><!-- /collapse -->
+        </div><!-- /container -->
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main style="{% if request.endpoint not in ['login', 'register'] %}padding-top: var(--nav-height);{% endif %}">
+
+        {% if not (request.path == '/login' or request.path == '/register') %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="container mt-4">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% if not (request.path == '/login' or request.path == '/register') %}
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h4 class="mb-3 d-flex align-items-center">
+                        <svg width="30" height="30" viewBox="0 0 100 100" style="margin-right:10px;">
+                            <defs><linearGradient id="footerGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1a237e"/><stop offset="100%" stop-color="#3949ab"/></linearGradient></defs>
+                            <path fill="url(#footerGrad)" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
+                            <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text>
+                        </svg>
+                        <span>TANGAMAKURU</span>
+                    </h4>
+                    <p>Rwanda's Premier Digital Platform for Crime & Claim Reporting and Community Safety</p>
+                    <div class="social-icons mt-4">
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin fa-lg"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="mb-3">Quick Links</h5>
+                    <div class="footer-links">
+                        <a href="/">Home</a>
+                        <a href="#how-it-works">How It Works</a>
+                        <a href="#success-stories">Success Stories</a>
+                        <a href="#about">About</a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="mb-3">Resources</h5>
+                    <div class="footer-links">
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">FAQ</a>
+                        <a href="#">Safety Tips</a>
+                    </div>
+                </div>
+                <div class="col-lg-3 mb-4">
+                    <h5 class="mb-3">Contact Info</h5>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> Kigali, Rwanda</p>
+                    <p><i class="fas fa-phone me-2"></i> Hotline: coming soon</p>
+                    <p><i class="fas fa-envelope me-2"></i> coming soon</p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color:rgba(255,255,255,0.1);">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2026 TANGAMAKURU - All rights reserved. Developed by Attorney Valois NIYIGABA.</p>
+            </div>
+        </div>
+    </footer>
+
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    // ── All original JS logic preserved exactly ──────────────
+
+    if (typeof addressInput !== 'undefined') {
+        console.log('addressInput already defined, using existing');
+    } else {
+        const addressInput = document.getElementById('specific_location');
+    }
+
+    class AuthNavManager {
+        constructor() { this.init(); }
+
+        init() {
+            setTimeout(() => {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => { document.getElementById('preloader').style.display = 'none'; }, 500);
+            }, 1000);
+            this.initNavbarScroll();
+            this.initBackToTop();
+            const userRole = document.body.getAttribute('data-user-role');
+            if (userRole === 'guest') {
+                this.setupSmoothScroll();
+                this.initScrollSpy();
+            } else {
+                this.updateActiveNav();
+            }
+        }
+
+        initNavbarScroll() {
+            window.addEventListener('scroll', () => {
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    if (window.scrollY > 50) navbar.classList.add('scrolled');
+                    else navbar.classList.remove('scrolled');
+                }
+            });
+        }
+
+        initBackToTop() {
+            const backToTop = document.getElementById('backToTop');
+            if (!backToTop) return;
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) backToTop.classList.add('show');
+                else backToTop.classList.remove('show');
+            });
+            backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        }
+
+        setupSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href === '#' || href === '/') return;
+                    if (href.startsWith('#')) {
+                        e.preventDefault();
+                        const targetElement = document.querySelector(href);
+                        if (targetElement) {
+                            window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
+                            history.pushState(null, null, href);
+                        }
+                    }
+                });
+            });
+        }
+
+        initScrollSpy() {
+            const sections = [
+                { id: 'how-it-works' }, { id: 'success-stories' },
+                { id: 'about' }, { id: 'contact' }
+            ];
+            const navLinks = {
+                'how-it-works':    document.querySelector('a[href="#how-it-works"]'),
+                'success-stories': document.querySelector('a[href="#success-stories"]'),
+                'about':           document.querySelector('a[href="#about"]'),
+                'contact':         document.querySelector('a[href="#contact"]')
+            };
+            const sectionElements = sections
+                .map(section => ({ element: document.getElementById(section.id), link: navLinks[section.id] }))
+                .filter(item => item.element && item.link);
+            if (sectionElements.length === 0) return;
+            window.removeEventListener('scroll', this.scrollSpyHandler);
+            this.scrollSpyHandler = () => {
+                const scrollPosition = window.scrollY + 100;
+                const homeLink = document.getElementById('nav-home');
+                const firstSection = sectionElements.length > 0 ? sectionElements[0].element : null;
+                const firstSectionTop = firstSection ? firstSection.offsetTop : Infinity;
+                if (scrollPosition < firstSectionTop) {
+                    sectionElements.forEach(item => item.link.classList.remove('active'));
+                    if (homeLink) homeLink.classList.add('active');
+                    return;
+                }
+                let activeSection = null;
+                for (const item of sectionElements) {
+                    const sectionTop = item.element.offsetTop;
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + item.element.offsetHeight) {
+                        activeSection = item; break;
+                    }
+                }
+                sectionElements.forEach(item => item.link.classList.remove('active'));
+                if (homeLink) homeLink.classList.remove('active');
+                if (activeSection) activeSection.link.classList.add('active');
+            };
+            window.addEventListener('scroll', this.scrollSpyHandler);
+            setTimeout(() => { this.scrollSpyHandler(); }, 100);
+        }
+
+        updateActiveNav() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('#mainNav .nav-link, #nav-messages, #nav-notifications').forEach(link => {
+                if (link) link.classList.remove('active');
+            });
+            const dropdownOnlyPaths = [
+                '/admin/officers', '/admin/officers/', '/admin/announcements',
+                '/admin/all_reports', '/admin/reports', '/officer/incidents',
+                '/officer/announcements', '/officer/statistics', '/super-admin/list_admins',
+                '/super-admin/announcements', '/admin/pending-officers', '/admin/profile',
+                '/super-admin/profile', '/profile'
+            ];
+            const isDropdownOnlyPage = dropdownOnlyPaths.some(path => currentPath === path || currentPath.startsWith(path + '/'));
+            if (isDropdownOnlyPage) return;
+            if (currentPath === '/' || currentPath === '') {
+                const homeLink = document.getElementById('nav-home');
+                if (homeLink) homeLink.classList.add('active');
+            } else if (currentPath.includes('/messages')) {
+                const ml = document.getElementById('nav-messages');
+                if (ml) ml.classList.add('active');
+            } else if (currentPath === '/notifications' || currentPath.includes('/pending-officer/notifications')) {
+                const nl = document.getElementById('nav-notifications');
+                if (nl) nl.classList.add('active');
+            } else if (['/dashboard', '/super-admin/dashboard', '/admin/dashboard', '/officer/dashboard'].includes(currentPath)) {
+                const dl = document.getElementById('nav-dashboard');
+                if (dl) dl.classList.add('active');
+            }
+            document.querySelectorAll('#mainNav .nav-link, #nav-messages, #nav-notifications').forEach(link => {
+                if (link) link.addEventListener('click', function() {
+                    document.querySelectorAll('#mainNav .nav-link, #nav-messages, #nav-notifications').forEach(l => { if (l) l.classList.remove('active'); });
+                    this.classList.add('active');
+                });
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { window.authManager = new AuthNavManager(); });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => {
+                    const closeBtn = alert.querySelector('.btn-close');
+                    if (closeBtn) closeBtn.click();
+                }, 2500);
+            });
+        }, 500);
+    });
+    function updateNotificationCounts() {
+        fetch('/api/notifications/unread-count')
+            .then(r => { if (!r.ok) throw new Error('err'); return r.json(); })
+            .then(data => {
+                // Desktop icon badge
+                const d = document.getElementById('notificationCount');
+                if (d) { d.textContent = data.count; d.style.display = data.count > 0 ? 'flex' : 'none'; }
+                // Mobile nav link badge
+                const m = document.getElementById('notificationCountMobile');
+                if (m) { m.textContent = data.count; m.style.display = data.count > 0 ? 'inline-flex' : 'none'; }
+            })
+            .catch(e => console.log('Notification fetch error:', e));
+
+        const userRole = document.body.getAttribute('data-user-role');
+        if (userRole === 'officer') {
+            fetch('/api/announcements/unread-count')
+                .then(r => { if (!r.ok) throw new Error('err'); return r.json(); })
+                .then(data => {
+                    const b = document.getElementById('announcementBadge');
+                    if (b) { b.textContent = data.count; b.style.display = data.count > 0 ? 'inline-block' : 'none'; }
+                })
+                .catch(e => console.log('Announcement fetch error:', e));
+        }
+    }
+
+function updateMessageCount() {
+    const userRole = document.body.getAttribute('data-user-role');
+    if (userRole === 'admin' || userRole === 'officer') {
+        fetch(`/${userRole}/api/messages/unread-count`)
+            .then(r => r.json())
+            .then(data => {
+                // Desktop icon badge
+                const d = document.getElementById('messageCount');
+                if (d) { d.textContent = data.count; d.style.display = data.count > 0 ? 'flex' : 'none'; }
+                // Mobile nav link badge
+                const m = document.getElementById('messageCountMobile');
+                if (m) { m.textContent = data.count; m.style.display = data.count > 0 ? 'inline-flex' : 'none'; }
+            })
+            .catch(e => console.log('Message fetch error:', e));
+    }
+}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNotificationCounts();
+        setInterval(updateNotificationCounts, 30000);
+    });
+
+    function updateNewOfficersCount() {
+        const userRole = document.body.getAttribute('data-user-role');
+        if (userRole === 'admin') {
+            fetch('/admin/api/pending-officers/count')
+                .then(response => { if (!response.ok) throw new Error('Network error'); return response.json(); })
+                .then(data => {
+                    const count = data.count || 0;
+                    const countBadge = document.getElementById('newOfficersCount');
+                    const navBadge   = document.getElementById('newOfficersBadge');
+                    if (countBadge) { countBadge.textContent = count; countBadge.style.display = count > 0 ? 'inline-block' : 'none'; if (count > 0) { countBadge.classList.add('pulse-animation'); setTimeout(() => countBadge.classList.remove('pulse-animation'), 1000); } }
+                    if (navBadge)   { navBadge.textContent = count;   navBadge.style.display   = count > 0 ? 'inline-block' : 'none'; }
+                    document.title = count > 0 ? `(${count}) New Officers - TANGAMAKURU` : 'TANGAMAKURU - Rwanda Crime Reporting System';
+                })
+                .catch(error => console.log('New officers fetch error:', error));
+        }
+    }
+
+    if (!document.getElementById('pulse-style')) {
+        const style = document.createElement('style');
+        style.id = 'pulse-style';
+        style.textContent = `.pulse-animation { animation: pulseAnim 1s ease-in-out; } @keyframes pulseAnim { 0%{transform:scale(1);}50%{transform:scale(1.2);background-color:#ff4444;}100%{transform:scale(1);} }`;
+        document.head.appendChild(style);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNewOfficersCount();
+        setInterval(updateNewOfficersCount, 30000);
+    });
+
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) updateNewOfficersCount();
+    });
+
+
+    updateMessageCount();
+    setInterval(updateMessageCount, 30000);
+
+    let inactivityTimer;
+    let warningTimer;
+
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        clearTimeout(warningTimer);
+        warningTimer  = setTimeout(showLogoutWarning, 9 * 60 * 1000);
+        inactivityTimer = setTimeout(logoutUser, 10 * 60 * 1000);
+    }
+
+    function showLogoutWarning() { showToast('warning', 'Session Expiring', 'You will be logged out in 1 minute due to inactivity.'); }
+    function logoutUser() { showToast('info', 'Session Expired', 'You have been logged out due to inactivity.'); setTimeout(() => { window.location.href = '/logout'; }, 2000); }
+
+    document.addEventListener('mousemove', resetInactivityTimer);
+    document.addEventListener('keypress',  resetInactivityTimer);
+    document.addEventListener('click',     resetInactivityTimer);
+    document.addEventListener('scroll',    resetInactivityTimer);
+    document.addEventListener('DOMContentLoaded', function() { resetInactivityTimer(); });
+
+    function showToast(type, title, message) {
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+        const toastId = 'toast-' + Date.now();
+        const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-info';
+        toastContainer.insertAdjacentHTML('beforeend', `
+            <div id="${toastId}" class="toast align-items-center text-white ${bgColor} border-0 mb-2" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body"><strong>${title}:</strong> ${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>`);
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+        toast.show();
+        toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+    }
+
+
+    // Prevent browser from restoring page after session expires
+window.addEventListener('pageshow', function(event) {
+    // Skip this check on login, register, and home pages
+    const currentPath = window.location.pathname;
+    const skipPaths = ['/', '/login', '/register', '/officer/register'];
+    
+    if (skipPaths.includes(currentPath)) {
+        return;
+    }
+    
+    // Also skip if we're on landing page (no user logged in)
+    const userRole = document.body.getAttribute('data-user-role');
+    if (userRole === 'guest') {
+        return;
+    }
+    
+    // If the page is loaded from cache (bfcache)
+    if (event.persisted) {
+        // Check if we're still logged in by making a quick API call
+        fetch('/api/check-session')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Session invalid');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.authenticated) {
+                    // Session expired, redirect to login with timeout message
+                    window.location.href = '/login?timeout=1';
+                }
+            })
+            .catch(() => {
+                // If API fails, assume session expired
+                window.location.href = '/login?timeout=1';
+            });
+    }
+});
+
+
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
