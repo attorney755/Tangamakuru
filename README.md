@@ -110,8 +110,6 @@ pip install -r requirements.txt
 
 ---
 
----
-
 ## 4️ Set Up PostgreSQL Database
 
 ```bash
