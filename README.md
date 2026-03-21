@@ -78,7 +78,7 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/tangamakuru.git
+git clone https://github.com/attorney755/Tangamakuru.git
 cd tangamakuru
 
 2. **Create and activate virtual environment**
