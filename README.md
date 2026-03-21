@@ -1,5 +1,3 @@
-Here is your `README.md` arranged as a single, well-structured file:
-
 ```markdown
 # TANGAMAKURU - Rwanda Crime Reporting System
 **Python Flask PostgreSQL**
