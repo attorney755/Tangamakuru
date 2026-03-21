@@ -336,4 +336,3 @@ Copyright © 2026 Attorney Valois NIYIGABA. All rights reserved.
 - Rwanda National Police for the inspiration
 - Flask community for the excellent framework
 - Bootstrap for the responsive design components
-```
