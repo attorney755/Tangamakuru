@@ -1,26 +1,22 @@
-```markdown
 # TANGAMAKURU - Rwanda Crime Reporting System
-**Python Flask PostgreSQL**
+
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12%2B-blue.svg)](https://www.postgresql.org/)
 
 A comprehensive digital platform for reporting and managing crime incidents in Rwanda. Citizens can report incidents with evidence, officers can manage cases, and administrators can oversee the entire system.
 
----
-
 ## 📋 Table of Contents
-- [Features](#-features)
-- [Technology Stack](#-technology-stack)
-- [Prerequisites](#-prerequisites)
-- [Installation Steps](#-installation-steps)
-- [Project Structure](#-project-structure)
-- [Default Accounts](#-default-accounts)
-- [Usage Guide](#-usage-guide)
-- [Troubleshooting](#-troubleshooting)
-- [Security Notes](#-security-notes)
-- [License](#-license)
-- [Author](#-author)
-- [Acknowledgments](#-acknowledgments)
 
----
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Prerequisites](#prerequisites)
+- [Installation Steps](#installation-steps)
+- [Project Structure](#project-structure)
+- [Default Accounts](#default-accounts)
+- [Usage Guide](#usage-guide)
+- [Troubleshooting](#troubleshooting)
+- [Security Notes](#security-notes)
 
 ## ✨ Features
 
@@ -54,41 +50,36 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 - Admin account management (activate/deactivate/delete)
 - View system-wide statistics
 
----
-
 ## 🛠 Technology Stack
 
-| Component      | Technology                     |
-|----------------|--------------------------------|
-| Backend        | Flask 2.3.3 (Python 3.10+)     |
-| Database       | PostgreSQL 12+                 |
-| ORM            | SQLAlchemy 2.0                 |
-| Migrations     | Flask-Migrate / Alembic         |
-| Frontend       | Bootstrap 5, JavaScript, Jinja2|
+| Component | Technology |
+|-----------|------------|
+| Backend | Flask 2.3.3 (Python 3.10+) |
+| Database | PostgreSQL 12+ |
+| ORM | SQLAlchemy 2.0 |
+| Migrations | Flask-Migrate / Alembic |
+| Frontend | Bootstrap 5, JavaScript, Jinja2 |
 | Authentication | Session-based with Flask-Login |
-| PDF Generation | WeasyPrint                     |
-| File Uploads   | Local storage with secure filenames |
-| Charts         | Matplotlib                     |
-| Background Tasks| Celery with Redis             |
-| Email          | Flask-Mail (optional)          |
-
----
+| PDF Generation | WeasyPrint |
+| File Uploads | Local storage with secure filenames |
+| Charts | Matplotlib |
+| Background Tasks | Celery with Redis |
+| Email | Flask-Mail (optional) |
 
 ## 📋 Prerequisites
-- Python 3.10 or 3.11 (Python 3.12 has compatibility issues with datetime functions)
-- PostgreSQL 12 or higher
-- Git (for cloning the repository)
-- Redis (optional, for Celery background tasks)
 
----
+- **Python 3.10 or 3.11** (Python 3.12 has compatibility issues with datetime functions)
+- **PostgreSQL 12 or higher**
+- **Git** (for cloning the repository)
+- **Redis** (optional, for Celery background tasks)
 
-🚀 Installation Steps
+## 🚀 Installation Steps
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/tangamakuru.git
-   cd tangamakuru
-   ```
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/tangamakuru.git
+cd tangamakuru
 
 2. **Create and activate virtual environment**
    - **Linux/macOS:**
