@@ -110,72 +110,90 @@ pip install -r requirements.txt
 
 ---
 
-4. **Set up PostgreSQL database**
-   ```bash
-   # Login to PostgreSQL
-   sudo -u postgres psql
-   ```
-   Run these SQL commands:
-   ```sql
-   CREATE DATABASE tangamakuru_db;
-   CREATE USER tangamakuru_user WITH PASSWORD 'your_secure_password';
-   ALTER ROLE tangamakuru_user SET client_encoding TO 'utf8';
-   ALTER ROLE tangamakuru_user SET default_transaction_isolation TO 'read committed';
-   ALTER ROLE tangamakuru_user SET timezone TO 'UTC';
-   GRANT ALL PRIVILEGES ON DATABASE tangamakuru_db TO tangamakuru_user;
-   \q
-   ```
+---
 
-5. **Configure environment variables**
-   Create a `.env` file in the backend directory:
-   ```bash
-   cp .env.example .env
-   nano .env  # or use any text editor
-   ```
-   `.env` file content:
-   ```ini
-   # Flask Configuration
-   SECRET_KEY=your-secret-key-here-change-this-in-production
-   FLASK_APP=run.py
-   FLASK_ENV=development
+## 4️ Set Up PostgreSQL Database
 
-   # Database Configuration
-   DATABASE_URL=postgresql://tangamakuru_user:your_secure_password@localhost/tangamakuru_db
+```bash
+# Login to PostgreSQL
+sudo -u postgres psql
+```
 
-   # Upload Configuration
-   UPLOAD_FOLDER=uploads
-   MAX_CONTENT_LENGTH=16777216  # 16MB
-
-   # Email Configuration (optional)
-   MAIL_SERVER=smtp.gmail.com
-   MAIL_PORT=587
-   MAIL_USE_TLS=True
-   MAIL_USERNAME=your-email@gmail.com
-   MAIL_PASSWORD=your-app-password
-   ```
-
-6. **Run database migrations**
-   ```bash
-   flask db upgrade
-   ```
-
-7. **Create uploads directory**
-   ```bash
-   mkdir -p uploads
-   ```
-
-8. **Create default users (optional)**
-   ```bash
-   python create_admin.py
-   ```
-
-9. **Start the application**
-   ```bash
-   python run.py
-   ```
-   The application will be available at: [http://localhost:5000](http://localhost:5000)
+Run these SQL commands:
+```sql
+CREATE DATABASE tangamakuru_db;
+CREATE USER tangamakuru_user WITH PASSWORD 'your_secure_password';
+ALTER ROLE tangamakuru_user SET client_encoding TO 'utf8';
+ALTER ROLE tangamakuru_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE tangamakuru_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE tangamakuru_db TO tangamakuru_user;
+\q
+```
 
 ---
+
+## 5️ Configure Environment Variables
+
+Create a `.env` file in the backend directory:
+```bash
+cp .env.example .env
+nano .env  # or use any text editor
+```
+
+`.env` file content:
+```ini
+# Flask Configuration
+SECRET_KEY=your-secret-key-here-change-this-in-production
+FLASK_APP=run.py
+FLASK_ENV=development
+
+# Database Configuration
+DATABASE_URL=postgresql://tangamakuru_user:your_secure_password@localhost/tangamakuru_db
+
+# Upload Configuration
+UPLOAD_FOLDER=uploads
+MAX_CONTENT_LENGTH=16777216  # 16MB
+
+# Email Configuration (optional)
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+```
+
+---
+
+## 6️ Run Database Migrations
+
+```bash
+flask db upgrade
+```
+
+---
+
+## 7️ Create Uploads Directory
+
+```bash
+mkdir -p uploads
+```
+
+---
+
+## 8️Create Default Users (Optional)
+
+```bash
+python create_admin.py
+```
+
+---
+
+## 9️Start the Application
+
+```bash
+python run.py
+```
+The application will be available at: [http://localhost:5000](http://localhost:5000)
 
 ## 📁 Project Structure
 
