@@ -82,7 +82,7 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 
 ---
 
-## 🚀 Installation Steps
+🚀 Installation Steps
 
 1. **Clone the repository**
    ```bash
