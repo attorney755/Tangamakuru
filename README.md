@@ -190,7 +190,6 @@ announcements - Stores system announcements
 pending_approvals - Tracks officer registration approvals
 
 user_announcements - Stores announcement copies for users
----
 
 ---
 
