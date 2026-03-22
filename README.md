@@ -183,9 +183,8 @@ mkdir -p uploads
 ```
 After setting up the database and running migrations, create the Super Admin account using the interactive script:
 
-### Step 1: Run the Super Admin Creation Script
+Step 1: Run the Super Admin Creation Script
 
-```bash
 cd backend
 python create_super_admin.py
 ```
@@ -198,14 +197,11 @@ It can create district administrators who will manage officers.
 
 Enter Super Admin email address:
 (Note: Must end with @gov.rw, e.g., superadmin@gov.rw)
-Email: superadmin@gov.rw
 
 First Name: your first name  
 Last Name: your last name
 
-Create a strong password (minimum 8 characters):
-Password: ********
-Confirm Password: ********
+Create a strong password (minimum 8 characters)
 ---
 
 ## 9️Start the Application
