@@ -162,11 +162,34 @@ MAIL_PASSWORD=your-app-password
 
 ---
 
-## 6️ Run Database Migrations
+## 6️ Create Database Tables (Run Migrations)
 
+Important: The database is empty after creation. You need to create all the tables (users, reports, media, messages, etc.) using Flask-Migrate.
+
+```bash
+cd backend
+```
 ```bash
 flask db upgrade
 ```
+This command will create all the following tables automatically:
+
+users - Stores all user accounts (citizens, officers, admins, super admin)
+
+reports - Stores all incident reports
+
+media - Stores evidence files (images, videos, documents)
+
+messages - Stores conversations between admin and officers
+
+notifications - Stores system notifications
+
+announcements - Stores system announcements
+
+pending_approvals - Tracks officer registration approvals
+
+user_announcements - Stores announcement copies for users
+
 
 ---
 
