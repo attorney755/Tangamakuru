@@ -188,9 +188,9 @@ Step 1: Run the Super Admin Creation Script
 cd backend
 python create_super_admin.py
 ```
-==================================================
+
   TANGAMAKURU - Super Admin Account Setup
-==================================================
+
 
 This account will have full system access.
 It can create district administrators who will manage officers.
