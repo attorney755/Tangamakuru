@@ -178,16 +178,15 @@ mkdir -p uploads
 
 ---
 
-## 8️Creating the Super Admin Account
+## 8️🔑 Creating the Super Admin Account
 
-```
 After setting up the database and running migrations, create the Super Admin account using the interactive script:
 
-Step 1: Run the Super Admin Creation Script
+### Step 1: Run the Super Admin Creation Script
+
 ```
 cd backend
 python create_super_admin.py
-```
 
   ==================================================
   TANGAMAKURU - Super Admin Account Setup
