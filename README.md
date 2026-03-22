@@ -217,6 +217,12 @@ python run.py
 ```
 The application will be available at: [http://localhost:5000](http://localhost:5000)
 
+For Testing the Platform Online
+Users can log in to the Super Admin account using the following credentials to test the platform online:
+
+Email: superadmin@gov.rw
+Password: Vanessa@2025
+
 ## 📁 Project Structure
 
 ```
