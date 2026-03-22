@@ -172,7 +172,7 @@ cd backend
 ```bash
 flask db upgrade
 ```
-```
+---
 This command will create all the following tables automatically:
 
 users - Stores all user accounts (citizens, officers, admins, super admin)
@@ -190,7 +190,7 @@ announcements - Stores system announcements
 pending_approvals - Tracks officer registration approvals
 
 user_announcements - Stores announcement copies for users
-```
+---
 
 ---
 
