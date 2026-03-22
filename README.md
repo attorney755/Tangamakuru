@@ -187,6 +187,7 @@ After setting up the database and running migrations, create the Super Admin acc
 ```
 cd backend
 python create_super_admin.py
+---
 
   ==================================================
   TANGAMAKURU - Super Admin Account Setup
