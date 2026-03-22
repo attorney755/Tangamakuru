@@ -21,7 +21,7 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 ## ✨ Features
 
 ### 👥 Citizen Portal
-- Submit incident reports with evidence (images, videos, documents)
+- Submit incident reports with evidence (images and documents)
 - Track report status in real-time (Pending → In Progress → Resolved)
 - Receive notifications about case updates
 - Respond to officer requests for additional information
