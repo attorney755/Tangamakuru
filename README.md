@@ -178,12 +178,34 @@ mkdir -p uploads
 
 ---
 
-## 8️Create Default Users (Optional)
+## 8️Creating the Super Admin Account
+
+```
+After setting up the database and running migrations, create the Super Admin account using the interactive script:
+
+### Step 1: Run the Super Admin Creation Script
 
 ```bash
-python create_admin.py
+cd backend
+python create_super_admin.py
 ```
+==================================================
+  TANGAMAKURU - Super Admin Account Setup
+==================================================
 
+This account will have full system access.
+It can create district administrators who will manage officers.
+
+Enter Super Admin email address:
+(Note: Must end with @gov.rw, e.g., superadmin@gov.rw)
+Email: superadmin@gov.rw
+
+First Name: your first name  
+Last Name: your last name
+
+Create a strong password (minimum 8 characters):
+Password: ********
+Confirm Password: ********
 ---
 
 ## 9️Start the Application
