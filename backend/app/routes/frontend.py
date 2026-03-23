@@ -946,27 +946,43 @@ def check_session():
     # Return 200 OK with authenticated: false instead of 401
     return jsonify({'authenticated': False})
 
-@frontend_bp.route('/admin/clear-citizens')
-def clear_citizens():
-    """Temporary route to delete all citizen accounts"""
-    from app.models import User
+@frontend_bp.route('/admin/clear-all-test-data')
+def clear_all_test_data():
+    """Temporary route to delete all test data (citizens and their reports)"""
+    from app.models import User, Report, Media, Message
     
     # Check if user is logged in as super admin
     user = session.get('user')
     if not user or user.get('role') != 'super_admin':
         return "Access denied. Super admin only.", 403
     
-    # Delete all citizen accounts
+    # Get all citizen accounts
     citizens = User.query.filter_by(role='citizen').all()
-    count = len(citizens)
+    citizen_ids = [c.id for c in citizens]
+    citizen_count = len(citizens)
     
-    for citizen in citizens:
-        db.session.delete(citizen)
+    # Delete in correct order (due to foreign keys)
+    # 1. Delete messages related to citizen reports
+    for report in Report.query.filter(Report.user_id.in_(citizen_ids)).all():
+        Message.query.filter_by(report_id=report.id).delete()
+    
+    # 2. Delete media related to citizen reports
+    for report in Report.query.filter(Report.user_id.in_(citizen_ids)).all():
+        Media.query.filter_by(report_id=report.id).delete()
+    
+    # 3. Delete reports from citizens
+    deleted_reports = Report.query.filter(Report.user_id.in_(citizen_ids)).delete()
+    
+    # 4. Delete citizen accounts
+    deleted_citizens = User.query.filter_by(role='citizen').delete()
+    
     db.session.commit()
     
     return f"""
     <h2>✅ Cleanup Complete</h2>
-    <p>Deleted {count} citizen test accounts.</p>
+    <p>Deleted {deleted_citizens} citizen accounts.</p>
+    <p>Deleted {deleted_reports} reports.</p>
     <p>Super admin account preserved: superadmin@gov.rw</p>
     <a href="/">Go to Home</a>
     """
+
