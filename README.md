@@ -213,7 +213,13 @@ python create_super_admin.py
 
 You will see the following prompt:
 
-```
+Here’s a polished and user-friendly way to present this section in your `README.md`:
+
+---
+
+## 🔐 **Super Admin Account Setup**
+
+```plaintext
 ==================================================
 TANGAMAKURU - Super Admin Account Setup
 ==================================================
@@ -224,11 +230,16 @@ It can create district administrators who will manage officers.
 Enter Super Admin email address:
 (Note: Must end with @gov.rw, e.g., superadmin@gov.rw)
 
-First Name: your first name
-Last Name: your last name
+First Name: [Enter your first name]
+Last Name: [Enter your last name]
 
-Create a strong password (minimum 8 characters)
+Create a strong password (minimum 8 characters): [Enter your password]
 ```
+
+### **Notes:**
+- The **email address** must end with `@gov.rw` (e.g., `superadmin@gov.rw`).
+- The **password** must be at least **8 characters** long.
+- This account will have **full administrative privileges** to manage the entire platform.
 
 ---
 
