@@ -127,33 +127,41 @@ def create_app():
         return jsonify({'status': 'healthy', 'service': 'TANGAMAKURU API'})
 
     # Context processor MUST come BEFORE return app
-    @app.context_processor
-    def inject_notification_counts():
-        """Inject notification counts into all templates"""
-        from app.models import Notification
-        from flask import session
+@app.context_processor
+def inject_notification_counts():
+    """Inject notification counts into all templates"""
+    from flask import has_request_context, session
+    
+    # Only run if we're in an active request context
+    if not has_request_context():
+        return {'notification_count': 0, 'announcement_count': 0}
+    
+    from app.models import Notification
+    
+    counts = {
+        'notification_count': 0,
+        'announcement_count': 0
+    }
+    
+    if 'user' in session:
+        user_id = session['user']['id']
+        user_role = session['user']['role']
         
-        counts = {
-            'notification_count': 0,
-            'announcement_count': 0
-        }
+        # Regular notifications count
+        counts['notification_count'] = Notification.query.filter_by(
+            user_id=user_id, 
+            is_read=False
+        ).count()
         
-        if 'user' in session:
-            user_id = session['user']['id']
-            user_role = session['user']['role']
-            
-            # Regular notifications count
-            counts['notification_count'] = Notification.query.filter_by(
-                user_id=user_id, 
-                is_read=False
+        # For officers, also get announcement notifications count
+        if user_role == 'officer':
+            counts['announcement_count'] = Notification.query.filter(
+                Notification.user_id == user_id,
+                Notification.is_read == False,
+                Notification.title.like('📢%')
             ).count()
-            
-            # For officers, also get announcement notifications count
-            if user_role == 'officer':
-                counts['announcement_count'] = Notification.query.filter(
-                    Notification.user_id == user_id,
-                    Notification.is_read == False,
-                    Notification.title.like('📢%')
+    
+    return counts
                 ).count()
         
         return counts
