@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
+import threading
 from datetime import datetime, timezone, timedelta
 from app import db
 from app.models import User
@@ -89,6 +90,9 @@ def register():
         db.session.add(user)
         db.session.commit()
         
+        # Send welcome email in background (non-blocking)
+        threading.Thread(target=send_email_async, args=(user,)).start()
+        
         # Generate token
         token = generate_token(user.id, user.role)
         
@@ -111,6 +115,16 @@ def register():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+
+def send_email_async(user):
+    """Send welcome email in background thread"""
+    try:
+        from app.utils.email import send_welcome_email
+        print(f"Sending welcome email to {user.email} in background")
+        send_welcome_email(user)
+        print(f"Welcome email sent to {user.email}")
+    except Exception as e:
+        print(f"Background email error: {e}")
 
 # Get user profile with JWT token
 @auth_bp.route('/profile', methods=['GET'])
