@@ -173,25 +173,24 @@ cd backend
 flask db upgrade
 ```
 ---
-This command will create all the following tables automatically:
 
-users - Stores all user accounts (citizens, officers, admins, super admin)
+## 🗃️ **Database Schema Overview**
 
-reports - Stores all incident reports
+When you run the database setup command, the following tables will be **automatically created**:
 
-media - Stores evidence files (images, videos, documents)
-
-messages - Stores conversations between admin and officers
-
-notifications - Stores system notifications
-
-announcements - Stores system announcements
-
-pending_approvals - Tracks officer registration approvals
-
-user_announcements - Stores announcement copies for users
+| **Table Name**          | **Description**                                                                 |
+|-------------------------|-------------------------------------------------------------------------------|
+| **`users`**             | Stores all user accounts (citizens, officers, admins, and super admin).       |
+| **`reports`**           | Stores all incident reports submitted by citizens.                           |
+| **`media`**             | Stores evidence files (images, videos, documents) attached to reports.       |
+| **`messages`**          | Stores conversations between admins and officers.                           |
+| **`notifications`**     | Stores system notifications for users (e.g., report updates, requests).     |
+| **`announcements`**     | Stores system-wide announcements created by admins.                          |
+| **`pending_approvals`**| Tracks officer registration requests awaiting approval by district admins.  |
+| **`user_announcements`**| Stores personalized copies of announcements for individual users.            |
 
 ---
+**Note:** These tables are designed to support the **Tangamakuru** platform’s core features, including user management, incident reporting, and communication.
 
 ## 7️ Create Uploads Directory
 
