@@ -49,15 +49,13 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Session timeout configuration
-
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)  # Session expires after 10 minutes of inactivityy
-    app.config['SESSION_REFRESH_EACH_REQUEST'] = False  # Don't refresh session on each request
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = False
     app.config['SESSION_COOKIE_NAME'] = 'tangamakuru_session'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-     # Email configuration
-
+    # Email configuration
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
     app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
@@ -127,41 +125,38 @@ def create_app():
         return jsonify({'status': 'healthy', 'service': 'TANGAMAKURU API'})
 
     # Context processor MUST come BEFORE return app
-@app.context_processor
-def inject_notification_counts():
-    """Inject notification counts into all templates"""
-    from flask import has_request_context, session
-    
-    # Only run if we're in an active request context
-    if not has_request_context():
-        return {'notification_count': 0, 'announcement_count': 0}
-    
-    from app.models import Notification
-    
-    counts = {
-        'notification_count': 0,
-        'announcement_count': 0
-    }
-    
-    if 'user' in session:
-        user_id = session['user']['id']
-        user_role = session['user']['role']
+    @app.context_processor
+    def inject_notification_counts():
+        """Inject notification counts into all templates"""
+        from flask import has_request_context, session
         
-        # Regular notifications count
-        counts['notification_count'] = Notification.query.filter_by(
-            user_id=user_id, 
-            is_read=False
-        ).count()
+        # Only run if we're in an active request context
+        if not has_request_context():
+            return {'notification_count': 0, 'announcement_count': 0}
         
-        # For officers, also get announcement notifications count
-        if user_role == 'officer':
-            counts['announcement_count'] = Notification.query.filter(
-                Notification.user_id == user_id,
-                Notification.is_read == False,
-                Notification.title.like('📢%')
+        from app.models import Notification
+        
+        counts = {
+            'notification_count': 0,
+            'announcement_count': 0
+        }
+        
+        if 'user' in session:
+            user_id = session['user']['id']
+            user_role = session['user']['role']
+            
+            # Regular notifications count
+            counts['notification_count'] = Notification.query.filter_by(
+                user_id=user_id, 
+                is_read=False
             ).count()
-    
-    return counts
+            
+            # For officers, also get announcement notifications count
+            if user_role == 'officer':
+                counts['announcement_count'] = Notification.query.filter(
+                    Notification.user_id == user_id,
+                    Notification.is_read == False,
+                    Notification.title.like('📢%')
                 ).count()
         
         return counts
