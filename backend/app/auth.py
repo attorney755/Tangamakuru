@@ -89,15 +89,11 @@ def register():
         db.session.add(user)
         db.session.commit()
         
-        # Send welcome email
-        from app.utils.email import send_welcome_email
-        send_welcome_email(user)
-        
         # Generate token
         token = generate_token(user.id, user.role)
         
         return jsonify({
-            'message': 'Registration successful. Welcome email sent!',
+            'message': 'Registration successful!',
             'user': {
                 'id': user.id,
                 'email': user.email,
@@ -110,6 +106,9 @@ def register():
         
     except Exception as e:
         db.session.rollback()
+        print(f"Registration error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
