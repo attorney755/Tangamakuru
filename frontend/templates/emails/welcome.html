@@ -1,189 +1,434 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to TANGAMAKURU</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: 'Inter', Arial, sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 0;
+            background-color: #eef2f7;
+            padding: 2rem 1rem;
         }
-        .email-container {
+
+        .wrapper {
             max-width: 600px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
+        }
+
+        /* ── Pre-header (preview text) ── */
+        .preheader {
+            display: none;
+            max-height: 0;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            font-size: 1px;
+            color: #eef2f7;
         }
-        .email-header {
-            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
-            padding: 30px 20px;
+
+        /* ── Top brand bar ── */
+        .brand-bar {
+            background: #0d1b58;
+            border-radius: 16px 16px 0 0;
+            padding: 1.75rem 2rem 1.5rem;
             text-align: center;
         }
-        .email-header svg {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 15px;
-        }
-        .email-header h1 {
-            color: white;
-            margin: 0;
-            font-size: 28px;
-            font-weight: 700;
-        }
-        .email-body {
-            padding: 30px;
-        }
-        .welcome-text {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .user-name {
-            font-weight: 700;
-            color: #1a237e;
-        }
-        .info-card {
-            background: #f8f9fa;
-            border-left: 4px solid #1a237e;
-            padding: 15px 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-        .info-card p {
-            margin: 5px 0;
-            color: #555;
-        }
-        .button {
+        .brand-shield {
             display: inline-block;
+            margin-bottom: 0.75rem;
+        }
+        .brand-name {
+            display: block;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.04em;
+        }
+        .brand-tagline {
+            display: block;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 0.25rem;
+        }
+
+        /* ── Hero banner ── */
+        .hero {
             background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
-            color: white !important;
-            text-decoration: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            margin: 20px 0;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50px; left: -30px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .hero-greeting {
+            font-size: 0.8rem;
             font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.6rem;
         }
-        .button:hover {
-            opacity: 0.9;
+        .hero-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.3;
+            margin-bottom: 0.5rem;
         }
-        .features {
+        .hero-title span { color: #93c5fd; }
+        .hero-sub {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.6;
+        }
+
+        /* ── Body card ── */
+        .body-card {
+            background: #ffffff;
+            padding: 2.25rem 2rem;
+        }
+
+        /* Account confirmed banner */
+        .confirmed-banner {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
             display: flex;
-            justify-content: space-between;
-            margin: 30px 0;
-            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
         }
-        .feature {
-            text-align: center;
-            flex: 1;
-            min-width: 100px;
-            padding: 10px;
+        .confirmed-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            margin-top: 1px;
         }
-        .feature-icon {
-            font-size: 24px;
+        .confirmed-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 0.2rem;
+        }
+        .confirmed-sub {
+            font-size: 0.8rem;
+            color: #047857;
+            line-height: 1.5;
+        }
+
+        /* Greeting */
+        .greeting-text {
+            font-size: 1rem;
+            color: #263238;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        .greeting-text strong { color: #1a237e; }
+
+        /* Account details card */
+        .account-card {
+            background: #f8f9fa;
+            border: 1px solid #e8eaf6;
+            border-left: 4px solid #3949ab;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+        .account-card-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #3949ab;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.875rem;
+        }
+        .account-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.45rem 0;
+            border-bottom: 1px solid #e8eaf6;
+            font-size: 0.875rem;
+        }
+        .account-row:last-child { border-bottom: none; }
+        .account-row-icon { font-size: 0.9rem; flex-shrink: 0; }
+        .account-row-label { color: #78909c; min-width: 90px; font-weight: 500; }
+        .account-row-value { color: #263238; font-weight: 600; }
+
+        /* Section heading */
+        .section-heading {
+            font-size: 0.875rem;
+            font-weight: 700;
             color: #1a237e;
-            margin-bottom: 8px;
-            display: inline-block;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1.5px solid #e8eaf6;
         }
-        .feature p {
-            font-size: 12px;
-            color: #666;
-            margin: 0;
+
+        /* Feature tiles */
+        .features-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 10px;
+            margin-bottom: 0.5rem;
         }
-        .email-footer {
-            background: #f5f7fa;
-            padding: 20px;
+        .features-row { display: table-row; }
+        .feature-tile {
+            display: table-cell;
+            width: 25%;
+            background: #f0f4ff;
+            border: 1px solid #e8eaf6;
+            border-radius: 10px;
+            padding: 1rem 0.5rem;
             text-align: center;
-            font-size: 12px;
-            color: #888;
-            border-top: 1px solid #e0e0e0;
+            vertical-align: top;
         }
-        hr {
+        .feature-emoji {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 0.4rem;
+        }
+        .feature-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #1a237e;
+            line-height: 1.4;
+        }
+
+        /* Divider */
+        .divider {
             border: none;
-            border-top: 1px solid #e0e0e0;
-            margin: 20px 0;
+            border-top: 1px solid #e8eaf6;
+            margin: 1.75rem 0;
+        }
+
+        /* CTA button */
+        .cta-wrap { text-align: center; margin: 1.75rem 0; }
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #0d1b58 0%, #3949ab 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.875rem 2.5rem;
+            border-radius: 999px;
+            letter-spacing: 0.02em;
+            box-shadow: 0 6px 20px rgba(26,35,126,0.28);
+        }
+
+        /* Help note */
+        .help-note {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-size: 0.82rem;
+            color: #92400e;
+            line-height: 1.6;
+        }
+        .help-note a { color: #1a237e; font-weight: 600; }
+
+        /* Auto-reply note */
+        .auto-note {
+            font-size: 0.75rem;
+            color: #b0bec5;
+            font-style: italic;
+            text-align: center;
+            margin-top: 1.25rem;
+        }
+
+        /* ── Footer ── */
+        .email-footer {
+            background: #263238;
+            border-radius: 0 0 16px 16px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .footer-links {
+            margin-bottom: 0.875rem;
+        }
+        .footer-links a {
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 0.75rem;
+            margin: 0 0.6rem;
+        }
+        .footer-links a:hover { color: #fff; }
+        .footer-sep {
+            color: rgba(255,255,255,0.2);
+            font-size: 0.75rem;
+        }
+        .footer-copy {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.35);
+            line-height: 1.7;
+        }
+        .footer-copy strong { color: rgba(255,255,255,0.6); }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            body { padding: 1rem 0.5rem; }
+            .brand-bar, .hero, .body-card { padding-left: 1.25rem; padding-right: 1.25rem; }
+            .hero-title { font-size: 1.3rem; }
+            .features-grid { border-spacing: 6px; }
+            .feature-tile { padding: 0.75rem 0.25rem; }
+            .feature-emoji { font-size: 1.25rem; }
+            .feature-label { font-size: 0.65rem; }
+            .cta-btn { padding: 0.8rem 1.75rem; font-size: 0.875rem; }
+            .account-row-label { min-width: 70px; }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <div class="email-header">
-            <!-- Custom Shield Logo with T -->
-            <svg width="60" height="60" viewBox="0 0 100 100">
-               
-               <h4 class="mb-3 d-flex align-items-center">
-                        <svg width="30" height="30" viewBox="0 0 100 100" style="margin-right:10px;">
-                            <defs><linearGradient id="footerGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1a237e"/><stop offset="100%" stop-color="#3949ab"/></linearGradient></defs>
-                            <path fill="url(#footerGrad)" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
-                            <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text>
-                        </svg>
-                    </h4>
-    
-            <h1>Welcome to TANGAMAKURU</h1>
+
+    <!-- Preview text (shown in email clients) -->
+    <div class="preheader">Your TANGAMAKURU account is ready — start reporting and building a safer community today.</div>
+
+    <div class="wrapper">
+
+        <!-- Brand Bar -->
+        <div class="brand-bar">
+            <div class="brand-shield">
+                <svg width="52" height="52" viewBox="0 0 100 100">
+                    <defs>
+                        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4f6bbd"/>
+                            <stop offset="100%" stop-color="#7986cb"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#shieldGrad)" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
+                    <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">T</text>
+                </svg>
+            </div>
+            <span class="brand-name">TANGAMAKURU</span>
+            <span class="brand-tagline">Rwanda's Premier Crime Reporting Platform</span>
         </div>
-        
-        <div class="email-body">
-            <div class="welcome-text">
-                Hello <span class="user-name">{{ user.first_name }} {{ user.last_name }}</span>,
-            </div>
-            
-            <p style="color: #555; line-height: 1.6;">
-                Welcome to <strong>TANGAMAKURU</strong> - Rwanda's Premier Digital Platform for Crime Reporting and Community Safety.
-            </p>
-            
-            <div class="info-card">
-                <p><strong>✅ Your account has been successfully created!</strong></p>
-                <p><strong>📧 Email:</strong> {{ user.email }}</p>
-                <p><strong>👤 Role:</strong> Citizen</p>
-                <p><strong>📅 Registered on:</strong> {{ user.created_at.strftime('%B %d, %Y at %H:%M') if user.created_at else 'Today' }}</p>
-            </div>
-            
-            <p style="color: #555; line-height: 1.6;">
-                You can now:
-            </p>
-            
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">📝</div>
-                    <p>Submit Reports</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📊</div>
-                    <p>Track Progress</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">💬</div>
-                    <p>Receive Updates</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🛡️</div>
-                    <p>Stay Safe</p>
-                </div>
-            </div>
-            
-            <div style="text-align: center;">
-                <a href="https://tangamakuru.onrender.com/login" class="button">Login to Your Account</a>
-            </div>
-            
-            <hr>
-            
-            <p style="color: #555; font-size: 14px;">
-                <strong>Need help?</strong> If you have any questions or need assistance, please contact our support team or visit our <a href="http://127.0.0.1:5000/faq" style="color: #1a237e;">Help Center</a>.
-            </p>
-            
-            <p style="color: #888; font-size: 12px; margin-top: 20px;">
-                <em>This is an automated message from TANGAMAKURU. Please do not reply to this email.</em>
-            </p>
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-greeting">Account Confirmation</div>
+            <div class="hero-title">Welcome aboard,<br><span>{{ user.first_name }} {{ user.last_name }}!</span></div>
+            <div class="hero-sub">You're now part of Rwanda's growing community of<br>citizens working together for a safer nation.</div>
         </div>
-        
+
+        <!-- Body -->
+        <div class="body-card">
+
+            <!-- Confirmed banner -->
+            <div class="confirmed-banner">
+                <div class="confirmed-icon">✅</div>
+                <div>
+                    <div class="confirmed-title">Account Successfully Created</div>
+                    <div class="confirmed-sub">Your account is active and ready to use. You can log in immediately using your registered email.</div>
+                </div>
+            </div>
+
+            <!-- Greeting -->
+            <p class="greeting-text">
+                Hello <strong>{{ user.first_name }}</strong>,<br><br>
+                Welcome to <strong>TANGAMAKURU</strong> — Rwanda's trusted digital platform for crime and claim reporting. We're thrilled to have you join our growing community dedicated to building safer neighbourhoods across the country.
+            </p>
+
+            <!-- Account details -->
+            <div class="account-card">
+                <div class="account-card-title">Your Account Details</div>
+                <div class="account-row">
+                    <span class="account-row-icon">📧</span>
+                    <span class="account-row-label">Email</span>
+                    <span class="account-row-value">{{ user.email }}</span>
+                </div>
+                <div class="account-row">
+                    <span class="account-row-icon">👤</span>
+                    <span class="account-row-label">Role</span>
+                    <span class="account-row-value">Citizen</span>
+                </div>
+                <div class="account-row">
+                    <span class="account-row-icon">📅</span>
+                    <span class="account-row-label">Registered</span>
+                    <span class="account-row-value">{{ user.created_at.strftime('%B %d, %Y at %H:%M') if user.created_at else 'Today' }}</span>
+                </div>
+                <div class="account-row">
+                    <span class="account-row-icon">🟢</span>
+                    <span class="account-row-label">Status</span>
+                    <span class="account-row-value" style="color:#065f46;">Active</span>
+                </div>
+            </div>
+
+            <!-- What you can do -->
+            <div class="section-heading">What you can do with your account</div>
+            <table class="features-grid" cellpadding="0" cellspacing="8" width="100%">
+                <tr class="features-row">
+                    <td class="feature-tile">
+                        <span class="feature-emoji">📝</span>
+                        <span class="feature-label">Submit Reports</span>
+                    </td>
+                    <td class="feature-tile">
+                        <span class="feature-emoji">📊</span>
+                        <span class="feature-label">Track Progress</span>
+                    </td>
+                    <td class="feature-tile">
+                        <span class="feature-emoji">💬</span>
+                        <span class="feature-label">Get Updates</span>
+                    </td>
+                    <td class="feature-tile">
+                        <span class="feature-emoji">🛡️</span>
+                        <span class="feature-label">Stay Safe</span>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- CTA -->
+            <div class="cta-wrap">
+                <a href="https://tangamakuru.onrender.com/login" class="cta-btn">
+                    Login to Your Account →
+                </a>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Help note -->
+            <div class="help-note">
+                💡 <strong>Need help?</strong> Visit our <a href="https://tangamakuru.onrender.com/faq">Help Center</a> for guides and FAQs, or reach out to our support team. We typically respond within 24 hours.
+            </div>
+
+            <p class="auto-note">This is an automated message from TANGAMAKURU. Please do not reply to this email.</p>
+
+        </div>
+
+        <!-- Footer -->
         <div class="email-footer">
-            <p>&copy; 2026 TANGAMAKURU - Rwanda Crime Reporting System - Developed by Attorney Valois NIYIGABA</p>
-            <p>Building a Safer Rwanda Together</p>
+            <div class="footer-links">
+                <a href="https://tangamakuru.onrender.com">Home</a>
+                <span class="footer-sep">·</span>
+                <a href="https://tangamakuru.onrender.com/faq">Help Center</a>
+                <span class="footer-sep">·</span>
+                <a href="https://tangamakuru.onrender.com/privacy">Privacy Policy</a>
+                <span class="footer-sep">·</span>
+                <a href="https://tangamakuru.onrender.com/terms">Terms of Service</a>
+            </div>
+            <div class="footer-copy">
+                <strong>&copy; 2026 TANGAMAKURU</strong> — Rwanda Crime Reporting System<br>
+                Developed by Attorney Valois NIYIGABA &nbsp;·&nbsp; Building a Safer Rwanda Together
+            </div>
         </div>
+
     </div>
 </body>
 </html>
