@@ -42,7 +42,7 @@ def send_welcome_email(user):
         print(f"Attempting to send welcome email to {user.email}")
         return send_email(
             to=user.email,
-            subject="Welcome to TANGAMAKURU! 🛡️",
+            subject="Welcome to TANGAMAKURU!",
             template="emails/welcome.html",
             user=user
         )
