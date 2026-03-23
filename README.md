@@ -240,11 +240,27 @@ python run.py
 ```
 The application will be available at: [http://localhost:5000](http://localhost:5000)
 
-For Testing the Platform Online
-Users can log in to the Super Admin account using the following credentials to test the platform online:
+---
 
-Email: superadmin@gov.rw
-Password: Vanessa@2025
+## 🌐 **Testing the Platform Online**
+
+You can test the **Tangamakuru** platform online using the following **Super Admin** credentials:
+
+### **Login Details**
+| **Email**            | **Password**      |
+|----------------------|--------------------|
+| `superadmin@gov.rw`  | `Vanessa@2025`     |
+
+### **Access the Platform**
+🔗 **[Visit Tangamakuru Online](https://tangamakuru.onrender.com)**
+
+---
+**Note:** These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
+- Super Admin dashboard
+- Officer and citizen workflows
+- Reporting and case management
+
+---
 
 ## 📁 Project Structure
 
