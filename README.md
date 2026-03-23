@@ -320,13 +320,12 @@ Tangamakuru/
 
 After running `create_admin.py`, these accounts are created:
 
-| Role         | Email                     | Password       |
-|--------------|---------------------------|----------------|
-| Super Admin  | admin@tangamakuru.rw      | Admin@2024     |
-| Officer      | officer@tangamakuru.rw    | Officer@2024   |
-| Citizen      | citizen@tangamakuru.rw    | Citizen@2024   |
+| Role         | Email                  | Password       |
+|--------------|------------------------|----------------|
+| Super Admin  | superadmin@gov.rw      | Vanessa@2025   |
 
-**Note:** District admins must be created by the Super Admin from the dashboard.
+
+**Note:** This account is for testing purposes only and district admins must be created by the Super Admin from the dashboard.
 
 ---
 
