@@ -1,3 +1,4 @@
+import threading
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,6 +10,28 @@ from app.models import User
 from functools import wraps
 
 auth_bp = Blueprint('auth', __name__)
+
+def send_email_async(user):
+    """Send welcome email in background thread with app context"""
+    # Get the app instance
+    from flask import current_app
+    app = current_app._get_current_object()
+    
+    def send():
+        with app.app_context():
+            try:
+                from app.utils.email import send_welcome_email
+                print(f"Sending welcome email to {user.email} in background")
+                send_welcome_email(user)
+                print(f"Welcome email sent to {user.email}")
+            except Exception as e:
+                print(f"Background email error: {e}")
+                import traceback
+                traceback.print_exc()
+    
+    thread = threading.Thread(target=send)
+    thread.daemon = True
+    thread.start()
 
 def token_required(f):
     """Decorator to require JWT token"""
@@ -91,7 +114,7 @@ def register():
         db.session.commit()
         
         # Send welcome email in background (non-blocking)
-        threading.Thread(target=send_email_async, args=(user,)).start()
+        send_email_async(user)
         
         # Generate token
         token = generate_token(user.id, user.role)
@@ -115,16 +138,6 @@ def register():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
-
-def send_email_async(user):
-    """Send welcome email in background thread"""
-    try:
-        from app.utils.email import send_welcome_email
-        print(f"Sending welcome email to {user.email} in background")
-        send_welcome_email(user)
-        print(f"Welcome email sent to {user.email}")
-    except Exception as e:
-        print(f"Background email error: {e}")
 
 # Get user profile with JWT token
 @auth_bp.route('/profile', methods=['GET'])
