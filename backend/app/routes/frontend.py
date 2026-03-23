@@ -945,3 +945,28 @@ def check_session():
         return jsonify({'authenticated': True})
     # Return 200 OK with authenticated: false instead of 401
     return jsonify({'authenticated': False})
+
+@frontend_bp.route('/admin/clear-citizens')
+def clear_citizens():
+    """Temporary route to delete all citizen accounts"""
+    from app.models import User
+    
+    # Check if user is logged in as super admin
+    user = session.get('user')
+    if not user or user.get('role') != 'super_admin':
+        return "Access denied. Super admin only.", 403
+    
+    # Delete all citizen accounts
+    citizens = User.query.filter_by(role='citizen').all()
+    count = len(citizens)
+    
+    for citizen in citizens:
+        db.session.delete(citizen)
+    db.session.commit()
+    
+    return f"""
+    <h2>✅ Cleanup Complete</h2>
+    <p>Deleted {count} citizen test accounts.</p>
+    <p>Super admin account preserved: superadmin@gov.rw</p>
+    <a href="/">Go to Home</a>
+    """
