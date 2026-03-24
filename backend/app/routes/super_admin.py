@@ -515,3 +515,84 @@ def manage_users():
                          users=users_data)
 
 
+
+@super_admin_bp.route('/api/user/<int:user_id>')
+@super_admin_required
+def get_user_details(user_id):
+    """Get user details for modal"""
+    from app.models import User, Report
+    
+    user = User.query.get_or_404(user_id)
+    
+    report_count = Report.query.filter_by(user_id=user.id).count() if user.role == 'citizen' else 0
+    if user.role == 'officer':
+        report_count = Report.query.filter_by(assigned_officer_id=user.id).count()
+    
+    return jsonify({
+        'success': True,
+        'user': {
+            'id': user.id,
+            'name': user.get_full_name(),
+            'email': user.email,
+            'phone': user.phone,
+            'role': user.role,
+            'province': user.province,
+            'district': user.district,
+            'sector': user.sector,
+            'is_active': user.is_active,
+            'approval_status': user.approval_status,
+            'created_at': user.created_at.strftime('%d %b %Y, %H:%M'),
+            'report_count': report_count
+        }
+    })
+
+
+@super_admin_bp.route('/api/user/<int:user_id>/delete', methods=['DELETE'])
+@super_admin_required
+def delete_user(user_id):
+    """Delete a user and all their associated data"""
+    from app.models import User, Report, Media, Message, Notification, PendingApproval
+    
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Don't allow deleting super admin
+        if user.role == 'super_admin':
+            return jsonify({'error': 'Cannot delete super admin account'}), 400
+        
+        user_name = user.get_full_name()
+        
+        # Delete in correct order due to foreign keys
+        
+        # 1. Delete notifications
+        Notification.query.filter_by(user_id=user.id).delete()
+        
+        # 2. Delete messages and media related to reports
+        if user.role == 'citizen':
+            reports = Report.query.filter_by(user_id=user.id).all()
+        elif user.role == 'officer':
+            reports = Report.query.filter_by(assigned_officer_id=user.id).all()
+        else:
+            reports = []
+        
+        for report in reports:
+            Message.query.filter_by(report_id=report.id).delete()
+            Media.query.filter_by(report_id=report.id).delete()
+            db.session.delete(report)
+        
+        # 3. Delete pending approvals for officers
+        if user.role == 'officer':
+            PendingApproval.query.filter_by(officer_id=user.id).delete()
+        
+        # 4. Finally delete the user
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'User {user_name} has been deleted successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
