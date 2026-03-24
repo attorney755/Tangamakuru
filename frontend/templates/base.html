@@ -618,20 +618,23 @@
             </li>
             {% endif %}
 
+            
             <!-- Super Admin -->
             {% if session.user.role == 'super_admin' %}
             <li><hr class="dropdown-divider"></li>
             <div class="dropdown-section-label">Administration</div>
             <li>
-              <li>
-    <a class="dropdown-item" href="{{ url_for('super_admin.manage_users') }}">
-        <i class="fas fa-users me-2"></i>All Users
-    </a>
-</li>
                 <a class="dropdown-item" href="{{ url_for('super_admin.list_admins') }}">
                     <i class="fas fa-user-tie"></i> Manage Admins
                 </a>
             </li>
+
+            <li>
+    <a class="dropdown-item" href="{{ url_for('super_admin.manage_users') }}">
+        <i class="fas fa-users me-2"></i>All Users
+    </a>
+</li>
+
             <li>
                 <a class="dropdown-item" href="{{ url_for('super_admin.announcements') }}">
                     <i class="fas fa-bullhorn"></i> System Announcements
