@@ -460,25 +460,6 @@ def delete_admin(admin_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-
-@super_admin_bp.route('/fix-citizen-status')
-@super_admin_required
-def fix_citizen_status():
-    """Temporary route to fix citizen approval status"""
-    from app.models import User
-    
-    citizens = User.query.filter_by(role='citizen').all()
-    count = 0
-    for c in citizens:
-        if c.approval_status != 'approved' or not c.is_approved:
-            c.approval_status = 'approved'
-            c.is_approved = True
-            count += 1
-    
-    db.session.commit()
-    return f"✅ Fixed {count} citizen accounts. <a href='/super-admin/manage-users'>Go to User Management</a>"
-
-
 @super_admin_bp.route('/manage-users')
 @super_admin_required
 def manage_users():
@@ -590,8 +571,18 @@ def delete_user(user_id):
         
         return jsonify({
             'success': True,
-            'message': f'User {user_name} has been deleted successfully'
+            'message': f'User {user_name} has been deleted successfully'  # Add this line
         })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500    
+
+    
+
+
+
+    
         
     except Exception as e:
         db.session.rollback()
