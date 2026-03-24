@@ -479,3 +479,39 @@ def fix_citizen_status():
     return f"✅ Fixed {count} citizen accounts. <a href='/super-admin/manage-users'>Go to User Management</a>"
 
 
+@super_admin_bp.route('/manage-users')
+@super_admin_required
+def manage_users():
+    """User management page for super admin"""
+    from app.models import User, Report
+    
+    users = User.query.all()
+    users_data = []
+    for user in users:
+        report_count = Report.query.filter_by(user_id=user.id).count() if user.role == 'citizen' else 0
+        if user.role == 'officer':
+            report_count = Report.query.filter_by(assigned_officer_id=user.id).count()
+        
+        status = 'active' if user.is_active else 'inactive'
+        if user.role == 'officer' and user.approval_status == 'pending':
+            status = 'pending'
+        
+        users_data.append({
+            'id': user.id,
+            'name': user.get_full_name(),
+            'email': user.email,
+            'role': user.role,
+            'sector': user.sector,
+            'district': user.district,
+            'is_active': user.is_active,
+            'approval_status': user.approval_status,
+            'status': status,
+            'created_at': user.created_at,
+            'report_count': report_count
+        })
+    
+    return render_template('super_admin/manage_users.html',
+                         user=session.get('user'),
+                         users=users_data)
+
+
