@@ -104,7 +104,11 @@ def register():
             district=data.get('district', ''),
             sector=data.get('sector', ''),
             cell=data.get('cell', ''),
-            village=data.get('village', '')
+            village=data.get('village', ''),
+            is_active=True,
+            is_verified=True,
+            is_approved=True,
+            approval_status='approved'
         )
         
         # Set password
