@@ -547,9 +547,10 @@ def logout():
     if timeout == '1':
         flash('You have been logged out due to inactivity.', 'info')
     else:
-        flash('You have been logged out', 'info')
+        flash('You have been logged out. Please login again.', 'info')
     
-    return redirect(url_for('frontend.index'))
+    # Redirect to login page instead of home
+    return redirect(url_for('frontend.login'))
 
 @frontend_bp.route('/test')
 def test():
