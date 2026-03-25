@@ -473,9 +473,15 @@ def manage_users():
         if user.role == 'officer':
             report_count = Report.query.filter_by(assigned_officer_id=user.id).count()
         
-        status = 'active' if user.is_active else 'inactive'
+        # Determine status
         if user.role == 'officer' and user.approval_status == 'pending':
             status = 'pending'
+        elif user.role in ['admin', 'super_admin']:
+            # Admins and super admins are always active if is_active is True
+            status = 'active' if user.is_active else 'inactive'
+        else:
+            # Citizens and others
+            status = 'active' if user.is_active else 'inactive'
         
         users_data.append({
             'id': user.id,
@@ -587,3 +593,22 @@ def delete_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+
+@super_admin_bp.route('/fix-admin-status')
+@super_admin_required
+def fix_admin_status():
+    """Fix admin and super admin approval status"""
+    from app.models import User
+    
+    admins = User.query.filter(User.role.in_(['admin', 'super_admin'])).all()
+    count = 0
+    for a in admins:
+        if a.approval_status != 'approved' or not a.is_approved:
+            a.approval_status = 'approved'
+            a.is_approved = True
+            count += 1
+    
+    db.session.commit()
+    return f"✅ Fixed {count} admin accounts. <a href='/super-admin/manage-users'>Go to User Management</a>"
