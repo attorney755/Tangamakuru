@@ -104,7 +104,9 @@ def create_admin():
                 cell=data.get('cell', ''),
                 village=data.get('village', ''),
                 is_active=True,
-                is_verified=True
+                is_verified=True,
+                is_approved=True, 
+                approval_status='approved'
             )
             
             admin.set_password(password)
