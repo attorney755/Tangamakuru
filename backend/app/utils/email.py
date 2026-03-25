@@ -45,6 +45,50 @@ def send_welcome_email(user):
             subject="Welcome to TANGAMAKURU!",
             template="emails/welcome.html",
             user=user
+
+
+def send_admin_welcome_email(admin, password):
+    """Send welcome email to a new admin with their login credentials"""
+    try:
+        return send_email(
+            to=admin.email,
+            subject="Welcome to TANGAMAKURU - Your Admin Account",
+            template="emails/admin_welcome.html",
+            admin=admin,
+            password=password
+        )
+    except Exception as e:
+        print(f"Error sending admin welcome email: {e}")
+        return False
+
+
+def send_admin_deactivation_email(admin):
+    """Send deactivation email to an admin"""
+    try:
+        return send_email(
+            to=admin.email,
+            subject="TANGAMAKURU - Your Admin Account Has Been Deactivated",
+            template="emails/admin_deactivation.html",
+            admin=admin
+        )
+    except Exception as e:
+        print(f"Error sending admin deactivation email: {e}")
+        return False
+
+
+def send_admin_activation_email(admin):
+    """Send activation email to an admin"""
+    try:
+        return send_email(
+            to=admin.email,
+            subject="TANGAMAKURU - Your Admin Account Has Been Activated",
+            template="emails/admin_activation.html",
+            admin=admin
+        )
+    except Exception as e:
+        print(f"Error sending admin activation email: {e}")
+        return False
+            
         )
     except Exception as e:
         print(f"Error sending welcome email: {e}")
