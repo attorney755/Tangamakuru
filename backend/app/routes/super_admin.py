@@ -584,31 +584,92 @@ def delete_user(user_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500    
 
-    
-
-
 
     
+@super_admin_bp.route('/api/user/<int:user_id>/officers-count')
+@super_admin_required
+def get_admin_officers_count(user_id):
+    """Get count of officers under an admin"""
+    from app.models import User
+    
+    user = User.query.get_or_404(user_id)
+    if user.role != 'admin':
+        return jsonify({'officers_count': 0})
+    
+    # Count officers in the same district as the admin
+    officers = User.query.filter_by(role='officer', district=user.district).count()
+    return jsonify({'officers_count': officers})
+
+
+@super_admin_bp.route('/api/user/<int:user_id>/delete-with-officers', methods=['DELETE'])
+@super_admin_required
+def delete_user_with_officers(user_id):
+    """Delete an admin and all their officers"""
+    from app.models import User, Report, Media, Message, Notification, PendingApproval
+    
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Don't allow deleting super admin
+        if user.role == 'super_admin':
+            return jsonify({'error': 'Cannot delete super admin account'}), 400
+        
+        # Only admins can have officers
+        if user.role != 'admin':
+            return jsonify({'error': 'User is not an admin'}), 400
+        
+        # Don't allow deleting yourself
+        if user.id == session['user']['id']:
+            return jsonify({'error': 'You cannot delete your own account'}), 400
+        
+        user_name = user.get_full_name()
+        
+        # Get all officers under this admin (based on district)
+        officers = User.query.filter_by(role='officer', district=user.district).all()
+        officer_ids = [o.id for o in officers]
+        officer_count = len(officers)
+        
+        # Delete in correct order for foreign key constraints
+        
+        # 1. Delete notifications for all officers and admin
+        if officer_ids:
+            Notification.query.filter(Notification.user_id.in_(officer_ids)).delete(synchronize_session=False)
+        Notification.query.filter_by(user_id=user.id).delete()
+        
+        # 2. Delete reports, messages, media for officers
+        for officer in officers:
+            reports = Report.query.filter_by(assigned_officer_id=officer.id).all()
+            for report in reports:
+                # Delete messages for this report
+                Message.query.filter_by(report_id=report.id).delete()
+                # Delete media for this report
+                Media.query.filter_by(report_id=report.id).delete()
+                # Delete the report
+                db.session.delete(report)
+            
+            # Delete pending approvals for officer
+            PendingApproval.query.filter_by(officer_id=officer.id).delete()
+        
+        # 3. Delete officers
+        if officer_ids:
+            User.query.filter(User.id.in_(officer_ids)).delete(synchronize_session=False)
+        
+        # 4. Delete the admin
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'✅ Admin {user_name} and {officer_count} officer(s) deleted successfully!'
+        }), 200
         
     except Exception as e:
         db.session.rollback()
+        print(f"Error deleting admin with officers: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 
 
-@super_admin_bp.route('/fix-admin-status')
-@super_admin_required
-def fix_admin_status():
-    """Fix admin and super admin approval status"""
-    from app.models import User
-    
-    admins = User.query.filter(User.role.in_(['admin', 'super_admin'])).all()
-    count = 0
-    for a in admins:
-        if a.approval_status != 'approved' or not a.is_approved:
-            a.approval_status = 'approved'
-            a.is_approved = True
-            count += 1
-    
-    db.session.commit()
-    return f"✅ Fixed {count} admin accounts. <a href='/super-admin/manage-users'>Go to User Management</a>"
+
+
+
