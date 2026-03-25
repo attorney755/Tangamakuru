@@ -494,7 +494,7 @@ def manage_users():
             'district': user.district,
             'is_active': user.is_active,
             'approval_status': user.approval_status,
-            'status': status,
+            'status': status,  # This is used in the table
             'created_at': user.created_at,
             'report_count': report_count
         })
