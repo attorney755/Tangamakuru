@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Account Deactivated - TANGAMAKURU</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #991b1b, #dc2626); padding: 30px; text-align: center; }
+        .header h1 { color: white; margin: 0; }
+        .content { padding: 30px; }
+        .footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .button { display: inline-block; background: #991b1b; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Account Deactivated</h1>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{{ admin.first_name }} {{ admin.last_name }}</strong>,</p>
+            <p>Your administrator account for <strong>TANGAMAKURU</strong> has been <strong style="color: #991b1b;">deactivated</strong> by a Super Administrator.</p>
+            <p>You can no longer log in to the system. If you believe this is a mistake, please contact your Super Administrator.</p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>📧 Email:</strong> {{ admin.email }}</p>
+                <p><strong>📍 District:</strong> {{ admin.district or 'Not assigned' }}</p>
+            </div>
+            <hr>
+            <p style="font-size: 14px; color: #666;">For more information, please reach out to your Super Administrator.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 TANGAMAKURU - Rwanda Crime Reporting System</p>
+        </div>
+    </div>
+</body>
+</html>
