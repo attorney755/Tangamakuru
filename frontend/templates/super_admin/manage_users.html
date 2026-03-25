@@ -665,40 +665,23 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
     })
-    .then(r => {
-        console.log('Response status:', r.status);
-        return r.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log('Response data:', data);
         if (data.success) {
-            // Close the modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteUserModal'));
-            modal.hide();
-            
-            // Show the toast message
-            showToast(data.message, true);
-            
-            // Remove the row from the table
-            const rows = document.querySelectorAll('#usersTableBody tr');
-            for (let row of rows) {
-                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
-                    row.remove();
-                    break;
-                }
-            }
-            
-            // Reload after 2 seconds
-            setTimeout(() => location.reload(), 2000);
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
+            // Reload page immediately without showing toast
+            location.reload();
         } else {
-            showToast('Error: ' + data.error, false);
+            // Show error in alert
+            alert('Error: ' + data.error);
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
         }
     })
     .catch(error => {
-        console.error('Fetch error:', error);
-        showToast('Network error. Please try again.', false);
+        console.error('Error:', error);
+        alert('Network error. Please try again.');
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
     });
