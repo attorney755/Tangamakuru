@@ -124,6 +124,15 @@ def create_admin():
                 link='/login'
             )
             
+            # Send welcome email to new admin
+            try:
+                from app.utils.email import send_admin_welcome_email
+                send_admin_welcome_email(admin, password)
+                print(f"Welcome email sent to {admin.email}")
+            except Exception as email_error:
+                print(f"Email sending failed: {email_error}")
+                # Don't fail admin creation if email fails
+            
             if request.is_json:
                 return jsonify({
                     'success': True,
@@ -154,20 +163,31 @@ def deactivate_admin(admin_id):
         if admin.role != 'admin':
             return jsonify({'error': 'User is not an admin'}), 400
         
+        admin_name = admin.get_full_name()
+        admin_email = admin.email
+        
         admin.is_active = False
         db.session.commit()
         
-        # Notify the admin
+        # Send notification to the admin
         from app.utils.notifications import send_notification
         send_notification(
             user_id=admin.id,
             title='Account Deactivated',
-            message='Your admin account has been deactivated by the super administrator.',
+            message='Your admin account has been deactivated by the super administrator. Please contact your super admin for more information.',
             notification_type='warning',
             link='/login'
         )
         
-        return jsonify({'success': True}), 200
+        # Send email to the admin
+        try:
+            from app.utils.email import send_admin_deactivation_email
+            send_admin_deactivation_email(admin)
+            print(f"Deactivation email sent to {admin_email}")
+        except Exception as email_error:
+            print(f"Deactivation email failed: {email_error}")
+        
+        return jsonify({'success': True, 'message': f'Admin {admin_name} has been deactivated'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -181,20 +201,31 @@ def activate_admin(admin_id):
         if admin.role != 'admin':
             return jsonify({'error': 'User is not an admin'}), 400
         
+        admin_name = admin.get_full_name()
+        admin_email = admin.email
+        
         admin.is_active = True
         db.session.commit()
         
-        # Notify the admin
+        # Send notification to the admin
         from app.utils.notifications import send_notification
         send_notification(
             user_id=admin.id,
             title='Account Activated',
-            message='Your admin account has been activated by the super administrator.',
+            message='Your admin account has been activated by the super administrator. You can now log in.',
             notification_type='success',
             link='/login'
         )
         
-        return jsonify({'success': True}), 200
+        # Send email to the admin
+        try:
+            from app.utils.email import send_admin_activation_email
+            send_admin_activation_email(admin)
+            print(f"Activation email sent to {admin_email}")
+        except Exception as email_error:
+            print(f"Activation email failed: {email_error}")
+        
+        return jsonify({'success': True, 'message': f'Admin {admin_name} has been activated'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
