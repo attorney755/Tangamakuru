@@ -231,22 +231,22 @@ def update_incident_status(report_id):
         old_status = report.status
         report.status = new_status
         
-        # Add comment to officer_notes or create a new field
+        # Always add a note when status changes
+        officer_name = f"{officer.first_name} {officer.last_name}"
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
         if comment:
-            officer_name = f"{officer.first_name} {officer.last_name}"
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
-
-            # Format: "2024-03-11 14:30 - John Doe: Comment here"
-            formatted_comment = f"{timestamp} - {officer_name}: {comment}"
-
-            if hasattr(report, 'officer_notes'):
-              # Prepend new comment to show most recent first
-                if report.officer_notes:
-              # Use DOUBLE newline to separate comments properly
-                    report.officer_notes = formatted_comment + "\n\n" + report.officer_notes
+            note = f"{timestamp} - {officer_name}: Status changed from {old_status} to {new_status}. Comment: {comment}"
+        else:
+            note = f"{timestamp} - {officer_name}: Status changed from {old_status} to {new_status}"
+        
+        # Add to officer_notes (prepend to show most recent first)
+        if hasattr(report, 'officer_notes'):
+            if report.officer_notes:
+                report.officer_notes = note + "\n\n" + report.officer_notes
             else:
-                    report.officer_notes = formatted_comment
-            
+                report.officer_notes = note
+        
         # Assign officer if not assigned
         if not report.assigned_officer_id:
             report.assigned_officer_id = officer.id
@@ -271,12 +271,12 @@ def update_incident_status(report_id):
                 message += f" Officer comment: {comment}"
             
             Notification.create_notification(
-              user_id=report.user_id,
-              title=f'Report Status Update - {report.report_id}',
-              message=message,
-              notification_type='success' if new_status == 'resolved' else 'info',
-              link=f'/view-report/{report.id}'  # Change from '/reports/{report.id}' to '/view-report/{report.id}'
-)
+                user_id=report.user_id,
+                title=f'Report Status Update - {report.report_id}',
+                message=message,
+                notification_type='success' if new_status == 'resolved' else 'info',
+                link=f'/view-report/{report.id}'
+            )
         
         return jsonify({
             'success': True,
