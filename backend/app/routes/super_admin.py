@@ -535,7 +535,7 @@ def get_user_details(user_id):
         }
     })
 
-
+  
 @super_admin_bp.route('/api/user/<int:user_id>/delete', methods=['DELETE'])
 @super_admin_required
 def delete_user(user_id):
@@ -550,6 +550,8 @@ def delete_user(user_id):
             return jsonify({'error': 'Cannot delete super admin account'}), 400
         
         user_name = user.get_full_name()
+        
+        print(f"=== DELETING USER: {user_name} (ID: {user_id}) ===")
         
         # Delete in correct order due to foreign keys
         
@@ -577,16 +579,17 @@ def delete_user(user_id):
         db.session.delete(user)
         db.session.commit()
         
-        return jsonify({
+        response_data = {
             'success': True,
-            'message': f'User {user_name} has been deleted successfully'  # Add this line
-        })
+            'message': f'User {user_name} has been deleted successfully'
+        }
+        print(f"=== RETURNING: {response_data} ===")
+        return jsonify(response_data), 200
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500    
-
-
+        print(f"=== ERROR DELETING USER: {str(e)} ===")
+        return jsonify({'error': str(e)}), 500
     
 @super_admin_bp.route('/api/user/<int:user_id>/officers-count')
 @super_admin_required
