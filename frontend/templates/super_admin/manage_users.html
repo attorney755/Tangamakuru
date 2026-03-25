@@ -141,7 +141,7 @@
                                 </button>
                                 {% if user.role != 'super_admin' %}
                                 <button class="um-act-btn um-act-btn--delete"
-                                        onclick="deleteUser({{ user.id }}, '{{ user.name }}')" title="Delete Account">
+                                        onclick="deleteUser({{ user.id }}, '{{ user.name }}', '{{ user.role }}')" title="Delete Account">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                                 {% endif %}
@@ -210,6 +210,57 @@
                 </button>
                 <button type="button" class="um-btn um-btn--danger" id="confirmDeleteBtn" disabled>
                     <i class="fas fa-trash-alt"></i> Delete User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Warning Modal (for deleting admin with officers) -->
+<div class="modal fade" id="adminWarningModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content um-modal">
+            <div class="modal-header um-modal-header um-modal-header--warning">
+                <h5 class="modal-title um-modal-title"><i class="fas fa-exclamation-triangle"></i> Warning: Admin Has Officers</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body um-modal-body" style="text-align:center;">
+                <div class="um-modal-icon um-modal-icon--warning">
+                    <i class="fas fa-users-slash"></i>
+                </div>
+                <div class="um-modal-heading">This admin has officers under them!</div>
+                <p class="um-modal-desc" id="adminWarningUserName"></p>
+                
+                <div class="um-delete-warning um-delete-warning--severe">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>This admin has <span id="adminOfficersCount">0</span> officer(s) assigned to their district.</strong>
+                        <p class="mt-2 mb-0">If you continue, <strong>ALL associated officers will also be permanently deleted</strong> along with:</p>
+                        <ul class="um-delete-list mt-2">
+                            <li>All officers in this admin's district</li>
+                            <li>All reports assigned to those officers</li>
+                            <li>All evidence and notifications</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="um-warning-box mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This action cannot be undone. All officers and their data will be lost.</span>
+                </div>
+                
+                <label class="um-check mt-3">
+                    <input type="checkbox" id="adminWarningConfirmCheckbox">
+                    <span class="um-check-box"></span>
+                    <span>I understand this will delete <span id="adminOfficersCountConfirm">0</span> officer(s) and all their data</span>
+                </label>
+            </div>
+            <div class="modal-footer um-modal-footer">
+                <button type="button" class="um-btn um-btn--ghost" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="um-btn um-btn--danger" id="confirmAdminDeleteBtn" disabled>
+                    <i class="fas fa-trash-alt"></i> Delete Admin and All Officers
                 </button>
             </div>
         </div>
@@ -363,12 +414,15 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 .um-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: none; }
 .um-modal-header--blue    { background: linear-gradient(135deg, var(--brand-dark), var(--brand)); }
 .um-modal-header--danger  { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.um-modal-header--warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
 .um-modal-title  { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
 .um-modal-body   { padding: 1.75rem 1.5rem; }
 .um-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--rule); }
 
 .um-modal-icon   { width: 58px; height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.4rem; }
 .um-modal-icon--danger { background: var(--danger-bg); color: var(--danger); }
+.um-modal-icon--warning { background: #fffbeb; color: #f59e0b; }
+
 .um-modal-heading { font-size: 1rem; font-weight: 800; color: var(--ink); margin-bottom: 0.4rem; text-align: center; }
 .um-modal-desc   { font-size: 0.875rem; color: var(--ink-3); margin-bottom: 1.1rem; }
 
@@ -391,9 +445,26 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
     font-size: 0.82rem; color: var(--warning); text-align: left;
     margin-bottom: 1.1rem;
 }
+.um-delete-warning--severe {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
 .um-delete-warning i { flex-shrink: 0; margin-top: 2px; }
 .um-delete-list { margin: 0.35rem 0 0 1rem; padding: 0; font-size: 0.8rem; }
 .um-delete-list li { margin-bottom: 0.2rem; }
+
+.um-warning-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #92400e;
+}
 
 /* Checkbox */
 .um-check { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.85rem; color: var(--ink-2); justify-content: center; }
@@ -425,6 +496,9 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 
 <script>
 let currentUserId = null;
+let currentUserName = null;
+let currentUserRole = null;
+let currentOfficersCount = 0;
 
 function filterUsers() {
     const role   = document.getElementById('roleFilter').value;
@@ -491,14 +565,87 @@ function viewUser(userId) {
         });
 }
 
-function deleteUser(userId, userName) {
+function deleteUser(userId, userName, userRole) {
     currentUserId = userId;
-    document.getElementById('deleteUserName').innerHTML = `Are you sure you want to permanently delete <strong>${userName}</strong>?`;
+    currentUserName = userName;
+    currentUserRole = userRole;
+    
+    // First, check if this admin has officers
+    if (userRole === 'admin') {
+        fetch(`/super-admin/api/user/${userId}/officers-count`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.officers_count > 0) {
+                    // Show warning modal for admin with officers
+                    currentOfficersCount = data.officers_count;
+                    showAdminWarningModal();
+                } else {
+                    // No officers, proceed with normal delete
+                    showDeleteConfirmation();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showDeleteConfirmation(); // Fallback to normal delete
+            });
+    } else {
+        // Not an admin, proceed with normal delete
+        showDeleteConfirmation();
+    }
+}
+
+function showDeleteConfirmation() {
+    document.getElementById('deleteUserName').innerHTML = `Are you sure you want to permanently delete <strong>${currentUserName}</strong>?`;
     document.getElementById('confirmDeleteCheckbox').checked = false;
     document.getElementById('confirmDeleteBtn').disabled = true;
     new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
 }
 
+function showAdminWarningModal() {
+    // Update the admin warning modal content
+    document.getElementById('adminWarningUserName').innerHTML = `<strong>${currentUserName}</strong>`;
+    document.getElementById('adminOfficersCount').innerHTML = currentOfficersCount;
+    document.getElementById('adminOfficersCountConfirm').innerHTML = currentOfficersCount;
+    document.getElementById('adminWarningConfirmCheckbox').checked = false;
+    document.getElementById('confirmAdminDeleteBtn').disabled = true;
+    new bootstrap.Modal(document.getElementById('adminWarningModal')).show();
+}
+
+function performAdminDeleteWithOfficers() {
+    // Close the warning modal
+    bootstrap.Modal.getInstance(document.getElementById('adminWarningModal')).hide();
+    
+    // Show loading toast
+    showToast('Deleting admin and all associated officers...', false);
+    
+    fetch(`/super-admin/api/user/${currentUserId}/delete-with-officers`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, true);
+            // Remove the row from the table
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            for (let row of rows) {
+                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
+                    row.remove();
+                    break;
+                }
+            }
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showToast('Error: ' + data.error, false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Network error. Please try again.', false);
+    });
+}
+
+// Event listeners for delete confirmation
 document.getElementById('confirmDeleteCheckbox').addEventListener('change', function() {
     document.getElementById('confirmDeleteBtn').disabled = !this.checked;
 });
@@ -519,34 +666,44 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
             showToast(data.message, true);
             const rows = document.querySelectorAll('#usersTableBody tr');
             for (let row of rows) {
-                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) { row.remove(); break; }
+                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
+                    row.remove();
+                    break;
+                }
             }
             setTimeout(() => location.reload(), 2000);
         } else {
-            alert('Error: ' + data.error);
+            showToast('Error: ' + data.error, false);
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
         }
     })
     .catch(() => {
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', false);
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
     });
 });
 
+// Event listeners for admin warning modal
+document.getElementById('adminWarningConfirmCheckbox').addEventListener('change', function() {
+    document.getElementById('confirmAdminDeleteBtn').disabled = !this.checked;
+});
+
+document.getElementById('confirmAdminDeleteBtn').addEventListener('click', function() {
+    performAdminDeleteWithOfficers();
+});
+
 function showToast(message, success) {
     const t    = document.getElementById('um-toast');
     const icon = document.getElementById('um-toast-icon');
-    t.querySelector('.um-toast-inner').style.background = success ? '#059669' : '#c0392b';
+    const innerDiv = t.querySelector('.um-toast-inner');
+    innerDiv.style.background = success ? '#059669' : '#c0392b';
     icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
     document.getElementById('um-toast-msg').textContent = message;
     t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
 }
-
-// Legacy showToast signature compatibility
-function showToastLegacy(message, type) { showToast(message, type === 'success'); }
 </script>
 
 {% endblock %}
