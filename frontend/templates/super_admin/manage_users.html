@@ -112,15 +112,15 @@
                         </td>
 
                         <!-- Status -->
-                        <td>
-                            {% if user.approval_status == 'pending' %}
-                            <span class="um-status um-status--pending"><i class="fas fa-clock"></i> Pending</span>
-                            {% elif user.is_active %}
-                            <span class="um-status um-status--active"><i class="fas fa-check-circle"></i> Active</span>
-                            {% else %}
-                            <span class="um-status um-status--inactive"><i class="fas fa-ban"></i> Inactive</span>
-                            {% endif %}
-                        </td>
+<td>
+    {% if user.role == 'officer' and user.approval_status == 'pending' %}
+    <span class="um-status um-status--pending"><i class="fas fa-clock"></i> Pending</span>
+    {% elif user.is_active %}
+    <span class="um-status um-status--active"><i class="fas fa-check-circle"></i> Active</span>
+    {% else %}
+    <span class="um-status um-status--inactive"><i class="fas fa-ban"></i> Inactive</span>
+    {% endif %}
+</td>
 
                         <!-- Joined -->
                         <td class="um-date">
@@ -532,6 +532,17 @@ function viewUser(userId) {
                 const u = data.user;
                 const roleCls = u.role === 'citizen' ? 'um-role--citizen' : u.role === 'officer' ? 'um-role--officer' : u.role === 'admin' ? 'um-role--admin' : 'um-role--super';
                 const roleLabel = u.role === 'super_admin' ? 'Super Admin' : u.role.charAt(0).toUpperCase() + u.role.slice(1);
+                
+                // Determine status display - only show ONE status
+                let statusHtml = '';
+                if (u.role === 'officer' && u.approval_status === 'pending') {
+                    statusHtml = '<span class="um-status um-status--pending"><i class="fas fa-clock"></i> Pending</span>';
+                } else if (u.is_active) {
+                    statusHtml = '<span class="um-status um-status--active"><i class="fas fa-check-circle"></i> Active</span>';
+                } else {
+                    statusHtml = '<span class="um-status um-status--inactive"><i class="fas fa-ban"></i> Inactive</span>';
+                }
+                
                 document.getElementById('userDetails').innerHTML = `
                     <div class="um-detail-grid">
                         <div class="um-detail-avatar-wrap">
@@ -542,17 +553,12 @@ function viewUser(userId) {
                         </div>
                         <div>
                             <table class="um-detail-table">
-                                <tr><td>Email</td><td>${u.email}</td></tr>
-                                <tr><td>Phone</td><td>${u.phone || 'Not provided'}</td></tr>
-                                <tr><td>Location</td><td>${u.province || '—'} › ${u.district || '—'} › ${u.sector || '—'}</td></tr>
-                                <tr><td>Registered</td><td>${u.created_at}</td></tr>
-                                <tr><td>Reports</td><td>${u.report_count}</td></tr>
-                                <tr><td>Status</td><td>
-                                    ${u.is_active
-                                        ? '<span class="um-status um-status--active"><i class="fas fa-check-circle"></i> Active</span>'
-                                        : '<span class="um-status um-status--inactive"><i class="fas fa-ban"></i> Inactive</span>'}
-                                    ${u.approval_status === 'pending' ? '<span class="um-status um-status--pending" style="margin-left:4px;"><i class="fas fa-clock"></i> Pending</span>' : ''}
-                                </td></tr>
+                                 ox修<td class="um-detail-cell">Email</td><td class="um-detail-value">${u.email}</td> </tr>
+                                 <tr><td class="um-detail-cell">Phone</td><td class="um-detail-value">${u.phone || 'Not provided'}</td> </tr>
+                                 <tr><td class="um-detail-cell">Location</td><td class="um-detail-value">${u.province || '—'} › ${u.district || '—'} › ${u.sector || '—'}</td> </tr>
+                                 <tr><td class="um-detail-cell">Registered</td><td class="um-detail-value">${u.created_at}</td> </tr>
+                                 <tr><td class="um-detail-cell">Reports</td><td class="um-detail-value">${u.report_count}</td> </tr>
+                                 <tr><td class="um-detail-cell">Status</td><td class="um-detail-value">${statusHtml}</td> </tr>
                             </table>
                         </div>
                     </div>`;
@@ -663,7 +669,7 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
     .then(data => {
         if (data.success) {
             bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
-            showToast(data.message, true);
+            showToast(data.message, true);  // This should now work
             const rows = document.querySelectorAll('#usersTableBody tr');
             for (let row of rows) {
                 if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
@@ -673,12 +679,13 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
             }
             setTimeout(() => location.reload(), 2000);
         } else {
-            showToast('Error: ' + data.error, false);
+            showToast('Error: ' + data.error, false);  // Changed from alert to toast
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
         }
     })
-    .catch(() => {
+    .catch(error => {
+        console.error('Error:', error);
         showToast('Network error. Please try again.', false);
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
