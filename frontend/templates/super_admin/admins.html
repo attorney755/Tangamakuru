@@ -391,16 +391,28 @@ document.getElementById('confirmActivateBtn').onclick = function() {
 };
 
 function performAction(adminId, action) {
-    showToast(`${action === 'deactivate' ? 'Deactivating' : 'Activating'} admin...`, 'info');
+    const actionText = action === 'deactivate' ? 'Deactivating' : 'Activating';
+    showToast(`${actionText} admin...`, 'info');
+    
     fetch(`/super-admin/admins/${adminId}/${action}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }
     })
     .then(r => r.json())
     .then(data => {
-        if (data.success) { showToast(`Admin ${action}d successfully`, true); setTimeout(() => location.reload(), 1500); }
-        else showToast(data.error || `Failed to ${action} admin`, false);
+        if (data.success) {
+            const successMessage = action === 'deactivate' 
+                ? 'Admin deactivated successfully' 
+                : 'Admin activated successfully';
+            showToast(successMessage, true);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.error || `Failed to ${action} admin`, false);
+        }
     })
-    .catch(() => showToast(`Failed to ${action} admin`, false));
+    .catch(() => {
+        showToast(`Failed to ${action} admin`, false);
+    });
 }
 
 // ── Delete ───────────────────
