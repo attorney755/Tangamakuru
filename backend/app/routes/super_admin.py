@@ -158,8 +158,11 @@ def create_admin():
 @super_admin_bp.route('/admins/<int:admin_id>/deactivate', methods=['POST'])
 @super_admin_required
 def deactivate_admin(admin_id):
-    """Deactivate an admin account"""
+    """Deactivate an admin account with reason"""
     try:
+        data = request.get_json()
+        reason = data.get('reason', 'No reason provided')
+        
         admin = User.query.get_or_404(admin_id)
         if admin.role != 'admin':
             return jsonify({'error': 'User is not an admin'}), 400
@@ -167,6 +170,10 @@ def deactivate_admin(admin_id):
         admin_name = admin.get_full_name()
         admin_email = admin.email
         
+        # Store deactivation reason
+        admin.deactivation_reason = reason
+        admin.deactivated_by = session['user']['id']
+        admin.deactivated_at = datetime.utcnow()
         admin.is_active = False
         db.session.commit()
         
@@ -175,7 +182,7 @@ def deactivate_admin(admin_id):
         send_notification(
             user_id=admin.id,
             title='Account Deactivated',
-            message='Your admin account has been deactivated by the super administrator. Please contact your super admin for more information.',
+            message=f'Your admin account has been deactivated. Reason: {reason}',
             notification_type='warning',
             link='/login'
         )
@@ -183,14 +190,14 @@ def deactivate_admin(admin_id):
         # Send email to the admin
         try:
             from app.utils.email import send_admin_deactivation_email
-            send_admin_deactivation_email(admin)
+            send_admin_deactivation_email(admin, reason)
             print(f"Deactivation email sent to {admin_email}")
         except Exception as email_error:
             print(f"Deactivation email failed: {email_error}")
         
         return jsonify({
             'success': True, 
-            'message': f'Admin {admin_name} has been deactivated'
+            'message': f'Admin {admin_name} has been deactivated. Reason: {reason}'
         }), 200
     except Exception as e:
         db.session.rollback()
