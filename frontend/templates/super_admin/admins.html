@@ -383,187 +383,216 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 </style>
 
 <script>
-let currentAdminId   = null;
+let currentAdminId = null;
+let adminToDelete = null;
 const superAdminName = "{{ user.first_name }} {{ user.last_name }}";
 
 // ── Modal helpers ────────────
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-['deactivateModal','activateModal','deleteModal'].forEach(id => {
-    document.getElementById(id).addEventListener('click', function(e) {
-        if (e.target === this) closeModal(id);
-    });
-});
+function closeModal(id) { 
+    document.getElementById(id).style.display = 'none'; 
+}
 
-let currentAdminId = null;
-let superAdminName = "{{ user.first_name }} {{ user.last_name }}";
+['deactivateModal', 'activateModal', 'deleteModal'].forEach(id => {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal(id);
+        });
+    }
+});
 
 // ── Deactivate with reason ───────────────
 function deactivateAdmin(id) {
     currentAdminId = id;
     // Reset form
-    document.getElementById('deactivateReason').value = '';
-    document.getElementById('deactivateOtherReason').value = '';
-    document.getElementById('deactivateOtherReasonDiv').style.display = 'none';
-    document.getElementById('deactivateConfirmName').value = '';
-    document.getElementById('confirmDeactivateBtn').disabled = true;
+    const reasonSelect = document.getElementById('deactivateReason');
+    const otherReasonDiv = document.getElementById('deactivateOtherReasonDiv');
+    const otherReason = document.getElementById('deactivateOtherReason');
+    const confirmName = document.getElementById('deactivateConfirmName');
+    
+    if (reasonSelect) reasonSelect.value = '';
+    if (otherReason) otherReason.value = '';
+    if (otherReasonDiv) otherReasonDiv.style.display = 'none';
+    if (confirmName) confirmName.value = '';
+    
+    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+    if (confirmBtn) confirmBtn.disabled = true;
+    
     document.getElementById('deactivateModal').style.display = 'flex';
 }
 
 // Reason selection change
-document.getElementById('deactivateReason').addEventListener('change', function() {
-    document.getElementById('deactivateOtherReasonDiv').style.display = this.value === 'Other' ? 'block' : 'none';
-    checkDeactivateForm();
-});
-
-// Confirm name input
-document.getElementById('deactivateConfirmName').addEventListener('input', checkDeactivateForm);
-document.getElementById('deactivateOtherReason').addEventListener('input', checkDeactivateForm);
-
-function checkDeactivateForm() {
-    const reason = document.getElementById('deactivateReason').value;
-    const otherReason = document.getElementById('deactivateOtherReason').value.trim();
-    const confirmName = document.getElementById('deactivateConfirmName').value;
-    const isValid = reason && (reason !== 'Other' || otherReason) && confirmName === superAdminName;
-    document.getElementById('confirmDeactivateBtn').disabled = !isValid;
+const deactivateReason = document.getElementById('deactivateReason');
+if (deactivateReason) {
+    deactivateReason.addEventListener('change', function() {
+        const otherReasonDiv = document.getElementById('deactivateOtherReasonDiv');
+        if (otherReasonDiv) {
+            otherReasonDiv.style.display = this.value === 'Other' ? 'block' : 'none';
+        }
+        checkDeactivateForm();
+    });
 }
 
-document.getElementById('confirmDeactivateBtn').onclick = function() {
-    const reason = document.getElementById('deactivateReason').value;
-    const otherReason = document.getElementById('deactivateOtherReason').value;
-    const finalReason = reason === 'Other' ? otherReason : reason;
-    
-    closeModal('deactivateModal');
-    showToast('Deactivating admin account...', 'info');
+// Confirm name input
+const deactivateConfirmName = document.getElementById('deactivateConfirmName');
+const deactivateOtherReason = document.getElementById('deactivateOtherReason');
+if (deactivateConfirmName) deactivateConfirmName.addEventListener('input', checkDeactivateForm);
+if (deactivateOtherReason) deactivateOtherReason.addEventListener('input', checkDeactivateForm);
 
-    fetch(`/super-admin/admins/${currentAdminId}/deactivate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: finalReason })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            showToast(data.message || 'Admin deactivated successfully', true);
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast(data.error || 'Failed to deactivate admin', false);
-        }
-    })
-    .catch(() => showToast('Failed to deactivate admin', false));
-};
+function checkDeactivateForm() {
+    const reason = document.getElementById('deactivateReason')?.value;
+    const otherReason = document.getElementById('deactivateOtherReason')?.value.trim() || '';
+    const confirmName = document.getElementById('deactivateConfirmName')?.value || '';
+    const isValid = reason && (reason !== 'Other' || otherReason) && confirmName === superAdminName;
+    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+    if (confirmBtn) confirmBtn.disabled = !isValid;
+}
+
+const confirmDeactivateBtn = document.getElementById('confirmDeactivateBtn');
+if (confirmDeactivateBtn) {
+    confirmDeactivateBtn.onclick = function() {
+        const reason = document.getElementById('deactivateReason')?.value;
+        const otherReason = document.getElementById('deactivateOtherReason')?.value || '';
+        const finalReason = reason === 'Other' ? otherReason : reason;
+        
+        closeModal('deactivateModal');
+        showToast('Deactivating admin account...', 'info');
+
+        fetch(`/super-admin/admins/${currentAdminId}/deactivate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: finalReason })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Admin deactivated successfully', true);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Failed to deactivate admin', false);
+            }
+        })
+        .catch(() => showToast('Failed to deactivate admin', false));
+    };
+}
 
 // ── Activate (simple, no reason needed) ──
 function activateAdmin(id) {
     currentAdminId = id;
     document.getElementById('activateModal').style.display = 'flex';
 }
-document.getElementById('confirmActivateBtn').onclick = function() {
-    closeModal('activateModal');
-    showToast('Activating admin account...', 'info');
 
-    fetch(`/super-admin/admins/${currentAdminId}/activate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            showToast(data.message || 'Admin activated successfully', true);
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast(data.error || 'Failed to activate admin', false);
-        }
-    })
-    .catch(() => showToast('Failed to activate admin', false));
-};
+const confirmActivateBtn = document.getElementById('confirmActivateBtn');
+if (confirmActivateBtn) {
+    confirmActivateBtn.onclick = function() {
+        closeModal('activateModal');
+        showToast('Activating admin account...', 'info');
 
-function performAction(adminId, action) {
-    const actionText = action === 'deactivate' ? 'Deactivating' : 'Activating';
-    showToast(`${actionText} admin...`, 'info');
-    
-    fetch(`/super-admin/admins/${adminId}/${action}`, {
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const successMessage = action === 'deactivate' 
-                ? 'Admin deactivated successfully' 
-                : 'Admin activated successfully';
-            showToast(successMessage, true);
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast(data.error || `Failed to ${action} admin`, false);
-        }
-    })
-    .catch(() => {
-        showToast(`Failed to ${action} admin`, false);
-    });
+        fetch(`/super-admin/admins/${currentAdminId}/activate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Admin activated successfully', true);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Failed to activate admin', false);
+            }
+        })
+        .catch(() => showToast('Failed to activate admin', false));
+    };
 }
 
 // ── Delete ───────────────────
-let adminToDelete = null;
-
 function deleteAdmin(id) {
     adminToDelete = id;
-    document.getElementById('deleteReason').value = '';
-    document.getElementById('otherReason').value  = '';
-    document.getElementById('otherReasonDiv').style.display = 'none';
-    document.getElementById('confirmName').value  = '';
-    document.getElementById('confirmDeleteBtn').disabled = true;
-    document.getElementById('deleteModal').style.display  = 'flex';
+    const deleteReason = document.getElementById('deleteReason');
+    const otherReason = document.getElementById('otherReason');
+    const otherReasonDiv = document.getElementById('otherReasonDiv');
+    const confirmName = document.getElementById('confirmName');
+    
+    if (deleteReason) deleteReason.value = '';
+    if (otherReason) otherReason.value = '';
+    if (otherReasonDiv) otherReasonDiv.style.display = 'none';
+    if (confirmName) confirmName.value = '';
+    
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) confirmBtn.disabled = true;
+    
+    document.getElementById('deleteModal').style.display = 'flex';
 }
 
-document.getElementById('deleteReason').addEventListener('change', function() {
-    document.getElementById('otherReasonDiv').style.display = this.value === 'Other' ? 'block' : 'none';
-    checkDeleteForm();
-});
-document.getElementById('confirmName').addEventListener('input', checkDeleteForm);
-document.getElementById('otherReason').addEventListener('input', checkDeleteForm);
+const deleteReason = document.getElementById('deleteReason');
+if (deleteReason) {
+    deleteReason.addEventListener('change', function() {
+        const otherReasonDiv = document.getElementById('otherReasonDiv');
+        if (otherReasonDiv) {
+            otherReasonDiv.style.display = this.value === 'Other' ? 'block' : 'none';
+        }
+        checkDeleteForm();
+    });
+}
+
+const confirmNameInput = document.getElementById('confirmName');
+const otherReasonInput = document.getElementById('otherReason');
+if (confirmNameInput) confirmNameInput.addEventListener('input', checkDeleteForm);
+if (otherReasonInput) otherReasonInput.addEventListener('input', checkDeleteForm);
 
 function checkDeleteForm() {
-    const reason      = document.getElementById('deleteReason').value;
-    const otherReason = document.getElementById('otherReason').value.trim();
-    const confirmName = document.getElementById('confirmName').value;
+    const reason = document.getElementById('deleteReason')?.value;
+    const otherReason = document.getElementById('otherReason')?.value.trim() || '';
+    const confirmName = document.getElementById('confirmName')?.value || '';
     const valid = reason && (reason !== 'Other' || otherReason) && confirmName === superAdminName;
-    document.getElementById('confirmDeleteBtn').disabled = !valid;
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) confirmBtn.disabled = !valid;
 }
 
-document.getElementById('confirmDeleteBtn').onclick = function() {
-    const reason      = document.getElementById('deleteReason').value;
-    const otherReason = document.getElementById('otherReason').value;
-    const finalReason = reason === 'Other' ? otherReason : reason;
-    closeModal('deleteModal');
-    showToast('Deleting admin account...', 'info');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+if (confirmDeleteBtn) {
+    confirmDeleteBtn.onclick = function() {
+        const reason = document.getElementById('deleteReason')?.value;
+        const otherReason = document.getElementById('otherReason')?.value || '';
+        const finalReason = reason === 'Other' ? otherReason : reason;
+        closeModal('deleteModal');
+        showToast('Deleting admin account...', 'info');
 
-    fetch(`/super-admin/admins/${adminToDelete}/delete`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: finalReason, deleted_by: superAdminName })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) { showToast('Admin account deleted successfully', true); setTimeout(() => location.reload(), 1500); }
-        else showToast(data.error || 'Failed to delete admin', false);
-    })
-    .catch(() => showToast('Failed to delete admin', false));
-};
+        fetch(`/super-admin/admins/${adminToDelete}/delete`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: finalReason, deleted_by: superAdminName })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { 
+                showToast('Admin account deleted successfully', true); 
+                setTimeout(() => location.reload(), 1500); 
+            } else {
+                showToast(data.error || 'Failed to delete admin', false);
+            }
+        })
+        .catch(() => showToast('Failed to delete admin', false));
+    };
+}
 
 // ── Toast ────────────────────
 function showToast(msg, success) {
     const t = document.getElementById('ma-toast');
+    if (!t) return;
+    
     const inner = t.querySelector('.ma-toast-inner');
-    const icon  = t.querySelector('i');
+    const icon = t.querySelector('i');
+    const msgSpan = document.getElementById('ma-toast-msg');
 
     if (success === 'info') {
-        inner.style.background = '#1e40af';
-        icon.className = 'fas fa-spinner fa-spin';
+        if (inner) inner.style.background = '#1e40af';
+        if (icon) icon.className = 'fas fa-spinner fa-spin';
     } else {
-        inner.style.background = success ? '#059669' : '#c0392b';
-        icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        if (inner) inner.style.background = success ? '#059669' : '#c0392b';
+        if (icon) icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
     }
-    document.getElementById('ma-toast-msg').textContent = msg;
+    if (msgSpan) msgSpan.textContent = msg;
     t.style.display = 'block';
     if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
 }
