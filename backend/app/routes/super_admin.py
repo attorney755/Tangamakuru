@@ -154,6 +154,7 @@ def create_admin():
     
     return render_template('super_admin/create_admin.html', user=session.get('user'))
 
+
 @super_admin_bp.route('/admins/<int:admin_id>/deactivate', methods=['POST'])
 @super_admin_required
 def deactivate_admin(admin_id):
@@ -187,10 +188,14 @@ def deactivate_admin(admin_id):
         except Exception as email_error:
             print(f"Deactivation email failed: {email_error}")
         
-        return jsonify({'success': True, 'message': f'Admin {admin_name} has been deactivated'}), 200
+        return jsonify({
+            'success': True, 
+            'message': f'Admin {admin_name} has been deactivated'
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
 
 @super_admin_bp.route('/admins/<int:admin_id>/activate', methods=['POST'])
 @super_admin_required
@@ -225,7 +230,10 @@ def activate_admin(admin_id):
         except Exception as email_error:
             print(f"Activation email failed: {email_error}")
         
-        return jsonify({'success': True, 'message': f'Admin {admin_name} has been activated'}), 200
+        return jsonify({
+            'success': True, 
+            'message': f'Admin {admin_name} has been activated'
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
