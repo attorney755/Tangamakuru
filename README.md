@@ -110,12 +110,80 @@ pip install -r requirements.txt
 
 ---
 
+You're absolutely right! Let's improve the README to include PostgreSQL installation instructions for all platforms. Here's the updated section:
+
+---
+
 ## 4️ Set Up PostgreSQL Database
+
+### 📦 Install PostgreSQL (if not already installed)
+
+**Check if PostgreSQL is installed:**
+```bash
+# Check PostgreSQL version
+psql --version
+# Or for Linux
+which psql
+```
+
+If PostgreSQL is not installed, follow the instructions for your operating system:
+
+#### 🐧 **Linux (Ubuntu/Debian)**
+```bash
+# Update package list
+sudo apt update
+
+# Install PostgreSQL
+sudo apt install postgresql postgresql-contrib
+
+# Start PostgreSQL service
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+#### 🍎 **macOS**
+```bash
+# Using Homebrew
+brew install postgresql
+
+# Start PostgreSQL service
+brew services start postgresql
+```
+
+#### 🪟 **Windows**
+1. Download the installer from [postgresql.org/download/windows/](https://www.postgresql.org/download/windows/)
+2. Run the installer and follow the setup wizard
+3. Note the password you set for the `postgres` user
+4. Add PostgreSQL to your system PATH (usually `C:\Program Files\PostgreSQL\15\bin`)
+
+### 🔧 Start PostgreSQL Service
+
+**Linux:**
+```bash
+sudo systemctl start postgresql
+```
+
+**macOS:**
+```bash
+brew services start postgresql
+```
+
+**Windows:** PostgreSQL starts automatically as a Windows service after installation.
+
+### 🗄️ Create Database and User
+
+Login to PostgreSQL and create the database:
 
 ```bash
 # Login to PostgreSQL
 sudo -u postgres psql
 ```
+
+**For Windows:** Open Command Prompt as Administrator and run:
+```bash
+psql -U postgres
+```
+(Enter the password you set during installation)
 
 Run these SQL commands:
 ```sql
@@ -132,10 +200,11 @@ GRANT ALL PRIVILEGES ON DATABASE tangamakuru_db TO tangamakuru_user;
 
 ## 5️ Configure Environment Variables
 
-Create a `.env` file in the backend directory:
+Create a `.env` file in the `backend` directory:
 ```bash
+cd backend
 cp .env.example .env
-nano .env  # or use any text editor
+nano .env  # or use any text editor (vim, code, etc.)
 ```
 
 `.env` file content:
@@ -152,7 +221,7 @@ DATABASE_URL=postgresql://tangamakuru_user:your_secure_password@localhost/tangam
 UPLOAD_FOLDER=uploads
 MAX_CONTENT_LENGTH=16777216  # 16MB
 
-# Email Configuration (optional)
+# Email Configuration (optional - use for email notifications)
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USE_TLS=True
@@ -162,21 +231,42 @@ MAIL_PASSWORD=your-app-password
 
 ---
 
-## 6️ Create Database Tables (Run Migrations)
+## 6️Create Database Tables (Run Migrations)
 
 Important: The database is empty after creation. You need to create all the tables (users, reports, media, messages, etc.) using Flask-Migrate.
 
 ```bash
 cd backend
 ```
+
 ```bash
+# Run database migrations to create all tables
 flask db upgrade
 ```
+
+If you see an error like "No such command 'db'", make sure you're in the virtual environment:
+```bash
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+---
+
+## 7️ Create Uploads Directory
+
+Create the uploads folder in the `backend` directory to store evidence files:
+
+```bash
+cd backend
+mkdir -p uploads
+chmod 755 uploads  # Optional: set permissions
+```
+
 ---
 
 ## 🗃️ **Database Schema Overview**
 
-When you run the database setup command, the following tables will be **automatically created**:
+When you run `flask db upgrade`, the following tables will be **automatically created**:
 
 | **Table Name**          | **Description**                                                                 |
 |-------------------------|-------------------------------------------------------------------------------|
@@ -186,16 +276,44 @@ When you run the database setup command, the following tables will be **automati
 | **`messages`**          | Stores conversations between admins and officers.                           |
 | **`notifications`**     | Stores system notifications for users (e.g., report updates, requests).     |
 | **`announcements`**     | Stores system-wide announcements created by admins.                          |
-| **`pending_approvals`**| Tracks officer registration requests awaiting approval by district admins.  |
+| **`pending_approvals`** | Tracks officer registration requests awaiting approval by district admins.  |
 | **`user_announcements`**| Stores personalized copies of announcements for individual users.            |
 
 ---
-**Note:** These tables are designed to support the **Tangamakuru** platform’s core features, including user management, incident reporting, and communication.
 
-## 7️ Create Uploads Directory
+## 🔧 Troubleshooting Database Issues
 
-```bash
-mkdir -p uploads
+### ❌ "psql: command not found"
+- PostgreSQL is not installed or not in PATH. Reinstall or add PostgreSQL bin directory to PATH.
+
+### ❌ "FATAL: password authentication failed for user 'postgres'"
+- Reset PostgreSQL password:
+  ```bash
+  sudo -u postgres psql
+  ALTER USER postgres WITH PASSWORD 'new_password';
+  \q
+  ```
+
+### ❌ "ERROR: database 'tangamakuru_db' already exists"
+- Drop the existing database first:
+  ```sql
+  DROP DATABASE IF EXISTS tangamakuru_db;
+  CREATE DATABASE tangamakuru_db;
+  ```
+
+### ❌ "flask: command not found"
+- Activate virtual environment first:
+  ```bash
+  source venv/bin/activate  # On Windows: venv\Scripts\activate
+  ```
+
+### ❌ "No such command 'db'"
+- Flask-Migrate is not installed. Install it:
+  ```bash
+  pip install Flask-Migrate
+  ```
+
+---
 ```
 
 ---
@@ -212,8 +330,6 @@ python create_super_admin.py
 ```
 
 You will see the following prompt:
-
-Here’s a polished and user-friendly way to present this section in your `README.md`:
 
 ---
 
