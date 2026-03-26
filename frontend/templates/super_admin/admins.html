@@ -95,25 +95,49 @@
 
 </div>
 
-<!-- Deactivate Modal -->
+<!-- Deactivate Modal with Reason -->
 <div class="ma-modal-overlay" id="deactivateModal" style="display:none;">
-    <div class="ma-modal">
-        <div class="ma-modal-header ma-modal-header--danger">
-            <div class="ma-modal-title"><i class="fas fa-user-slash"></i> Deactivate Admin</div>
+    <div class="ma-modal ma-modal--wide">
+        <div class="ma-modal-header ma-modal-header--warning">
+            <div class="ma-modal-title"><i class="fas fa-user-slash"></i> Deactivate Admin Account</div>
             <button class="ma-modal-close" onclick="closeModal('deactivateModal')"><i class="fas fa-times"></i></button>
         </div>
         <div class="ma-modal-body">
-            <div class="ma-modal-icon ma-modal-icon--danger"><i class="fas fa-user-slash"></i></div>
-            <div class="ma-modal-heading">Are you absolutely sure?</div>
-            <p class="ma-modal-desc">This admin will lose system access immediately. They cannot log in until reactivated.</p>
-            <div class="ma-modal-note ma-modal-note--warning">
-                <i class="fas fa-exclamation-circle"></i>
-                This action can be reversed by activating the account again.
+            <div class="ma-modal-icon ma-modal-icon--warning"><i class="fas fa-user-slash"></i></div>
+            <div class="ma-modal-heading">Deactivate this admin account?</div>
+            <p class="ma-modal-desc">The admin will lose system access immediately. This action can be reversed by activating the account again.</p>
+
+            <div class="ma-deactivate-form">
+                <div class="ma-field">
+                    <label class="ma-label">Reason for Deactivation <span class="ma-req">*</span></label>
+                    <select class="ma-input ma-select" id="deactivateReason" required>
+                        <option value="">Select a reason...</option>
+                        <option value="Temporary suspension">Temporary suspension</option>
+                        <option value="Policy violation - pending review">Policy violation - pending review</option>
+                        <option value="Inactivity">Inactivity</option>
+                        <option value="Role change">Role change</option>
+                        <option value="Requested by admin">Requested by admin</option>
+                        <option value="Other">Other (specify below)</option>
+                    </select>
+                </div>
+                <div class="ma-field" id="deactivateOtherReasonDiv" style="display:none;">
+                    <label class="ma-label">Please specify</label>
+                    <textarea class="ma-textarea" id="deactivateOtherReason" rows="2" placeholder="Enter reason..."></textarea>
+                </div>
+                <div class="ma-field">
+                    <label class="ma-label">Type your full name to confirm <span class="ma-req">*</span></label>
+                    <input type="text" class="ma-input" id="deactivateConfirmName" placeholder="Enter your full name">
+                    <div class="ma-hint">Type exactly: <strong>{{ user.first_name }} {{ user.last_name }}</strong></div>
+                </div>
+                <div class="ma-modal-note ma-modal-note--warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    The admin will receive a notification and email with the reason for deactivation.
+                </div>
             </div>
         </div>
         <div class="ma-modal-footer">
             <button class="ma-btn ma-btn--ghost" onclick="closeModal('deactivateModal')"><i class="fas fa-times"></i> Cancel</button>
-            <button class="ma-btn ma-btn--danger" id="confirmDeactivateBtn"><i class="fas fa-user-slash"></i> Deactivate Admin</button>
+            <button class="ma-btn ma-btn--warning" id="confirmDeactivateBtn" disabled><i class="fas fa-user-slash"></i> Deactivate Admin</button>
         </div>
     </div>
 </div>
@@ -370,24 +394,87 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     });
 });
 
-// ── Deactivate ───────────────
+let currentAdminId = null;
+let superAdminName = "{{ user.first_name }} {{ user.last_name }}";
+
+// ── Deactivate with reason ───────────────
 function deactivateAdmin(id) {
     currentAdminId = id;
+    // Reset form
+    document.getElementById('deactivateReason').value = '';
+    document.getElementById('deactivateOtherReason').value = '';
+    document.getElementById('deactivateOtherReasonDiv').style.display = 'none';
+    document.getElementById('deactivateConfirmName').value = '';
+    document.getElementById('confirmDeactivateBtn').disabled = true;
     document.getElementById('deactivateModal').style.display = 'flex';
 }
+
+// Reason selection change
+document.getElementById('deactivateReason').addEventListener('change', function() {
+    document.getElementById('deactivateOtherReasonDiv').style.display = this.value === 'Other' ? 'block' : 'none';
+    checkDeactivateForm();
+});
+
+// Confirm name input
+document.getElementById('deactivateConfirmName').addEventListener('input', checkDeactivateForm);
+document.getElementById('deactivateOtherReason').addEventListener('input', checkDeactivateForm);
+
+function checkDeactivateForm() {
+    const reason = document.getElementById('deactivateReason').value;
+    const otherReason = document.getElementById('deactivateOtherReason').value.trim();
+    const confirmName = document.getElementById('deactivateConfirmName').value;
+    const isValid = reason && (reason !== 'Other' || otherReason) && confirmName === superAdminName;
+    document.getElementById('confirmDeactivateBtn').disabled = !isValid;
+}
+
 document.getElementById('confirmDeactivateBtn').onclick = function() {
+    const reason = document.getElementById('deactivateReason').value;
+    const otherReason = document.getElementById('deactivateOtherReason').value;
+    const finalReason = reason === 'Other' ? otherReason : reason;
+    
     closeModal('deactivateModal');
-    performAction(currentAdminId, 'deactivate');
+    showToast('Deactivating admin account...', 'info');
+
+    fetch(`/super-admin/admins/${currentAdminId}/deactivate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: finalReason })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message || 'Admin deactivated successfully', true);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.error || 'Failed to deactivate admin', false);
+        }
+    })
+    .catch(() => showToast('Failed to deactivate admin', false));
 };
 
-// ── Activate ─────────────────
+// ── Activate (simple, no reason needed) ──
 function activateAdmin(id) {
     currentAdminId = id;
     document.getElementById('activateModal').style.display = 'flex';
 }
 document.getElementById('confirmActivateBtn').onclick = function() {
     closeModal('activateModal');
-    performAction(currentAdminId, 'activate');
+    showToast('Activating admin account...', 'info');
+
+    fetch(`/super-admin/admins/${currentAdminId}/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message || 'Admin activated successfully', true);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.error || 'Failed to activate admin', false);
+        }
+    })
+    .catch(() => showToast('Failed to activate admin', false));
 };
 
 function performAction(adminId, action) {
