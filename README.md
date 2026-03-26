@@ -110,8 +110,6 @@ pip install -r requirements.txt
 
 ---
 
-You're absolutely right! Let's improve the README to include PostgreSQL installation instructions for all platforms. Here's the updated section:
-
 ---
 
 ## 4️ Set Up PostgreSQL Database
