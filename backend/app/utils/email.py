@@ -67,14 +67,15 @@ def send_admin_welcome_email(admin, password):
         return False
 
 
-def send_admin_deactivation_email(admin):
-    """Send deactivation email to an admin"""
+def send_admin_deactivation_email(admin, reason):
+    """Send deactivation email to an admin with reason"""
     try:
         return send_email(
             to=admin.email,
             subject="TANGAMAKURU - Your Admin Account Has Been Deactivated",
             template="emails/admin_deactivation.html",
-            admin=admin
+            admin=admin,
+            reason=reason
         )
     except Exception as e:
         print(f"Error sending admin deactivation email: {e}")
