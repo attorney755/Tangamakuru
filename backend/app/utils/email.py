@@ -45,6 +45,11 @@ def send_welcome_email(user):
             subject="Welcome to TANGAMAKURU!",
             template="emails/welcome.html",
             user=user
+        )
+    except Exception as e:
+        print(f"Error sending welcome email: {e}")
+        print(traceback.format_exc())
+        return False
 
 
 def send_admin_welcome_email(admin, password):
@@ -87,10 +92,4 @@ def send_admin_activation_email(admin):
         )
     except Exception as e:
         print(f"Error sending admin activation email: {e}")
-        return False
-            
-        )
-    except Exception as e:
-        print(f"Error sending welcome email: {e}")
-        print(traceback.format_exc())
         return False
