@@ -401,24 +401,6 @@ function closeModal(id) {
     }
 });
 
-let currentAdminId = null;
-let adminToDelete = null;
-const superAdminName = "{{ user.first_name }} {{ user.last_name }}";
-
-// ── Modal helpers ────────────
-function closeModal(id) { 
-    document.getElementById(id).style.display = 'none'; 
-}
-
-['deactivateModal', 'activateModal', 'deleteModal'].forEach(id => {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) closeModal(id);
-        });
-    }
-});
-
 // ── Deactivate with reason ───────────────
 function deactivateAdmin(id) {
     currentAdminId = id;
