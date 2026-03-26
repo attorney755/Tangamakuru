@@ -401,6 +401,24 @@ function closeModal(id) {
     }
 });
 
+let currentAdminId = null;
+let adminToDelete = null;
+const superAdminName = "{{ user.first_name }} {{ user.last_name }}";
+
+// ── Modal helpers ────────────
+function closeModal(id) { 
+    document.getElementById(id).style.display = 'none'; 
+}
+
+['deactivateModal', 'activateModal', 'deleteModal'].forEach(id => {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal(id);
+        });
+    }
+});
+
 // ── Deactivate with reason ───────────────
 function deactivateAdmin(id) {
     currentAdminId = id;
@@ -456,7 +474,7 @@ if (confirmDeactivateBtn) {
         const finalReason = reason === 'Other' ? otherReason : reason;
         
         closeModal('deactivateModal');
-        showToast('Deactivating admin account...', 'info');
+        showSuccessMessage('Deactivating admin account...', 'info');
 
         fetch(`/super-admin/admins/${currentAdminId}/deactivate`, {
             method: 'POST',
@@ -466,13 +484,15 @@ if (confirmDeactivateBtn) {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showToast(data.message || 'Admin deactivated successfully', true);
+                showSuccessMessage('✓ Admin account has been deactivated successfully!', 'success');
                 setTimeout(() => location.reload(), 1500);
             } else {
-                showToast(data.error || 'Failed to deactivate admin', false);
+                showSuccessMessage('✗ Failed to deactivate admin: ' + (data.error || 'Unknown error'), 'error');
             }
         })
-        .catch(() => showToast('Failed to deactivate admin', false));
+        .catch(() => {
+            showSuccessMessage('✗ Network error. Please try again.', 'error');
+        });
     };
 }
 
@@ -486,7 +506,7 @@ const confirmActivateBtn = document.getElementById('confirmActivateBtn');
 if (confirmActivateBtn) {
     confirmActivateBtn.onclick = function() {
         closeModal('activateModal');
-        showToast('Activating admin account...', 'info');
+        showSuccessMessage('Activating admin account...', 'info');
 
         fetch(`/super-admin/admins/${currentAdminId}/activate`, {
             method: 'POST',
@@ -495,13 +515,15 @@ if (confirmActivateBtn) {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showToast(data.message || 'Admin activated successfully', true);
+                showSuccessMessage('✓ Admin account has been activated successfully!', 'success');
                 setTimeout(() => location.reload(), 1500);
             } else {
-                showToast(data.error || 'Failed to activate admin', false);
+                showSuccessMessage('✗ Failed to activate admin: ' + (data.error || 'Unknown error'), 'error');
             }
         })
-        .catch(() => showToast('Failed to activate admin', false));
+        .catch(() => {
+            showSuccessMessage('✗ Network error. Please try again.', 'error');
+        });
     };
 }
 
@@ -556,7 +578,7 @@ if (confirmDeleteBtn) {
         const otherReason = document.getElementById('otherReason')?.value || '';
         const finalReason = reason === 'Other' ? otherReason : reason;
         closeModal('deleteModal');
-        showToast('Deleting admin account...', 'info');
+        showSuccessMessage('Deleting admin account...', 'info');
 
         fetch(`/super-admin/admins/${adminToDelete}/delete`, {
             method: 'DELETE',
@@ -566,18 +588,20 @@ if (confirmDeleteBtn) {
         .then(r => r.json())
         .then(data => {
             if (data.success) { 
-                showToast('Admin account deleted successfully', true); 
+                showSuccessMessage('✓ Admin account has been deleted successfully!', 'success');
                 setTimeout(() => location.reload(), 1500); 
             } else {
-                showToast(data.error || 'Failed to delete admin', false);
+                showSuccessMessage('✗ Failed to delete admin: ' + (data.error || 'Unknown error'), 'error');
             }
         })
-        .catch(() => showToast('Failed to delete admin', false));
+        .catch(() => {
+            showSuccessMessage('✗ Network error. Please try again.', 'error');
+        });
     };
 }
 
-// ── Toast ────────────────────
-function showToast(msg, success) {
+// ── Success Message ────────────────────
+function showSuccessMessage(msg, type) {
     const t = document.getElementById('ma-toast');
     if (!t) return;
     
@@ -585,16 +609,19 @@ function showToast(msg, success) {
     const icon = t.querySelector('i');
     const msgSpan = document.getElementById('ma-toast-msg');
 
-    if (success === 'info') {
+    if (type === 'info') {
         if (inner) inner.style.background = '#1e40af';
         if (icon) icon.className = 'fas fa-spinner fa-spin';
+    } else if (type === 'success') {
+        if (inner) inner.style.background = '#059669';
+        if (icon) icon.className = 'fas fa-check-circle';
     } else {
-        if (inner) inner.style.background = success ? '#059669' : '#c0392b';
-        if (icon) icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        if (inner) inner.style.background = '#c0392b';
+        if (icon) icon.className = 'fas fa-exclamation-circle';
     }
     if (msgSpan) msgSpan.textContent = msg;
     t.style.display = 'block';
-    if (success !== 'info') setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+    if (type !== 'info') setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 </script>
 
