@@ -439,11 +439,11 @@ Tangamakuru/
 
 After running `create_super_admin.py`, this account is created:
 
-| Role         | Email                  | Password       |
-|--------------|------------------------|----------------|
-| Super Admin  | superadmin@gov.rw      | Vanessa@2025   |
+| Role         | Email                    | Password                      |
+|--------------|--------------------------|------------------------------ |
+| Super Admin  | super admin email created| Password you used in step 9   |
 
-**Note:** District admins must be created by the Super Admin from the dashboard. Officers must self-register and be approved by their district admin.
+**Note:** District admins must be created by the Super Admin from the dashboard. Officers can be created by admins or self-register and be approved by their district admin.
 
 ---
 
