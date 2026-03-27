@@ -1,3 +1,7 @@
+Perfect! Now I have your current README. Let me create an updated version with all the Windows-specific fixes and email setup instructions. Here's the updated README with all the improvements:
+
+---
+
 # TANGAMAKURU - Rwanda Crime Reporting System
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
@@ -5,6 +9,8 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12%2B-blue.svg)](https://www.postgresql.org/)
 
 A comprehensive digital platform for reporting and managing crime incidents in Rwanda. Citizens can report incidents with evidence, officers can manage cases, and administrators can oversee the entire system.
+
+---
 
 ## 📋 Table of Contents
 
@@ -17,6 +23,8 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 - [Usage Guide](#usage-guide)
 - [Troubleshooting](#troubleshooting)
 - [Security Notes](#security-notes)
+
+---
 
 ## ✨ Features
 
@@ -50,6 +58,8 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 - Admin account management (activate/deactivate/delete)
 - View system-wide statistics
 
+---
+
 ## 🛠 Technology Stack
 
 | Component | Technology |
@@ -64,7 +74,9 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 | File Uploads | Local storage with secure filenames |
 | Charts | Matplotlib |
 | Background Tasks | Celery with Redis |
-| Email | Flask-Mail (optional) |
+| Email | Flask-Mail |
+
+---
 
 ## 📋 Prerequisites
 
@@ -73,11 +85,11 @@ A comprehensive digital platform for reporting and managing crime incidents in R
 - **Git** (for cloning the repository)
 - **Redis** (optional, for Celery background tasks)
 
-## 🚀 Installation Steps
-
 ---
 
-## 1️Clone the Repository
+## 🚀 Installation Steps
+
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/attorney755/Tangamakuru.git
@@ -86,22 +98,23 @@ cd Tangamakuru
 
 ---
 
-## 2️Create and Activate Virtual Environment
+### 2️⃣ Create and Activate Virtual Environment
 
-- **Linux/macOS:**
-  ```bash
-  python3.10 -m venv venv
-  source venv/bin/activate
-  ```
-- **Windows:**
-  ```cmd
-  python -m venv venv
-  venv\Scripts\activate
-  ```
+**Linux/macOS:**
+```bash
+python3.10 -m venv venv
+source venv/bin/activate
+```
+
+**Windows:**
+```cmd
+python -m venv venv
+venv\Scripts\activate
+```
 
 ---
 
-## 3️Install Dependencies
+### 3️⃣ Install Dependencies
 
 ```bash
 cd backend
@@ -110,80 +123,71 @@ pip install -r requirements.txt
 
 ---
 
----
+### 4️⃣ Set Up PostgreSQL Database
 
-## 4️ Set Up PostgreSQL Database
-
-### 📦 Install PostgreSQL (if not already installed)
+#### 📦 **Install PostgreSQL (if not already installed)**
 
 **Check if PostgreSQL is installed:**
 ```bash
-# Check PostgreSQL version
 psql --version
-# Or for Linux
-which psql
 ```
 
-If PostgreSQL is not installed, follow the instructions for your operating system:
+**If not installed, follow these instructions:**
 
-#### 🐧 **Linux (Ubuntu/Debian)**
+<details>
+<summary><b>🐧 Linux (Ubuntu/Debian)</b></summary>
+
 ```bash
-# Update package list
 sudo apt update
-
-# Install PostgreSQL
 sudo apt install postgresql postgresql-contrib
-
-# Start PostgreSQL service
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
 ```
+</details>
 
-#### 🍎 **macOS**
+<details>
+<summary><b>🍎 macOS</b></summary>
+
 ```bash
-# Using Homebrew
 brew install postgresql
-
-# Start PostgreSQL service
 brew services start postgresql
 ```
+</details>
 
-#### 🪟 **Windows**
+<details>
+<summary><b>🪟 Windows</b></summary>
+
 1. Download the installer from [postgresql.org/download/windows/](https://www.postgresql.org/download/windows/)
 2. Run the installer and follow the setup wizard
-3. Note the password you set for the `postgres` user
-4. Add PostgreSQL to your system PATH (usually `C:\Program Files\PostgreSQL\15\bin`)
+3. **Remember the password** you set for the `postgres` user
+4. **Fix the PATH** so you can run `psql` from any location:
+   - Click Start and type: `env`
+   - Select "Edit the system environment variables"
+   - Click "Environment Variables"
+   - In "System variables", find `Path` and click Edit
+   - Click New and add: `C:\Program Files\PostgreSQL\18\bin`
+   - Click OK on all windows
+   - **Close and reopen** your Command Prompt/PowerShell
+</details>
 
-### 🔧 Start PostgreSQL Service
+---
 
-**Linux:**
+#### 🗄️ **Create Database and User**
+
+**Login to PostgreSQL:**
+
+**Linux/macOS:**
 ```bash
-sudo systemctl start postgresql
-```
-
-**macOS:**
-```bash
-brew services start postgresql
-```
-
-**Windows:** PostgreSQL starts automatically as a Windows service after installation.
-
-### 🗄️ Create Database and User
-
-Login to PostgreSQL and create the database:
-
-```bash
-# Login to PostgreSQL
 sudo -u postgres psql
 ```
 
-**For Windows:** Open Command Prompt as Administrator and run:
-```bash
+**Windows:**
+```cmd
 psql -U postgres
 ```
 (Enter the password you set during installation)
 
-Run these SQL commands:
+**Run these SQL commands:**
 ```sql
 CREATE DATABASE tangamakuru_db;
 CREATE USER tangamakuru_user WITH PASSWORD 'your_secure_password';
@@ -191,18 +195,21 @@ ALTER ROLE tangamakuru_user SET client_encoding TO 'utf8';
 ALTER ROLE tangamakuru_user SET default_transaction_isolation TO 'read committed';
 ALTER ROLE tangamakuru_user SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE tangamakuru_db TO tangamakuru_user;
+\c tangamakuru_db
+GRANT ALL ON SCHEMA public TO tangamakuru_user;
 \q
 ```
 
+> **⚠️ Important for PostgreSQL 15+:** The last two commands (`\c tangamakuru_db` and `GRANT ALL ON SCHEMA public`) are **required** to give your user permission to create tables. Without them, you'll get a "permission denied for schema public" error.
+
 ---
 
-## 5️ Configure Environment Variables
+### 5️⃣ Configure Environment Variables
 
 Create a `.env` file in the `backend` directory:
 ```bash
-cd backend
 cp .env.example .env
-nano .env  # or use any text editor (vim, code, etc.)
+nano .env  # or use any text editor
 ```
 
 `.env` file content:
@@ -219,52 +226,88 @@ DATABASE_URL=postgresql://tangamakuru_user:your_secure_password@localhost/tangam
 UPLOAD_FOLDER=uploads
 MAX_CONTENT_LENGTH=16777216  # 16MB
 
-# Email Configuration (optional - use for email notifications)
+# Email Configuration (for welcome emails)
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USE_TLS=True
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
+MAIL_DEFAULT_SENDER=your-email@gmail.com
 ```
 
 ---
 
-## 6️Create Database Tables (Run Migrations)
+#### 📧 **Setting Up Gmail App Password (For Email)**
 
-Important: The database is empty after creation. You need to create all the tables (users, reports, media, messages, etc.) using Flask-Migrate.
+To send welcome emails, you need a Gmail App Password (not your regular password):
+
+1. **Enable 2-Step Verification** on your Google Account
+2. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Select **App:** "Mail"
+4. Select **Device:** "Other (Custom name)"
+5. Enter "Tangamakuru" as the device name
+6. Click **Generate**
+7. Copy the 16-character password (e.g., `xxxx xxxx xxxx xxxx`)
+8. **Remove spaces** and use it as `MAIL_PASSWORD` in your `.env` file
+
+Example:
+```ini
+MAIL_PASSWORD=xxxxxxxxxxxxxxxx  # No spaces!
+```
+
+---
+
+### 6️⃣ Install GTK+ for Windows (WeasyPrint PDF Generation)
+
+**Important for Windows users only!** WeasyPrint (used for PDF reports) requires GTK+ libraries.
+
+1. Download GTK3 Runtime from [GitHub](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases)
+   - Recommended: `gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe`
+2. Run the installer
+3. **Crucial:** Check the box **"Add GTK to the PATH environment variable"**
+4. Complete installation
+5. **Restart your terminal** (close and reopen Command Prompt/PowerShell)
+
+---
+
+### 7️⃣ Create Database Tables (Run Migrations)
+
+**Important:** The database is empty after creation. You need to create all the tables (users, reports, media, messages, etc.) using Flask-Migrate.
 
 ```bash
 cd backend
 ```
 
+**If this is your first time running migrations:**
 ```bash
-# Run database migrations to create all tables
+flask db init
+flask db migrate -m "Initial migration"
 flask db upgrade
 ```
 
-If you see an error like "No such command 'db'", make sure you're in the virtual environment:
-```bash
-# Activate virtual environment
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+**If you already have migrations and get errors:**
+- If you see `permission denied for schema public`, run the `GRANT ALL ON SCHEMA` commands from Step 4
+- If you see `relation "notifications" does not exist`, your migration history is out of sync. Reset with:
+  ```sql
+  DROP DATABASE tangamakuru_db;
+  CREATE DATABASE tangamakuru_db;
+  \c tangamakuru_db
+  GRANT ALL ON SCHEMA public TO tangamakuru_user;
+  \q
+  ```
+  Then run:
+  ```bash
+  rm -rf migrations/
+  flask db init
+  flask db migrate -m "Initial migration"
+  flask db upgrade
+  ```
 
 ---
 
-## 7️ Create Uploads Directory
+### 🗃️ **Database Schema Overview**
 
-Create the uploads folder in the `backend` directory to store evidence files:
-
-```bash
-cd backend
-mkdir -p uploads
-chmod 755 uploads  # Optional: set permissions
-```
-
----
-
-## 🗃️ **Database Schema Overview**
-
-When you run `flask db upgrade`, the following tables will be **automatically created**:
+When you run the database setup command, the following tables will be **automatically created**:
 
 | **Table Name**          | **Description**                                                                 |
 |-------------------------|-------------------------------------------------------------------------------|
@@ -274,53 +317,22 @@ When you run `flask db upgrade`, the following tables will be **automatically cr
 | **`messages`**          | Stores conversations between admins and officers.                           |
 | **`notifications`**     | Stores system notifications for users (e.g., report updates, requests).     |
 | **`announcements`**     | Stores system-wide announcements created by admins.                          |
-| **`pending_approvals`** | Tracks officer registration requests awaiting approval by district admins.  |
+| **`pending_approvals`**| Tracks officer registration requests awaiting approval by district admins.  |
 | **`user_announcements`**| Stores personalized copies of announcements for individual users.            |
 
 ---
 
-## 🔧 Troubleshooting Database Issues
+### 8️⃣ Create Uploads Directory
 
-### ❌ "psql: command not found"
-- PostgreSQL is not installed or not in PATH. Reinstall or add PostgreSQL bin directory to PATH.
-
-### ❌ "FATAL: password authentication failed for user 'postgres'"
-- Reset PostgreSQL password:
-  ```bash
-  sudo -u postgres psql
-  ALTER USER postgres WITH PASSWORD 'new_password';
-  \q
-  ```
-
-### ❌ "ERROR: database 'tangamakuru_db' already exists"
-- Drop the existing database first:
-  ```sql
-  DROP DATABASE IF EXISTS tangamakuru_db;
-  CREATE DATABASE tangamakuru_db;
-  ```
-
-### ❌ "flask: command not found"
-- Activate virtual environment first:
-  ```bash
-  source venv/bin/activate  # On Windows: venv\Scripts\activate
-  ```
-
-### ❌ "No such command 'db'"
-- Flask-Migrate is not installed. Install it:
-  ```bash
-  pip install Flask-Migrate
-  ```
-
----
+```bash
+mkdir -p uploads
 ```
 
 ---
 
-## 8️ Create the Super Admin Account
+### 9️⃣ Create the Super Admin Account
 
 After setting up the database and running migrations, create the Super Admin account using the interactive script:
-
-### Step 1: Run the Super Admin Creation Script
 
 ```bash
 cd backend
@@ -329,11 +341,7 @@ python create_super_admin.py
 
 You will see the following prompt:
 
----
-
-## 🔐 **Super Admin Account Setup**
-
-```plaintext
+```
 ==================================================
 TANGAMAKURU - Super Admin Account Setup
 ==================================================
@@ -350,18 +358,19 @@ Last Name: [Enter your last name]
 Create a strong password (minimum 8 characters): [Enter your password]
 ```
 
-### **Notes:**
-- The **email address** must end with `@gov.rw` (e.g., `superadmin@gov.rw`).
-- The **password** must be at least **8 characters** long.
-- This account will have **full administrative privileges** to manage the entire platform.
+**Notes:**
+- The **email address** must end with `@gov.rw` (e.g., `superadmin@gov.rw`)
+- The **password** must be at least **8 characters** long
+- This account will have **full administrative privileges** to manage the entire platform
 
 ---
 
-## 9️ Start the Application
+### 🔟 Start the Application
 
 ```bash
 python run.py
 ```
+
 The application will be available at: [http://localhost:5000](http://localhost:5000)
 
 ---
@@ -370,15 +379,12 @@ The application will be available at: [http://localhost:5000](http://localhost:5
 
 You can test the **Tangamakuru** platform online using the following **Super Admin** credentials:
 
-### **Login Details**
 | **Email**            | **Password**      |
 |----------------------|--------------------|
 | `superadmin@gov.rw`  | `Vanessa@2025`     |
 
-### **Access the Platform**
-🔗 **[Visit Tangamakuru Online](https://tangamakuru.onrender.com)**
+**Access the Platform:** 🔗 [https://tangamakuru.onrender.com](https://tangamakuru.onrender.com)
 
----
 **Note:** These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
 - Super Admin dashboard
 - Officer and citizen workflows
@@ -411,7 +417,7 @@ Tangamakuru/
 │   ├── uploads/              # Uploaded files (created on first upload)
 │   ├── requirements.txt      # Python dependencies
 │   ├── run.py               # Application entry point
-│   ├── create_admin.py      # Create default users
+│   ├── create_super_admin.py # Create super admin account
 │   └── .env.example         # Environment variables template
 ├── frontend/
 │   └── templates/           # All HTML templates
@@ -432,14 +438,13 @@ Tangamakuru/
 
 ## 🔑 Default Accounts
 
-After running `create_admin.py`, these accounts are created:
+After running `create_super_admin.py`, this account is created:
 
 | Role         | Email                  | Password       |
 |--------------|------------------------|----------------|
 | Super Admin  | superadmin@gov.rw      | Vanessa@2025   |
 
-
-**Note:** This account is for testing purposes only and district admins must be created by the Super Admin from the dashboard.
+**Note:** District admins must be created by the Super Admin from the dashboard. Officers must self-register and be approved by their district admin.
 
 ---
 
@@ -481,25 +486,107 @@ After running `create_admin.py`, these accounts are created:
 
 ## 🛠 Troubleshooting
 
-### Python 3.12 datetime error
+### Common Issues and Solutions
+
+<details>
+<summary><b>🐍 Python 3.12 datetime error</b></summary>
+
 **Error:**
 ```
 AttributeError: module 'datetime' has no attribute 'utcnow'
 ```
 **Solution:** Use Python 3.10 or 3.11. The app is tested with Python 3.10.
+</details>
 
-### Database connection error
+<details>
+<summary><b>🐘 PostgreSQL 'psql' command not found</b></summary>
+
 **Error:**
 ```
-psycopg2.OperationalError: could not connect to server
+'psql' is not recognized as an internal or external command
 ```
-**Solution:** Ensure PostgreSQL is running:
-```bash
-sudo systemctl start postgresql  # Linux
-brew services start postgresql   # macOS
-```
+**Solution:** Add PostgreSQL to your PATH:
+- Windows: Add `C:\Program Files\PostgreSQL\18\bin` to System PATH
+- macOS/Linux: PostgreSQL is usually in `/usr/local/bin/`
+</details>
 
-### Upload folder permission error
+<details>
+<summary><b>🔒 Permission denied for schema public</b></summary>
+
+**Error:**
+```
+psycopg2.errors.InsufficientPrivilege: permission denied for schema public
+```
+**Solution:** Run these SQL commands:
+```sql
+\c tangamakuru_db
+GRANT ALL ON SCHEMA public TO tangamakuru_user;
+```
+</details>
+
+<details>
+<summary><b>📄 WeasyPrint cannot load library 'libgobject-2.0-0' (Windows)</b></summary>
+
+**Error:**
+```
+OSError: cannot load library 'libgobject-2.0-0'
+```
+**Solution:** Install GTK3 Runtime:
+1. Download from [GitHub](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases)
+2. Run installer and check **"Add GTK to PATH"**
+3. Restart terminal
+</details>
+
+<details>
+<summary><b>📧 Email sending fails</b></summary>
+
+**Error:**
+```
+Email sending failed: Connection timeout
+```
+**Solution:**
+1. Use an **App Password** (not your regular Gmail password)
+2. Verify `MAIL_PASSWORD` has no spaces
+3. For Render free tier, use port `2525` instead of `587`
+</details>
+
+<details>
+<summary><b>🗄️ Migration error - relation does not exist</b></summary>
+
+**Error:**
+```
+psycopg2.errors.UndefinedTable: relation "notifications" does not exist
+```
+**Solution:** Reset migrations (if no important data):
+```sql
+DROP DATABASE tangamakuru_db;
+CREATE DATABASE tangamakuru_db;
+\c tangamakuru_db
+GRANT ALL ON SCHEMA public TO tangamakuru_user;
+\q
+```
+Then:
+```bash
+rm -rf migrations/
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+```
+</details>
+
+<details>
+<summary><b>🔑 Missing secret key error</b></summary>
+
+**Error:**
+```
+RuntimeError: The session is unavailable because no secret key was set
+```
+**Solution:** Make sure `.env` file exists and contains `SECRET_KEY=your-secret-key`
+</details>
+
+<details>
+<summary><b>🌐 Upload folder permission error</b></summary>
+
 **Error:**
 ```
 PermissionError: [Errno 13] Permission denied: 'uploads'
@@ -509,33 +596,17 @@ PermissionError: [Errno 13] Permission denied: 'uploads'
 mkdir -p uploads
 chmod 755 uploads
 ```
-
-### Migration error - missing tables
-**Error:**
-```
-sqlalchemy.exc.ProgrammingError: relation "users" does not exist
-```
-**Solution:**
-```bash
-flask db upgrade
-```
-
-### Missing secret key error
-**Error:**
-```
-RuntimeError: The session is unavailable because no secret key was set
-```
-**Solution:** Make sure `.env` file exists and contains `SECRET_KEY=your-secret-key`
+</details>
 
 ---
 
 ## 🔒 Security Notes
-- Never commit the `.env` file to version control
-- Change default passwords in production
-- Use HTTPS in production (configure with Nginx/Apache)
-- Set `FLASK_ENV=production` in production
-- Regularly update dependencies: `pip install --upgrade -r requirements.txt`
-- Set `SESSION_COOKIE_SECURE = True` when using HTTPS
+- ❌ Never commit the `.env` file to version control
+- 🔄 Change default passwords in production
+- 🔒 Use HTTPS in production (configure with Nginx/Apache)
+- ⚙️ Set `FLASK_ENV=production` in production
+- 📦 Regularly update dependencies: `pip install --upgrade -r requirements.txt`
+- 🍪 Set `SESSION_COOKIE_SECURE = True` when using HTTPS
 
 ---
 
@@ -545,6 +616,7 @@ Copyright © 2026 Attorney Valois NIYIGABA. All rights reserved.
 ---
 
 ## 👨‍💻 Author
+
 **Attorney Valois NIYIGABA**
 - GitHub: [attorney755](https://github.com/attorney755)
 - Email: [attorneyvalois@gmail.com](mailto:attorneyvalois@gmail.com)
@@ -555,3 +627,7 @@ Copyright © 2026 Attorney Valois NIYIGABA. All rights reserved.
 - Rwanda National Police for the inspiration
 - Flask community for the excellent framework
 - Bootstrap for the responsive design components
+
+---
+
+**Need help?** Create an issue on GitHub or contact the author.
