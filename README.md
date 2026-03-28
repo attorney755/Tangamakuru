@@ -378,18 +378,52 @@ The application will be available at: [http://localhost:5000](http://localhost:5
 
 You can test the **Tangamakuru** platform online using the following **Super Admin** credentials:
 
-| **Email**            | **Password**      |
-|----------------------|--------------------|
-| `superadmin@gov.rw`  | `Vanessa@2025`     |
+| **Email** | **Password** |
+|-----------|--------------|
+| `superadmin@gov.rw` | `Vanessa@2025` |
 
 **Access the Platform:** 🔗 [https://tangamakuru.onrender.com](https://tangamakuru.onrender.com)
 
-**Note:** These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
-- Super Admin dashboard
-- Officer and citizen workflows
-- Reporting and case management
+---
+
+### ⏳ **Important Note About Render Free Tier**
+
+> **The platform is hosted on Render's free tier.**  
+> Free instances **spin down after 15 minutes of inactivity**. When you visit the site after it has been idle, you may experience a **30–50 second delay** as the service "wakes up" from sleep.  
+>  
+> 🔄 **If the site is building or loading slowly, please wait a moment and refresh the page.** This is normal behavior for free-tier hosting and does not indicate a problem with the platform itself.
 
 ---
+
+### 🧪 **What You Can Test**
+
+These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
+
+- ✅ **Super Admin Dashboard** – View system-wide statistics and manage users
+- ✅ **Create District Admins** – Set up administrators for different districts
+- ✅ **Officer Registration & Approval** – Test officer self-registration and admin approval workflows
+- ✅ **Citizen Report Submission** – Submit reports with evidence and track status
+- ✅ **Messaging System** – Communicate between admins and officers
+- ✅ **Real-Time Notifications** – Receive updates on case progress
+
+---
+
+### 🚀 **Getting Started After Wake-Up**
+
+Once the site is awake, you can:
+
+1. **Login** with the credentials above
+2. **Navigate to Super Admin Dashboard** – Manage all users and system settings
+3. **Create a District Admin** – From the "Manage Admins" section
+4. **Test Officer Registration** – Use `/officer/register` to sign up as an officer
+5. **Test Citizen Reporting** – Register as a citizen and submit a report
+
+---
+
+### 💡 **Pro Tip**
+
+To minimize delays during testing, try to keep the site active by occasionally refreshing the page. The first visit after inactivity will be the slowest; subsequent actions will be faster once the instance is awake.
+
 
 ## 📁 Project Structure
 
