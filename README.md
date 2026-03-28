@@ -406,6 +406,11 @@ These credentials are for **testing purposes only**. Use them to explore the pla
 - ✅ **Messaging System** – Communicate between admins and officers
 - ✅ **Real-Time Notifications** – Receive updates on case progress
 
+**Note:** These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
+- Super Admin dashboard
+- Officer and citizen workflows
+- Reporting and case management
+
 ---
 
 ### 🚀 **Getting Started After Wake-Up**
@@ -423,6 +428,8 @@ Once the site is awake, you can:
 ### 💡 **Pro Tip**
 
 To minimize delays during testing, try to keep the site active by occasionally refreshing the page. The first visit after inactivity will be the slowest; subsequent actions will be faster once the instance is awake.
+
+---
 
 
 ## 📁 Project Structure
