@@ -397,8 +397,6 @@ You can test the **Tangamakuru** platform online using the following **Super Adm
 
 ### 🧪 **What You Can Test**
 
-These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
-
 - ✅ **Super Admin Dashboard** – View system-wide statistics and manage users
 - ✅ **Create District Admins** – Set up administrators for different districts
 - ✅ **Officer Registration & Approval** – Test officer self-registration and admin approval workflows
@@ -406,10 +404,7 @@ These credentials are for **testing purposes only**. Use them to explore the pla
 - ✅ **Messaging System** – Communicate between admins and officers
 - ✅ **Real-Time Notifications** – Receive updates on case progress
 
-**Note:** These credentials are for **testing purposes only**. Use them to explore the platform’s features, including:
-- Super Admin dashboard
-- Officer and citizen workflows
-- Reporting and case management
+**Note:** These credentials are for **testing purposes only**. Use them to explore the platform’s features only:
 
 ---
 
