@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to TANGAMAKURU - Admin Account</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .email-header {
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .email-header svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+        }
+        .email-header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .email-body {
+            padding: 30px;
+        }
+        .welcome-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .credentials-box {
+            background: #f8f9fa;
+            border-left: 4px solid #1a237e;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .credentials-box p {
+            margin: 8px 0;
+        }
+        .credentials-box strong {
+            color: #1a237e;
+        }
+        .password-box {
+            background: #e8eaf6;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            text-align: center;
+            margin: 10px 0;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #856404;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #f5f7fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #1a237e;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <svg width="60" height="60" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="white"/>
+                        <stop offset="100%" stop-color="#e8eaf6"/>
+                    </linearGradient>
+                </defs>
+                <path fill="url(#headerGrad)" d="M50 5 L15 25 L15 45 C15 70 30 85 50 95 C70 85 85 70 85 45 L85 25 L50 5 Z"/>
+                <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="#1a237e" font-family="Arial, sans-serif">T</text>
+            </svg>
+            <h1>Welcome to TANGAMAKURU</h1>
+        </div>
+        
+        <div class="email-body">
+            <div class="welcome-text">
+                Hello <strong>{{ admin.first_name }} {{ admin.last_name }}</strong>,
+            </div>
+            
+            <p style="color: #555; line-height: 1.6;">
+                Your administrator account for <strong>TANGAMAKURU</strong> has been created by a Super Administrator.
+                You can now log in to manage officers and reports in your district.
+            </p>
+            
+            <div class="credentials-box">
+                <p><strong>📧 Email:</strong> {{ admin.email }}</p>
+                <p><strong>🔑 Temporary Password:</strong></p>
+                <div class="password-box">{{ password }}</div>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ Important:</strong> Please change your password after your first login for security purposes.
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="https://tangamakuru.onrender.com/login" class="button">Login to Your Account</a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p style="color: #555; font-size: 14px;">
+                <strong>Your Responsibilities as an Admin:</strong>
+            </p>
+            <ul style="color: #555; font-size: 14px;">
+                <li>Manage officers in your district</li>
+                <li>Approve new officer registrations</li>
+                <li>View and assign reports</li>
+                <li>Communicate with officers via the messaging system</li>
+            </ul>
+            
+            <div class="divider"></div>
+            
+            <p style="color: #888; font-size: 12px;">
+                <em>This is an automated message from TANGAMAKURU. Please do not reply to this email.</em>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2026 TANGAMAKURU - Rwanda Crime Reporting System</p>
+            <p>Building a Safer Rwanda Together</p>
+        </div>
+    </div>
+</body>
+</html>
