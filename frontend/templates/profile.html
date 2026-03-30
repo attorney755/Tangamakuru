@@ -250,7 +250,6 @@
     </div>
 </div>
 
-<!-- Toast -->
 <div id="cp-toast" class="cp-toast" style="display:none;">
     <div class="cp-toast-inner">
         <i id="cp-toast-icon" class="fas fa-check-circle"></i>
@@ -420,8 +419,6 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 </style>
 
 <script>
-let currentUserId = null;
-
 function showTab(tab) {
     ['view','edit','password'].forEach(t => {
         document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
