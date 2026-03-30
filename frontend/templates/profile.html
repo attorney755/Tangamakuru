@@ -420,6 +420,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 </style>
 
 <script>
+let currentUserId = null;
+
 function showTab(tab) {
     ['view','edit','password'].forEach(t => {
         document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
@@ -427,6 +429,7 @@ function showTab(tab) {
     });
 }
 
+// ── Profile Update ───────────────
 document.getElementById('profileEditForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
@@ -446,31 +449,43 @@ document.getElementById('profileEditForm')?.addEventListener('submit', async fun
     };
 
     try {
-        const res  = await fetch('/api/profile/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formData) });
+        const res = await fetch('/api/profile/update', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(formData) 
+        });
         const data = await res.json();
+        
         if (res.ok) {
-            showInlineMsg('editMessage', '✓ Profile updated successfully!', 'success');
-            showToast('✓ Profile updated successfully', true);
-            setTimeout(() => location.reload(), 1600);
+            showSuccessMessage('✓ Profile updated successfully!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            const errorMsg = data.error || 'Failed to update profile';
-            showInlineMsg('editMessage', '✗ ' + errorMsg, 'danger');
-            showToast('✗ ' + errorMsg, false);
+            showSuccessMessage('✗ ' + (data.error || 'Failed to update profile'), 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        showInlineMsg('editMessage', '✗ Network error. Please try again.', 'danger');
-        showToast('✗ Network error. Please try again.', false);
+        showSuccessMessage('✗ Network error. Please try again.', 'error');
     }
-    finally { btn.innerHTML = orig; btn.disabled = false; }
+    finally { 
+        btn.innerHTML = orig; 
+        btn.disabled = false; 
+    }
 });
 
+// ── Change Password ───────────────
 document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const np = document.getElementById('new_password').value;
     const cp = document.getElementById('confirm_password').value;
-    if (np !== cp)    { showInlineMsg('pwMessage', '✗ Passwords do not match', 'warning'); return; }
-    if (np.length < 6){ showInlineMsg('pwMessage', '✗ Password must be at least 6 characters', 'warning'); return; }
+    
+    if (np !== cp) { 
+        showSuccessMessage('✗ Passwords do not match', 'error'); 
+        return; 
+    }
+    if (np.length < 6) { 
+        showSuccessMessage('✗ Password must be at least 6 characters', 'error'); 
+        return; 
+    }
 
     const btn = document.getElementById('changePwBtn');
     const orig = btn.innerHTML;
@@ -478,26 +493,34 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
     btn.disabled = true;
 
     try {
-        const res  = await fetch('/api/profile/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password: document.getElementById('current_password').value, new_password: np }) });
+        const res = await fetch('/api/profile/change-password', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ 
+                current_password: document.getElementById('current_password').value, 
+                new_password: np 
+            }) 
+        });
         const data = await res.json();
+        
         if (res.ok) {
-            showToast('✓ Password changed successfully', true);
-            showInlineMsg('pwMessage', '✓ Password changed successfully', 'success');
-            this.reset();
+            showSuccessMessage('✓ Password changed successfully!', 'success');
+            document.getElementById('changePasswordForm').reset();
             setTimeout(() => showTab('view'), 1500);
         } else {
-            const errorMsg = data.error || 'Failed to change password';
-            showInlineMsg('pwMessage', '✗ ' + errorMsg, 'danger');
-            showToast('✗ ' + errorMsg, false);
+            showSuccessMessage('✗ ' + (data.error || 'Failed to change password'), 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        showInlineMsg('pwMessage', '✗ Network error. Please try again.', 'danger');
-        showToast('✗ Network error. Please try again.', false);
+        showSuccessMessage('✗ Network error. Please try again.', 'error');
     }
-    finally { btn.innerHTML = orig; btn.disabled = false; }
+    finally { 
+        btn.innerHTML = orig; 
+        btn.disabled = false; 
+    }
 });
 
+// ── Password validation ───────────────
 document.getElementById('confirm_password')?.addEventListener('input', function() {
     const match = this.value === document.getElementById('new_password').value;
     this.classList.toggle('cp-invalid', !match);
@@ -511,22 +534,19 @@ document.getElementById('new_password')?.addEventListener('input', function() {
     cp.classList.toggle('cp-valid', match);
 });
 
-function showInlineMsg(id, text, type) {
-    const icons = { success:'check-circle', danger:'times-circle', warning:'exclamation-triangle' };
-    const div = document.getElementById(id);
-    div.innerHTML = `<div class="cp-msg cp-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i> ${text}</div>`;
-    div.style.display = 'block';
-    setTimeout(() => { div.style.display = 'none'; }, 5000);
-}
-
-function showToast(msg, success) {
+// ── Success Message (same as admins.html) ────────────────
+function showSuccessMessage(msg, type) {
     const t = document.getElementById('cp-toast');
     if (!t) return;
-    const inner = t.querySelector('.cp-toast-inner');
-    const icon = document.getElementById('cp-toast-icon');
-    const msgSpan = document.getElementById('cp-toast-msg');
     
-    if (success === true) {
+    const inner = t.querySelector('.cp-toast-inner');
+    const icon = t.querySelector('i');
+    const msgSpan = document.getElementById('cp-toast-msg');
+
+    if (type === 'info') {
+        if (inner) inner.style.background = '#1e40af';
+        if (icon) icon.className = 'fas fa-spinner fa-spin';
+    } else if (type === 'success') {
         if (inner) inner.style.background = '#059669';
         if (icon) icon.className = 'fas fa-check-circle';
     } else {
@@ -535,7 +555,7 @@ function showToast(msg, success) {
     }
     if (msgSpan) msgSpan.textContent = msg;
     t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, 3000);
+    if (type !== 'info') setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 </script>
 
