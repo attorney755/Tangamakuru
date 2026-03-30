@@ -413,7 +413,72 @@ function showTab(tab) {
     });
 }
 
-// Profile edit
+// Create a temporary message element
+function showMessage(message, isSuccess = true) {
+    // Remove any existing message div
+    const existingMsg = document.getElementById('temp-message');
+    if (existingMsg) existingMsg.remove();
+    
+    // Create new message div
+    const msgDiv = document.createElement('div');
+    msgDiv.id = 'temp-message';
+    msgDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        background: ${isSuccess ? '#059669' : '#c0392b'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideInRight 0.3s ease-out;
+        font-family: 'Inter', sans-serif;
+    `;
+    msgDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(msgDiv);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (msgDiv) {
+            msgDiv.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => msgDiv.remove(), 300);
+        }
+    }, 3000);
+}
+
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// ── Profile Update ───────────────
 document.getElementById('profileEditForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('saveBtn');
@@ -425,34 +490,51 @@ document.getElementById('profileEditForm')?.addEventListener('submit', async fun
         first_name: document.getElementById('first_name').value,
         last_name:  document.getElementById('last_name').value,
         phone:      document.getElementById('phone').value || '',
-        province:   document.getElementById('province').value || '',
-        district:   document.getElementById('district').value || '',
-        sector:     document.getElementById('sector').value || '',
-        cell:       document.getElementById('cell').value || '',
-        village:    document.getElementById('village').value || ''
+        province:   document.getElementById('province')?.value || '',
+        district:   document.getElementById('district')?.value || '',
+        sector:     document.getElementById('sector')?.value || '',
+        cell:       document.getElementById('cell')?.value || '',
+        village:    document.getElementById('village')?.value || ''
     };
 
     try {
-        const res  = await fetch('/api/profile/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formData) });
+        const res = await fetch('/api/profile/update', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(formData) 
+        });
         const data = await res.json();
+        
         if (res.ok) {
-            showInlineMsg('editMessage', 'Profile updated successfully!', 'success');
-            showToast('Profile updated successfully', true);
-            setTimeout(() => location.reload(), 1600);
+            showMessage('Profile updated successfully!', true);
+            setTimeout(() => location.reload(), 1500);
         } else {
-            showInlineMsg('editMessage', data.error || 'Failed to update profile', 'danger');
+            showMessage(data.error || 'Failed to update profile', false);
         }
-    } catch { showInlineMsg('editMessage', 'Network error. Please try again.', 'danger'); }
-    finally { btn.innerHTML = orig; btn.disabled = false; }
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Network error. Please try again.', false);
+    }
+    finally { 
+        btn.innerHTML = orig; 
+        btn.disabled = false; 
+    }
 });
 
-// Password change
+// ── Change Password ───────────────
 document.getElementById('changePasswordForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const np = document.getElementById('new_password').value;
     const cp = document.getElementById('confirm_password').value;
-    if (np !== cp) { showInlineMsg('pwMessage', 'Passwords do not match', 'warning'); return; }
-    if (np.length < 6) { showInlineMsg('pwMessage', 'Password must be at least 6 characters', 'warning'); return; }
+    
+    if (np !== cp) { 
+        showMessage('Passwords do not match', false); 
+        return; 
+    }
+    if (np.length < 6) { 
+        showMessage('Password must be at least 6 characters', false); 
+        return; 
+    }
 
     const btn = document.getElementById('changePwBtn');
     const orig = btn.innerHTML;
@@ -460,20 +542,34 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
     btn.disabled = true;
 
     try {
-        const res  = await fetch('/api/profile/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password: document.getElementById('current_password').value, new_password: np }) });
+        const res = await fetch('/api/profile/change-password', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ 
+                current_password: document.getElementById('current_password').value, 
+                new_password: np 
+            }) 
+        });
         const data = await res.json();
+        
         if (res.ok) {
-            showToast('Password changed successfully', true);
-            this.reset();
-            showTab('view');
+            showMessage('Password changed successfully!', true);
+            document.getElementById('changePasswordForm').reset();
+            setTimeout(() => showTab('view'), 1500);
         } else {
-            showInlineMsg('pwMessage', data.error || 'Failed to change password', 'danger');
+            showMessage(data.error || 'Failed to change password', false);
         }
-    } catch { showInlineMsg('pwMessage', 'Network error. Please try again.', 'danger'); }
-    finally { btn.innerHTML = orig; btn.disabled = false; }
+    } catch (error) {
+        console.error('Error:', error);
+        showMessage('Network error. Please try again.', false);
+    }
+    finally { 
+        btn.innerHTML = orig; 
+        btn.disabled = false; 
+    }
 });
 
-// Real-time password match
+// ── Password validation ───────────────
 document.getElementById('confirm_password')?.addEventListener('input', function() {
     const match = this.value === document.getElementById('new_password').value;
     this.classList.toggle('ap-invalid', !match);
@@ -486,23 +582,6 @@ document.getElementById('new_password')?.addEventListener('input', function() {
     cp.classList.toggle('ap-invalid', !match);
     cp.classList.toggle('ap-valid', match);
 });
-
-function showInlineMsg(id, text, type) {
-    const icons = { success:'check-circle', danger:'times-circle', warning:'exclamation-triangle' };
-    const div = document.getElementById(id);
-    div.innerHTML = `<div class="ap-msg ap-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
-    div.style.display = 'block';
-    setTimeout(() => { div.style.display = 'none'; }, 5000);
-}
-
-function showToast(msg, success) {
-    const t = document.getElementById('ap-toast');
-    t.querySelector('.ap-toast-inner').style.background = success ? '#059669' : '#c0392b';
-    document.getElementById('ap-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
-    document.getElementById('ap-toast-msg').textContent = msg;
-    t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
-}
 </script>
 
 {% endblock %}
