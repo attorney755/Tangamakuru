@@ -449,13 +449,19 @@ document.getElementById('profileEditForm')?.addEventListener('submit', async fun
         const res  = await fetch('/api/profile/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(formData) });
         const data = await res.json();
         if (res.ok) {
-            showInlineMsg('editMessage', 'Profile updated successfully!', 'success');
-            showToast('Profile updated successfully', true);
+            showInlineMsg('editMessage', '✓ Profile updated successfully!', 'success');
+            showToast('✓ Profile updated successfully', true);
             setTimeout(() => location.reload(), 1600);
         } else {
-            showInlineMsg('editMessage', data.error || 'Failed to update profile', 'danger');
+            const errorMsg = data.error || 'Failed to update profile';
+            showInlineMsg('editMessage', '✗ ' + errorMsg, 'danger');
+            showToast('✗ ' + errorMsg, false);
         }
-    } catch { showInlineMsg('editMessage', 'Network error. Please try again.', 'danger'); }
+    } catch (error) {
+        console.error('Error:', error);
+        showInlineMsg('editMessage', '✗ Network error. Please try again.', 'danger');
+        showToast('✗ Network error. Please try again.', false);
+    }
     finally { btn.innerHTML = orig; btn.disabled = false; }
 });
 
@@ -463,8 +469,8 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
     e.preventDefault();
     const np = document.getElementById('new_password').value;
     const cp = document.getElementById('confirm_password').value;
-    if (np !== cp)    { showInlineMsg('pwMessage', 'Passwords do not match', 'warning'); return; }
-    if (np.length < 6){ showInlineMsg('pwMessage', 'Password must be at least 6 characters', 'warning'); return; }
+    if (np !== cp)    { showInlineMsg('pwMessage', '✗ Passwords do not match', 'warning'); return; }
+    if (np.length < 6){ showInlineMsg('pwMessage', '✗ Password must be at least 6 characters', 'warning'); return; }
 
     const btn = document.getElementById('changePwBtn');
     const orig = btn.innerHTML;
@@ -475,13 +481,20 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
         const res  = await fetch('/api/profile/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ current_password: document.getElementById('current_password').value, new_password: np }) });
         const data = await res.json();
         if (res.ok) {
-            showToast('Password changed successfully', true);
+            showToast('✓ Password changed successfully', true);
+            showInlineMsg('pwMessage', '✓ Password changed successfully', 'success');
             this.reset();
-            showTab('view');
+            setTimeout(() => showTab('view'), 1500);
         } else {
-            showInlineMsg('pwMessage', data.error || 'Failed to change password', 'danger');
+            const errorMsg = data.error || 'Failed to change password';
+            showInlineMsg('pwMessage', '✗ ' + errorMsg, 'danger');
+            showToast('✗ ' + errorMsg, false);
         }
-    } catch { showInlineMsg('pwMessage', 'Network error. Please try again.', 'danger'); }
+    } catch (error) {
+        console.error('Error:', error);
+        showInlineMsg('pwMessage', '✗ Network error. Please try again.', 'danger');
+        showToast('✗ Network error. Please try again.', false);
+    }
     finally { btn.innerHTML = orig; btn.disabled = false; }
 });
 
@@ -501,18 +514,28 @@ document.getElementById('new_password')?.addEventListener('input', function() {
 function showInlineMsg(id, text, type) {
     const icons = { success:'check-circle', danger:'times-circle', warning:'exclamation-triangle' };
     const div = document.getElementById(id);
-    div.innerHTML = `<div class="cp-msg cp-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i>${text}</div>`;
+    div.innerHTML = `<div class="cp-msg cp-msg--${type}"><i class="fas fa-${icons[type]||'info-circle'}"></i> ${text}</div>`;
     div.style.display = 'block';
     setTimeout(() => { div.style.display = 'none'; }, 5000);
 }
 
 function showToast(msg, success) {
     const t = document.getElementById('cp-toast');
-    t.querySelector('.cp-toast-inner').style.background = success ? '#059669' : '#c0392b';
-    document.getElementById('cp-toast-icon').className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
-    document.getElementById('cp-toast-msg').textContent = msg;
+    if (!t) return;
+    const inner = t.querySelector('.cp-toast-inner');
+    const icon = document.getElementById('cp-toast-icon');
+    const msgSpan = document.getElementById('cp-toast-msg');
+    
+    if (success === true) {
+        if (inner) inner.style.background = '#059669';
+        if (icon) icon.className = 'fas fa-check-circle';
+    } else {
+        if (inner) inner.style.background = '#c0392b';
+        if (icon) icon.className = 'fas fa-exclamation-circle';
+    }
+    if (msgSpan) msgSpan.textContent = msg;
     t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 </script>
 
