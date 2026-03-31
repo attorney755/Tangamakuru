@@ -611,7 +611,7 @@ function performAdminDeleteWithOfficers() {
     bootstrap.Modal.getInstance(document.getElementById('adminWarningModal')).hide();
     
     // Show loading toast
-    showToast('Deleting admin and all associated officers...', false);
+    showToast('Deleting admin and all associated officers...', 'info');
     
     fetch(`/super-admin/api/user/${currentUserId}/delete-with-officers`, {
         method: 'DELETE',
@@ -620,7 +620,7 @@ function performAdminDeleteWithOfficers() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showToast(data.message, true);
+            showToast(data.message || 'Admin and officers deleted successfully!', true);
             // Remove the row from the table
             const rows = document.querySelectorAll('#usersTableBody tr');
             for (let row of rows) {
@@ -631,7 +631,7 @@ function performAdminDeleteWithOfficers() {
             }
             setTimeout(() => location.reload(), 2000);
         } else {
-            showToast('Error: ' + data.error, false);
+            showToast(data.error || 'Failed to delete admin', false);
         }
     })
     .catch(error => {
@@ -681,19 +681,74 @@ document.getElementById('adminWarningConfirmCheckbox').addEventListener('change'
     document.getElementById('confirmAdminDeleteBtn').disabled = !this.checked;
 });
 
-document.getElementById('confirmAdminDeleteBtn').addEventListener('click', function() {
-    performAdminDeleteWithOfficers();
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+    fetch(`/super-admin/api/user/${currentUserId}/delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
+            
+            // Show success message
+            showToast(data.message || 'User deleted successfully!', true);
+            
+            // Remove the row from the table
+            const rows = document.querySelectorAll('#usersTableBody tr');
+            for (let row of rows) {
+                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
+                    row.remove();
+                    break;
+                }
+            }
+            
+            // Reload after showing message
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showToast(data.error || 'Failed to delete user', false);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Network error. Please try again.', false);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
 });
 
-function showToast(message, success) {
-    const t    = document.getElementById('um-toast');
+function showToast(message, type) {
+    const t = document.getElementById('um-toast');
     const icon = document.getElementById('um-toast-icon');
     const innerDiv = t.querySelector('.um-toast-inner');
-    innerDiv.style.background = success ? '#059669' : '#c0392b';
-    icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    
+    if (type === 'info') {
+        innerDiv.style.background = '#1e40af';
+        icon.className = 'fas fa-spinner fa-spin';
+    } else if (type === true || type === 'success') {
+        innerDiv.style.background = '#059669';
+        icon.className = 'fas fa-check-circle';
+    } else {
+        innerDiv.style.background = '#c0392b';
+        icon.className = 'fas fa-exclamation-circle';
+    }
+    
     document.getElementById('um-toast-msg').textContent = message;
     t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, success ? 3000 : 5000);
+    
+    if (type !== 'info') {
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
 }
 </script>
 
