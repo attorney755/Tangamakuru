@@ -581,12 +581,11 @@ def get_user_details(user_id):
         }
     })
 
-  
 @super_admin_bp.route('/api/user/<int:user_id>/delete', methods=['DELETE'])
 @super_admin_required
 def delete_user(user_id):
     """Delete a user and all their associated data"""
-    from app.models import User, Report, Media, Message, Notification, PendingApproval
+    from app.models import User, Report, Media, Message, Notification, PendingApproval, UserAnnouncement
     
     try:
         user = User.query.get_or_404(user_id)
@@ -601,10 +600,13 @@ def delete_user(user_id):
         
         # Delete in correct order due to foreign keys
         
-        # 1. Delete notifications
+        # 1. Delete UserAnnouncements (announcement copies)
+        UserAnnouncement.query.filter_by(user_id=user.id).delete()
+        
+        # 2. Delete notifications
         Notification.query.filter_by(user_id=user.id).delete()
         
-        # 2. Delete messages and media related to reports
+        # 3. Delete messages and media related to reports
         if user.role == 'citizen':
             reports = Report.query.filter_by(user_id=user.id).all()
         elif user.role == 'officer':
@@ -617,11 +619,11 @@ def delete_user(user_id):
             Media.query.filter_by(report_id=report.id).delete()
             db.session.delete(report)
         
-        # 3. Delete pending approvals for officers
+        # 4. Delete pending approvals for officers
         if user.role == 'officer':
             PendingApproval.query.filter_by(officer_id=user.id).delete()
         
-        # 4. Finally delete the user
+        # 5. Finally delete the user
         db.session.delete(user)
         db.session.commit()
         
