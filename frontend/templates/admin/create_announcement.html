@@ -438,7 +438,6 @@ function submitAnnouncement(event) {
     .then(data => {
         if (data.success) {
             showFormMsg('Announcement published successfully! Redirecting...', 'success');
-            showToast('Published successfully', true);
             setTimeout(() => { window.location.href = '/admin/announcements'; }, 1500);
         } else {
             showFormMsg(data.error || 'Failed to publish announcement', 'danger');
