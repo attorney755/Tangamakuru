@@ -673,8 +673,7 @@ document.getElementById('sendMoreInfoBtn').onclick = function() {
     sendBtn.disabled = true;
     sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
-    closeModal();
-
+    // Keep modal open while sending
     fetch('/admin/api/messages/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -686,13 +685,19 @@ document.getElementById('sendMoreInfoBtn').onclick = function() {
     })
     .then(response => response.json())
     .then(data => {
+        // Close modal after successful send
+        closeModal();
+        
         if (data.success) {
-            showSuccessMessage(data.message, 'success');
+            showToast(data.message, true);
+            // Clear the textarea
+            document.getElementById('moreInfoQuestion').value = '';
         } else {
             showToast(data.error || 'Failed to send request', false);
         }
     })
     .catch(() => {
+        closeModal();
         showToast('Network error. Please try again.', false);
     })
     .finally(() => {
@@ -708,16 +713,14 @@ function showToast(msg, success) {
     const icon = toast.querySelector('i');
     const msgSpan = toast.querySelector('span');
     
-    if (success === true || success === 'success') {
+    if (success) {
         inner.style.background = '#059669';
         icon.className = 'fas fa-check-circle';
-        msgSpan.textContent = msg;
     } else {
         inner.style.background = '#c0392b';
         icon.className = 'fas fa-exclamation-circle';
-        msgSpan.textContent = msg || 'Something went wrong';
     }
-    
+    msgSpan.textContent = msg;
     toast.style.display = 'block';
     setTimeout(() => { 
         toast.style.display = 'none'; 
