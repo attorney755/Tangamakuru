@@ -481,66 +481,6 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 /* Responsive */
 @media (max-width: 900px) { .um-detail-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .um-wrapper { padding: 1rem; } .um-filters { flex-direction: column; } .um-filter-group--search { width: 100%; } .um-topbar { flex-direction: column; align-items: flex-start; } }
-
-/* Success Toast */
-.um-success-toast {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 10000;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.3s ease-out;
-}
-.um-success-toast.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-.um-success-content {
-    background: #059669;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.um-success-content i {
-    font-size: 18px;
-}
-
-/* Error Toast */
-.um-error-toast {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 10000;
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.3s ease-out;
-}
-.um-error-toast.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-.um-error-content {
-    background: #dc2626;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.um-error-content i {
-    font-size: 18px;
-}
     
 </style>
 
@@ -583,7 +523,6 @@ function viewUser(userId) {
                 const roleCls = u.role === 'citizen' ? 'um-role--citizen' : u.role === 'officer' ? 'um-role--officer' : u.role === 'admin' ? 'um-role--admin' : 'um-role--super';
                 const roleLabel = u.role === 'super_admin' ? 'Super Admin' : u.role.charAt(0).toUpperCase() + u.role.slice(1);
                 
-                // Determine status display - only show ONE status
                 let statusHtml = '';
                 if (u.role === 'officer' && u.approval_status === 'pending') {
                     statusHtml = '<span class="um-status um-status--pending"><i class="fas fa-clock"></i> Pending</span>';
@@ -603,12 +542,12 @@ function viewUser(userId) {
                         </div>
                         <div>
                             <table class="um-detail-table">
-                                 ox修<td class="um-detail-cell">Email</td><td class="um-detail-value">${u.email}</td> </tr>
-                                 <tr><td class="um-detail-cell">Phone</td><td class="um-detail-value">${u.phone || 'Not provided'}</td> </tr>
-                                 <tr><td class="um-detail-cell">Location</td><td class="um-detail-value">${u.province || '—'} › ${u.district || '—'} › ${u.sector || '—'}</td> </tr>
-                                 <tr><td class="um-detail-cell">Registered</td><td class="um-detail-value">${u.created_at}</td> </tr>
-                                 <tr><td class="um-detail-cell">Reports</td><td class="um-detail-value">${u.report_count}</td> </tr>
-                                 <tr><td class="um-detail-cell">Status</td><td class="um-detail-value">${statusHtml}</td> </tr>
+                                 <tr><td class="um-detail-cell">Email</td><td class="um-detail-value">${u.email}</td></tr>
+                                 <tr><td class="um-detail-cell">Phone</td><td class="um-detail-value">${u.phone || 'Not provided'}</td></tr>
+                                 <tr><td class="um-detail-cell">Location</td><td class="um-detail-value">${u.province || '—'} › ${u.district || '—'} › ${u.sector || '—'}</td></tr>
+                                 <tr><td class="um-detail-cell">Registered</td><td class="um-detail-value">${u.created_at}</td></tr>
+                                 <tr><td class="um-detail-cell">Reports</td><td class="um-detail-value">${u.report_count}</td></tr>
+                                 <tr><td class="um-detail-cell">Status</td><td class="um-detail-value">${statusHtml}</td></tr>
                             </table>
                         </div>
                     </div>`;
@@ -626,26 +565,22 @@ function deleteUser(userId, userName, userRole) {
     currentUserName = userName;
     currentUserRole = userRole;
     
-    // First, check if this admin has officers
     if (userRole === 'admin') {
         fetch(`/super-admin/api/user/${userId}/officers-count`)
             .then(response => response.json())
             .then(data => {
                 if (data.officers_count > 0) {
-                    // Show warning modal for admin with officers
                     currentOfficersCount = data.officers_count;
                     showAdminWarningModal();
                 } else {
-                    // No officers, proceed with normal delete
                     showDeleteConfirmation();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showDeleteConfirmation(); // Fallback to normal delete
+                showDeleteConfirmation();
             });
     } else {
-        // Not an admin, proceed with normal delete
         showDeleteConfirmation();
     }
 }
@@ -658,7 +593,6 @@ function showDeleteConfirmation() {
 }
 
 function showAdminWarningModal() {
-    // Update the admin warning modal content
     document.getElementById('adminWarningUserName').innerHTML = `<strong>${currentUserName}</strong>`;
     document.getElementById('adminOfficersCount').innerHTML = currentOfficersCount;
     document.getElementById('adminOfficersCountConfirm').innerHTML = currentOfficersCount;
@@ -668,11 +602,11 @@ function showAdminWarningModal() {
 }
 
 function performAdminDeleteWithOfficers() {
-    // Close the warning modal
     bootstrap.Modal.getInstance(document.getElementById('adminWarningModal')).hide();
     
-    // Show loading indicator
-    showSuccessMessage('Deleting admin and all associated officers...');
+    const btn = document.getElementById('confirmAdminDeleteBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
     
     fetch(`/super-admin/api/user/${currentUserId}/delete-with-officers`, {
         method: 'DELETE',
@@ -681,27 +615,22 @@ function performAdminDeleteWithOfficers() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showSuccessMessage(data.message || 'Admin and officers deleted successfully!');
-            // Remove the row from the table
-            const rows = document.querySelectorAll('#usersTableBody tr');
-            for (let row of rows) {
-                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
-                    row.remove();
-                    break;
-                }
-            }
-            setTimeout(() => location.reload(), 2000);
+            location.reload();
         } else {
-            showErrorMessage(data.error || 'Failed to delete admin');
+            alert('Error: ' + (data.error || 'Failed to delete admin'));
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete Admin and All Officers';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showErrorMessage('Network error. Please try again.');
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete Admin and All Officers';
     });
 }
 
-// Event listeners for delete confirmation
+// Delete confirmation - SIMPLIFIED: just reload on success
 document.getElementById('confirmDeleteCheckbox').addEventListener('change', function() {
     document.getElementById('confirmDeleteBtn').disabled = !this.checked;
 });
@@ -718,13 +647,11 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Close modal
+            // Close modal and reload immediately
             bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
-            // Reload page immediately without showing toast
             location.reload();
         } else {
-            // Show error in alert
-            alert('Error: ' + data.error);
+            alert('Error: ' + (data.error || 'Failed to delete user'));
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete User';
         }
@@ -737,136 +664,14 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
     });
 });
 
-// Event listeners for admin warning modal
+// Admin warning modal listeners
 document.getElementById('adminWarningConfirmCheckbox').addEventListener('change', function() {
     document.getElementById('confirmAdminDeleteBtn').disabled = !this.checked;
 });
 
-document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-    const btn = this;
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-
-    fetch(`/super-admin/api/user/${currentUserId}/delete`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Close the delete modal
-            bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
-            
-            // Show success message with the user's name
-            showSuccessMessage(data.message || 'User deleted successfully!');
-            
-            // Remove the row from the table
-            const rows = document.querySelectorAll('#usersTableBody tr');
-            for (let row of rows) {
-                if (row.querySelector(`button[onclick*="deleteUser(${currentUserId},"]`)) {
-                    row.remove();
-                    break;
-                }
-            }
-            
-            // Reload after 2 seconds to refresh the list
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
-        } else {
-            showErrorMessage(data.error || 'Failed to delete user');
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorMessage('Network error. Please try again.');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    });
+document.getElementById('confirmAdminDeleteBtn').addEventListener('click', function() {
+    performAdminDeleteWithOfficers();
 });
-
-function showToast(message, type) {
-    const t = document.getElementById('um-toast');
-    const icon = document.getElementById('um-toast-icon');
-    const innerDiv = t.querySelector('.um-toast-inner');
-    
-    if (type === 'info') {
-        innerDiv.style.background = '#1e40af';
-        icon.className = 'fas fa-spinner fa-spin';
-    } else if (type === true || type === 'success') {
-        innerDiv.style.background = '#059669';
-        icon.className = 'fas fa-check-circle';
-    } else {
-        innerDiv.style.background = '#c0392b';
-        icon.className = 'fas fa-exclamation-circle';
-    }
-    
-    document.getElementById('um-toast-msg').textContent = message;
-    t.style.display = 'block';
-    
-    if (type !== 'info') {
-        setTimeout(() => { t.style.display = 'none'; }, 3000);
-    }
-}
-
-// Success Message Modal/Dialog
-function showSuccessMessage(message) {
-    // Create a custom styled success alert
-    const successDiv = document.createElement('div');
-    successDiv.className = 'um-success-toast';
-    successDiv.innerHTML = `
-        <div class="um-success-content">
-            <i class="fas fa-check-circle"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(successDiv);
-    
-    // Animate in
-    setTimeout(() => {
-        successDiv.classList.add('show');
-    }, 100);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        successDiv.classList.remove('show');
-        setTimeout(() => {
-            successDiv.remove();
-        }, 300);
-    }, 3000);
-}
-
-function showErrorMessage(message) {
-    // Create a custom styled error alert
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'um-error-toast';
-    errorDiv.innerHTML = `
-        <div class="um-error-content">
-            <i class="fas fa-exclamation-circle"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(errorDiv);
-    
-    // Animate in
-    setTimeout(() => {
-        errorDiv.classList.add('show');
-    }, 100);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        errorDiv.classList.remove('show');
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 300);
-    }, 3000);
-}
-    
-    
-    
 </script>
 
 {% endblock %}
