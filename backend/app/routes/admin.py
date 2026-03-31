@@ -914,6 +914,10 @@ def send_message():
         db.session.add(msg)
         db.session.commit()
         
+        # Get officer name for the response
+        officer = User.query.get(receiver_id)
+        officer_name = officer.first_name if officer else 'Officer'
+        
         # Send notification to officer
         from app.utils.notifications import send_notification
         report = Report.query.get(report_id)
@@ -925,7 +929,10 @@ def send_message():
             link=f'/officer/incident/{report_id}?message=1'
         )
         
-        return jsonify({'success': True, 'message': 'Message sent successfully'}), 200
+        return jsonify({
+            'success': True, 
+            'message': f'Message sent successfully to Officer {officer_name}'
+        }), 200
         
     except Exception as e:
         db.session.rollback()
