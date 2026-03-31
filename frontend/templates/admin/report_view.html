@@ -662,7 +662,10 @@ document.getElementById('askMoreInfoModal').addEventListener('click', function(e
 
 document.getElementById('sendMoreInfoBtn').onclick = function() {
     const question = document.getElementById('moreInfoQuestion').value.trim();
-    if (!question) { showToast('Please enter a question', false); return; }
+    if (!question) { 
+        showToast('Please enter a question', false); 
+        return; 
+    }
 
     closeModal();
 
@@ -675,10 +678,13 @@ document.getElementById('sendMoreInfoBtn').onclick = function() {
             message: `[Request for more information] ${question}`
         })
     })
-    .then(r => r.json())
+    .then(response => response.json())
     .then(data => {
-        if (data.success) showToast(`Request sent to Officer ${currentOfficerName}`, true);
-        else showToast(data.error || 'Failed to send request', false);
+        if (data.success) {
+            showToast(data.message, true);  // Use the message from the server
+        } else {
+            showToast(data.error || 'Failed to send request', false);
+        }
     })
     .catch(() => showToast('Network error. Please try again.', false));
 };
