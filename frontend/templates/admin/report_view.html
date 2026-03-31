@@ -667,6 +667,12 @@ document.getElementById('sendMoreInfoBtn').onclick = function() {
         return; 
     }
 
+    // Disable button and show loading state
+    const sendBtn = this;
+    const originalText = sendBtn.innerHTML;
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
     closeModal();
 
     fetch('/admin/api/messages/send', {
@@ -681,23 +687,56 @@ document.getElementById('sendMoreInfoBtn').onclick = function() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(data.message, true);  // Use the message from the server
+            showSuccessMessage(data.message, 'success');
         } else {
             showToast(data.error || 'Failed to send request', false);
         }
     })
-    .catch(() => showToast('Network error. Please try again.', false));
+    .catch(() => {
+        showToast('Network error. Please try again.', false);
+    })
+    .finally(() => {
+        // Reset button state
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalText;
+    });
 };
 
 function showToast(msg, success) {
     const toast = document.getElementById('rd-toast');
     const inner = toast.querySelector('.rd-toast-inner');
-    const icon  = toast.querySelector('i');
-    inner.style.background = success ? '#059669' : '#c0392b';
-    icon.className = success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
-    toast.querySelector('span').textContent = msg;
+    const icon = toast.querySelector('i');
+    const msgSpan = toast.querySelector('span');
+    
+    if (success === true || success === 'success') {
+        inner.style.background = '#059669';
+        icon.className = 'fas fa-check-circle';
+        msgSpan.textContent = msg;
+    } else {
+        inner.style.background = '#c0392b';
+        icon.className = 'fas fa-exclamation-circle';
+        msgSpan.textContent = msg || 'Something went wrong';
+    }
+    
     toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    setTimeout(() => { 
+        toast.style.display = 'none'; 
+    }, 3500);
+}
+
+function showSuccessMessage(msg, type) {
+    const toast = document.getElementById('rd-toast');
+    const inner = toast.querySelector('.rd-toast-inner');
+    const icon = toast.querySelector('i');
+    const msgSpan = toast.querySelector('span');
+    
+    inner.style.background = '#059669';
+    icon.className = 'fas fa-check-circle';
+    msgSpan.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => { 
+        toast.style.display = 'none'; 
+    }, 3500);
 }
 
 function assignOfficer(reportId) {
