@@ -62,7 +62,7 @@
                         <th>Email</th>
                         <th>Role</th>
                         <th>Sector / District</th>
-                        <th>Status</th>
+                       
                         <th>Joined</th>
                         <th>Reports</th>
                         <th>Actions</th>
@@ -110,17 +110,6 @@
                             <span class="um-dash">—</span>
                             {% endif %}
                         </td>
-
-                        <!-- Status -->
-<td>
-    {% if user.role == 'officer' and user.approval_status == 'pending' %}
-    <span class="um-status um-status--pending"><i class="fas fa-clock"></i> Pending</span>
-    {% elif user.is_active %}
-    <span class="um-status um-status--active"><i class="fas fa-check-circle"></i> Active</span>
-    {% else %}
-    <span class="um-status um-status--inactive"><i class="fas fa-ban"></i> Inactive</span>
-    {% endif %}
-</td>
 
                         <!-- Joined -->
                         <td class="um-date">
