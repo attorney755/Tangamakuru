@@ -585,7 +585,7 @@ def get_user_details(user_id):
 @super_admin_required
 def delete_user(user_id):
     """Delete a user and all their associated data"""
-    from app.models import User, Report, Media, Message, Notification, PendingApproval, UserAnnouncement
+    from app.models import User, Report, Media, Message, Notification, PendingApproval, UserAnnouncement, Announcement
     
     try:
         user = User.query.get_or_404(user_id)
@@ -596,17 +596,18 @@ def delete_user(user_id):
         
         user_name = user.get_full_name()
         
-        print(f"=== DELETING USER: {user_name} (ID: {user_id}) ===")
-        
         # Delete in correct order due to foreign keys
         
-        # 1. Delete UserAnnouncements (announcement copies)
+        # 1. Delete announcements created by this user
+        Announcement.query.filter_by(created_by=user.id).delete()
+        
+        # 2. Delete UserAnnouncements (announcement copies for this user)
         UserAnnouncement.query.filter_by(user_id=user.id).delete()
         
-        # 2. Delete notifications
+        # 3. Delete notifications
         Notification.query.filter_by(user_id=user.id).delete()
         
-        # 3. Delete messages and media related to reports
+        # 4. Delete messages and media related to reports
         if user.role == 'citizen':
             reports = Report.query.filter_by(user_id=user.id).all()
         elif user.role == 'officer':
@@ -619,24 +620,22 @@ def delete_user(user_id):
             Media.query.filter_by(report_id=report.id).delete()
             db.session.delete(report)
         
-        # 4. Delete pending approvals for officers
+        # 5. Delete pending approvals for officers
         if user.role == 'officer':
             PendingApproval.query.filter_by(officer_id=user.id).delete()
         
-        # 5. Finally delete the user
+        # 6. Finally delete the user
         db.session.delete(user)
         db.session.commit()
         
-        response_data = {
+        return jsonify({
             'success': True,
-            'message': f'User {user_name} has been deleted successfully'
-        }
-        print(f"=== RETURNING: {response_data} ===")
-        return jsonify(response_data), 200
+            'message': f'✓ User {user_name} has been deleted successfully!'
+        }), 200
         
     except Exception as e:
         db.session.rollback()
-        print(f"=== ERROR DELETING USER: {str(e)} ===")
+        print(f"Error deleting user: {str(e)}")
         return jsonify({'error': str(e)}), 500
     
 @super_admin_bp.route('/api/user/<int:user_id>/officers-count')
@@ -658,7 +657,7 @@ def get_admin_officers_count(user_id):
 @super_admin_required
 def delete_user_with_officers(user_id):
     """Delete an admin and all their officers"""
-    from app.models import User, Report, Media, Message, Notification, PendingApproval
+    from app.models import User, Report, Media, Message, Notification, PendingApproval, UserAnnouncement, Announcement
     
     try:
         user = User.query.get_or_404(user_id)
@@ -684,12 +683,20 @@ def delete_user_with_officers(user_id):
         
         # Delete in correct order for foreign key constraints
         
-        # 1. Delete notifications for all officers and admin
+        # 1. Delete announcements created by the admin
+        Announcement.query.filter_by(created_by=user.id).delete()
+        
+        # 2. Delete UserAnnouncements for all officers and admin
+        if officer_ids:
+            UserAnnouncement.query.filter(UserAnnouncement.user_id.in_(officer_ids)).delete(synchronize_session=False)
+        UserAnnouncement.query.filter_by(user_id=user.id).delete()
+        
+        # 3. Delete notifications for all officers and admin
         if officer_ids:
             Notification.query.filter(Notification.user_id.in_(officer_ids)).delete(synchronize_session=False)
         Notification.query.filter_by(user_id=user.id).delete()
         
-        # 2. Delete reports, messages, media for officers
+        # 4. Delete reports, messages, media for officers
         for officer in officers:
             reports = Report.query.filter_by(assigned_officer_id=officer.id).all()
             for report in reports:
@@ -703,17 +710,17 @@ def delete_user_with_officers(user_id):
             # Delete pending approvals for officer
             PendingApproval.query.filter_by(officer_id=officer.id).delete()
         
-        # 3. Delete officers
+        # 5. Delete officers
         if officer_ids:
             User.query.filter(User.id.in_(officer_ids)).delete(synchronize_session=False)
         
-        # 4. Delete the admin
+        # 6. Delete the admin
         db.session.delete(user)
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': f'✅ Admin {user_name} and {officer_count} officer(s) deleted successfully!'
+            'message': f'✓ Admin {user_name} and {officer_count} officer(s) deleted successfully!'
         }), 200
         
     except Exception as e:
