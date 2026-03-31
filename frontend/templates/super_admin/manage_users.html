@@ -481,6 +481,67 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--surface); 
 /* Responsive */
 @media (max-width: 900px) { .um-detail-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .um-wrapper { padding: 1rem; } .um-filters { flex-direction: column; } .um-filter-group--search { width: 100%; } .um-topbar { flex-direction: column; align-items: flex-start; } }
+
+/* Success Toast */
+.um-success-toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease-out;
+}
+.um-success-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+.um-success-content {
+    background: #059669;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.um-success-content i {
+    font-size: 18px;
+}
+
+/* Error Toast */
+.um-error-toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease-out;
+}
+.um-error-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+.um-error-content {
+    background: #dc2626;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.um-error-content i {
+    font-size: 18px;
+}
+    
 </style>
 
 <script>
@@ -610,8 +671,8 @@ function performAdminDeleteWithOfficers() {
     // Close the warning modal
     bootstrap.Modal.getInstance(document.getElementById('adminWarningModal')).hide();
     
-    // Show loading toast
-    showToast('Deleting admin and all associated officers...', 'info');
+    // Show loading indicator
+    showSuccessMessage('Deleting admin and all associated officers...');
     
     fetch(`/super-admin/api/user/${currentUserId}/delete-with-officers`, {
         method: 'DELETE',
@@ -620,7 +681,7 @@ function performAdminDeleteWithOfficers() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showToast(data.message || 'Admin and officers deleted successfully!', true);
+            showSuccessMessage(data.message || 'Admin and officers deleted successfully!');
             // Remove the row from the table
             const rows = document.querySelectorAll('#usersTableBody tr');
             for (let row of rows) {
@@ -631,12 +692,12 @@ function performAdminDeleteWithOfficers() {
             }
             setTimeout(() => location.reload(), 2000);
         } else {
-            showToast(data.error || 'Failed to delete admin', false);
+            showErrorMessage(data.error || 'Failed to delete admin');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Network error. Please try again.', false);
+        showErrorMessage('Network error. Please try again.');
     });
 }
 
@@ -694,11 +755,11 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Close modal
+            // Close the delete modal
             bootstrap.Modal.getInstance(document.getElementById('deleteUserModal')).hide();
             
-            // Show success message
-            showToast(data.message || 'User deleted successfully!', true);
+            // Show success message with the user's name
+            showSuccessMessage(data.message || 'User deleted successfully!');
             
             // Remove the row from the table
             const rows = document.querySelectorAll('#usersTableBody tr');
@@ -709,19 +770,19 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
                 }
             }
             
-            // Reload after showing message
+            // Reload after 2 seconds to refresh the list
             setTimeout(() => {
                 location.reload();
             }, 2000);
         } else {
-            showToast(data.error || 'Failed to delete user', false);
+            showErrorMessage(data.error || 'Failed to delete user');
             btn.disabled = false;
             btn.innerHTML = originalText;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Network error. Please try again.', false);
+        showErrorMessage('Network error. Please try again.');
         btn.disabled = false;
         btn.innerHTML = originalText;
     });
@@ -750,6 +811,62 @@ function showToast(message, type) {
         setTimeout(() => { t.style.display = 'none'; }, 3000);
     }
 }
+
+// Success Message Modal/Dialog
+function showSuccessMessage(message) {
+    // Create a custom styled success alert
+    const successDiv = document.createElement('div');
+    successDiv.className = 'um-success-toast';
+    successDiv.innerHTML = `
+        <div class="um-success-content">
+            <i class="fas fa-check-circle"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(successDiv);
+    
+    // Animate in
+    setTimeout(() => {
+        successDiv.classList.add('show');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        successDiv.classList.remove('show');
+        setTimeout(() => {
+            successDiv.remove();
+        }, 300);
+    }, 3000);
+}
+
+function showErrorMessage(message) {
+    // Create a custom styled error alert
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'um-error-toast';
+    errorDiv.innerHTML = `
+        <div class="um-error-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(errorDiv);
+    
+    // Animate in
+    setTimeout(() => {
+        errorDiv.classList.add('show');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        errorDiv.classList.remove('show');
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 300);
+    }, 3000);
+}
+    
+    
+    
 </script>
 
 {% endblock %}
